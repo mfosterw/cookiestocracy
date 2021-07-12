@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ bill.name }} - {{ block.super }}{% endblock %}
+
+{% load i18n %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+  <form method="post" class="form-horizontal">
+    {% csrf_token %}
+    {{ form|crispy }}
+    <div class="control-group">
+      <div class="controls">
+        <button type="submit" class="btn btn-primary">{% trans 'Update' %}</button>
+      </div>
+    </div>
+  </form>
+{% endblock%}

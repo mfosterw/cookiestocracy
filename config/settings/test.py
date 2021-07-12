@@ -2,7 +2,7 @@
 With these settings, tests run faster.
 """
 
-from .base import *  # noqa
+from .base import *  # noqa pylint: disable=wildcard-import,unused-wildcard-import
 from .base import env
 
 # GENERAL
@@ -14,6 +14,8 @@ SECRET_KEY = env(
 )
 # https://docs.djangoproject.com/en/dev/ref/settings/#test-runner
 TEST_RUNNER = "django.test.runner.DiscoverRunner"
+# Admin site is only enabled during development
+INSTALLED_APPS += ["django.contrib.admin"]  # noqa F405
 
 # PASSWORDS
 # ------------------------------------------------------------------------------

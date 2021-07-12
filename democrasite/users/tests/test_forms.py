@@ -1,11 +1,15 @@
 # pylint: disable=too-few-public-methods,no-self-use
-import pytest
+from django.utils.crypto import get_random_string
 from django.utils.translation import gettext_lazy as _
 
-from democrasite.users.forms import UserCreationForm
+from democrasite.users.forms import (
+    DisabledChangePasswordForm,
+    DisabledResetPasswordForm,
+    DisabledResetPasswordKeyForm,
+    DisabledSetPasswordForm,
+    UserCreationForm,
+)
 from democrasite.users.models import User
-
-pytestmark = pytest.mark.django_db
 
 
 class TestUserCreationForm:
@@ -35,3 +39,45 @@ class TestUserCreationForm:
         assert len(form.errors) == 1
         assert "username" in form.errors
         assert form.errors["username"][0] == _("This username has already been taken.")
+
+
+class TestDisabledForms:
+    def test_change_password_form(self, user: User):
+        password = get_random_string(20)
+        form = DisabledChangePasswordForm(
+            data={
+                "oldpassword": user.password,
+                "password1": password,
+                "password2": password,
+            },
+            user=user,
+        )
+
+        assert not form.is_valid()
+        assert form.errors["__all__"][0] == _("You cannot change your password.")
+
+    def test_set_password_form(self, user: User):
+        password = get_random_string(20)
+        form = DisabledSetPasswordForm(
+            data={"password1": password, "password2": password},
+            user=user,
+        )
+
+        assert not form.is_valid()
+        assert form.errors["__all__"][0] == _("You cannot set a password.")
+
+    def test_reset_password_form(self, user: User):
+        form = DisabledResetPasswordForm(data={"email": user.email})
+
+        assert not form.is_valid()
+        assert form.errors["__all__"][0] == _("You cannot reset your password.")
+
+    def test_reset_key_password_form(self, user: User):
+        password = get_random_string(20)
+        form = DisabledResetPasswordKeyForm(
+            data={"password1": password, "password2": password},
+            user=user,
+        )
+
+        assert not form.is_valid()
+        assert form.errors["__all__"][0] == _("You cannot reset your password.")

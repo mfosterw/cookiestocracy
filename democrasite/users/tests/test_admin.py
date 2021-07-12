@@ -1,10 +1,7 @@
 # pylint: disable=too-few-public-methods,no-self-use
-import pytest
 from django.urls import reverse
 
 from democrasite.users.models import User
-
-pytestmark = pytest.mark.django_db
 
 
 class TestUserAdmin:

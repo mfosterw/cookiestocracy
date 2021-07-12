@@ -1,4 +1,10 @@
-/* These styles are generated from project.scss. */
+body {
+  margin-bottom: 20px;
+}
+
+.navbar-nav .dropdown-menu {
+  min-width: 10px;
+}
 
 .alert-debug {
   color: black;
@@ -10,4 +16,32 @@
   color: #b94a48;
   background-color: #f2dede;
   border-color: #eed3d7;
+}
+
+/* Prevent styling vote links on expired bills */
+.inactive a.vote {
+  cursor: default;
+  text-decoration: none;
+}
+
+.inactive a.vote.text-success {
+  color: var(--green) !important;
+}
+
+.inactive a.vote.text-danger {
+  color: var(--red) !important;
+}
+
+
+.git-pull-link {
+  text-decoration: none !important;
+}
+
+.progress {
+  height: 5px;
+}
+
+.about-page p {
+  text-align: justify;
+  text-align-last: center;
 }

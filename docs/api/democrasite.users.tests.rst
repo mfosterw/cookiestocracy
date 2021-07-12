@@ -12,6 +12,14 @@ democrasite.users.tests.factories module
    :undoc-members:
    :show-inheritance:
 
+democrasite.users.tests.test\_adapters module
+---------------------------------------------
+
+.. automodule:: democrasite.users.tests.test_adapters
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 democrasite.users.tests.test\_admin module
 ------------------------------------------
 
@@ -36,10 +44,10 @@ democrasite.users.tests.test\_models module
    :undoc-members:
    :show-inheritance:
 
-democrasite.users.tests.test\_tasks module
-------------------------------------------
+democrasite.users.tests.test\_templates module
+----------------------------------------------
 
-.. automodule:: democrasite.users.tests.test_tasks
+.. automodule:: democrasite.users.tests.test_templates
    :members:
    :undoc-members:
    :show-inheritance:

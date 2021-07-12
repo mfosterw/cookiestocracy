@@ -1,4 +1,4 @@
-{% load static i18n %}<!DOCTYPE html>
+{% load static i18n socialaccount %}<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="utf-8">
@@ -13,7 +13,7 @@
       <script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.min.js"></script>
     <![endif]-->
 
-    <link rel="icon" href="{% static 'images/favicons/favicon.ico' %}">
+    <link rel="icon" href="{% static 'images/favicons/favicon.ico' %}" />
 
     {% block css %}
     <!-- Latest compiled and minified Bootstrap CSS -->
@@ -28,53 +28,65 @@
     {# Placed at the top of the document so pages load faster with defer #}
     {% block javascript %}
       <!-- Bootstrap JS and its dependencies-->
-      <script defer src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+      <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
       <script defer src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
       <script defer src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
 
-      <!-- Your stuff: Third-party javascript libraries go here -->
+      <!-- Third-party javascript libraries go here -->
 
       <!-- place project specific Javascript in this file -->
       <script defer src="{% static 'js/project.js' %}"></script>
 
     {% endblock javascript %}
+    {% block extra_head %}
+    {% endblock %}
 
   </head>
 
   <body>
+    {% get_providers as socialaccount_providers %}
 
     <div class="mb-1">
       <nav class="navbar navbar-expand-md navbar-light bg-light">
-        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbar-supported-content" aria-controls="navbar-supported-content" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
-        <a class="navbar-brand" href="{% url 'home' %}">Democrasite</a>
+        <a class="navbar-brand" href="{% url 'webiscite:index' %}">Democrasite</a>
 
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <div class="collapse navbar-collapse" id="navbar-supported-content">
           <ul class="navbar-nav mr-auto">
-            <li class="nav-item active">
-              <a class="nav-link" href="{% url 'home' %}">Home <span class="sr-only">(current)</span></a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{% url 'about' %}">About</a>
-            </li>
             {% if request.user.is_authenticated %}
               <li class="nav-item">
                 {# URL provided by django-allauth/account/urls.py #}
-                <a class="nav-link" href="{% url 'users:detail' request.user.username  %}">{% trans "My Profile" %}</a>
+                <a class="nav-link" href="{% url 'users:detail' request.user.username  %}">{% trans 'Profile' %}</a>
+              </li>
+              {# lazy way to check if user is logged in with github #}
+              {% for provider in socialaccount_providers %}
+                {% if provider.id == 'github' %}
+                  <li class="nav-item">
+                    <a href="{% url 'webiscite:my-bills' %}" class="nav-link">{% trans 'Proposals' %}</a>
+                  </li>
+                {% endif %}
+              {% endfor %}
+              <li class="nav-item">
+                <a href="{% url 'webiscite:my-bill-votes' %}" class="nav-link">{% trans 'Votes Cast' %}</a>
               </li>
               <li class="nav-item">
                 {# URL provided by django-allauth/account/urls.py #}
-                <a class="nav-link" href="{% url 'account_logout' %}">{% trans "Sign Out" %}</a>
+                {# Use a little Javascript to log out with a POST request #}
+                <a id="logout-link" class="nav-link" href="#">{% trans 'Log out' %}</a>
+                <form id="logout-form" style="display:none" method="post" action="{% url 'account_logout' %}?next={{ request.path }}">{% csrf_token %}</form>
               </li>
             {% else %}
-              <li class="nav-item">
-                {# URL provided by django-allauth/account/urls.py #}
-                <a id="sign-up-link" class="nav-link" href="{% url 'account_signup' %}">{% trans "Sign Up" %}</a>
-              </li>
-              <li class="nav-item">
-                {# URL provided by django-allauth/account/urls.py #}
-                <a id="log-in-link" class="nav-link" href="{% url 'account_login' %}">{% trans "Sign In" %}</a>
+              <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="login-dropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                  {% trans 'Log in' %}
+                </a>
+                <div class="dropdown-menu dropdown-menu-right py-0" aria-labelledby="login-dropdown">
+                  {% for provider in socialaccount_providers %}
+                    <a title="{{ provider.name }}" class="dropdown-item px-3 socialaccount_provider {{provider.id}}" href="{% provider_login_url provider.id next=request.path %}">{{ provider.name }}</a>
+                  {% endfor %}
+                </div>
               </li>
             {% endif %}
           </ul>
@@ -92,15 +104,31 @@
       {% endif %}
 
       {% block content %}
-        <p>Use this document as a way to quick start any new project.</p>
+        <p>{% blocktrans %} This page is blank, but it probably shouldn't be. Please create an issue on <a href="https://github.com/{{ github_repo }}" target="_blank">Github</a>.{% endblocktrans %}</p>
       {% endblock content %}
 
     </div> <!-- /container -->
 
     {% block modal %}{% endblock modal %}
 
+    <footer class="footer fixed-bottom">
+      {% block footer %}
+        <div class="container">
+          <div class="text-center">
+            {% if request.resolver_match.url_name == 'index' %}
+              <a href="{% url 'about' %}">{% trans 'About' %}</a>
+              |
+              <a href="https://github.com/{{ github_repo }}" target="_blank">Github</a>
+            {% else %}
+              <a href="{% url 'webiscite:index' %}">{% trans 'Home' %}</a>
+            {% endif %}
+          </div>
+        </div>
+      {% endblock %}
+    </footer>
+
     {% block inline_javascript %}
-    {# Script tags with only code, no src (defer by default) #}
+      {# Script tags with only code, no src (defer by default) #}
     {% endblock inline_javascript %}
   </body>
 </html>

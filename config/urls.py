@@ -6,22 +6,26 @@ from django.views import defaults as default_views
 from django.views.generic import TemplateView
 
 urlpatterns = [
-    path("", TemplateView.as_view(template_name="pages/home.html"), name="home"),
     path(
         "about/", TemplateView.as_view(template_name="pages/about.html"), name="about"
     ),
-    # Django Admin, use {% url 'admin:index' %}
-    path(settings.ADMIN_URL, admin.site.urls),
     # User management
     path("users/", include("democrasite.users.urls", namespace="users")),
     path("accounts/", include("allauth.urls")),
-    # Your stuff: custom urls includes go here
+    # webiscite
+    path("", include("democrasite.webiscite.urls", namespace="webiscite")),
 ] + static(
     settings.MEDIA_URL, document_root=settings.MEDIA_ROOT
 )  # type: ignore
 
 
 if settings.DEBUG:
+    # Django Admin, use {% url 'admin:index' %}
+    # Admin site is only enabled during development
+    urlpatterns += [path("admin/", admin.site.urls)]
+    # Disable "view site" link because it points to the production url instead of local
+    admin.AdminSite.site_url = None  # type: ignore
+
     # This allows the error pages to be debugged during development, just visit
     # these url in browser to see how these error pages look like.
     urlpatterns += [

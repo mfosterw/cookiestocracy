@@ -53,14 +53,6 @@ democrasite.users.models module
    :undoc-members:
    :show-inheritance:
 
-democrasite.users.tasks module
-------------------------------
-
-.. automodule:: democrasite.users.tasks
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 democrasite.users.urls module
 -----------------------------
 

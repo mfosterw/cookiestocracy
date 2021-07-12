@@ -1,4 +1,4 @@
-democrasite
+Democrasite
 ===========
 
 .. toctree::

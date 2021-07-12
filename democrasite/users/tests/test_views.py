@@ -1,5 +1,4 @@
 # pylint: disable=too-few-public-methods,no-self-use
-import pytest
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.models import AnonymousUser
@@ -13,8 +12,6 @@ from democrasite.users.forms import UserChangeForm
 from democrasite.users.models import User
 from democrasite.users.tests.factories import UserFactory
 from democrasite.users.views import UserRedirectView, UserUpdateView, user_detail_view
-
-pytestmark = pytest.mark.django_db
 
 
 class TestUserUpdateView:

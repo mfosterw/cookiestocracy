@@ -10,6 +10,7 @@ Subpackages
    democrasite.contrib
    democrasite.users
    democrasite.utils
+   democrasite.webiscite
 
 Submodules
 ----------

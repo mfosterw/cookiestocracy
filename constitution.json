@@ -1,0 +1,14 @@
+{
+  "constitution.json": null,
+  "config/settings/base.py": [[340, 359]],
+  "config/urls.py": [[9, 16]],
+  "democrasite/static/js/vote.js": null,
+  "democrasite/templates/base.html": null,
+  "democrasite/users/models.py": [[7, 13]],
+  "democrasite/users/urls.py": null,
+  "democrasite/webiscite/constitution.py": null,
+  "democrasite/webiscite/models.py": [[11, 84]],
+  "democrasite/webiscite/tasks.py": [[43, 80], [89, 96], [112, 172]],
+  "democrasite/webiscite/urls.py": [[16, 22]],
+  "democrasite/webiscite/views.py": [[110, 133]]
+}

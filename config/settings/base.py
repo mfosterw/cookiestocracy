@@ -63,9 +63,9 @@ DJANGO_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     # "django.contrib.humanize", # Handy template tags
-    "django.contrib.admin",
     "django.forms",
 ]
+
 THIRD_PARTY_APPS = [
     "crispy_forms",
     "allauth",
@@ -76,7 +76,8 @@ THIRD_PARTY_APPS = [
 
 LOCAL_APPS = [
     "democrasite.users.apps.UsersConfig",
-    # Your stuff: custom apps go here
+    # custom apps go here
+    "democrasite.webiscite.apps.WebisciteConfig",
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -223,10 +224,8 @@ EMAIL_TIMEOUT = 5
 
 # ADMIN
 # ------------------------------------------------------------------------------
-# Django Admin URL.
-ADMIN_URL = "admin/"
 # https://docs.djangoproject.com/en/dev/ref/settings/#admins
-ADMINS = [("""Matthew Foster Walsh""", "mfosterwalsh@gmail.com")]
+ADMINS = [("Matthew Foster Walsh", "mfosterwalsh@gmail.com")]
 # https://docs.djangoproject.com/en/dev/ref/settings/#managers
 MANAGERS = ADMINS
 
@@ -261,6 +260,13 @@ if USE_TZ:
     CELERY_TIMEZONE = TIME_ZONE
 # http://docs.celeryproject.org/en/latest/userguide/configuration.html#std:setting-broker_url
 CELERY_BROKER_URL = env("CELERY_BROKER_URL")
+# https://docs.celeryproject.org/en/latest/userguide/configuration.html#std-setting-broker_transport_options
+CELERY_BROKER_TRANSPORT_OPTIONS = {
+    # Allow tasks to remain in queue long enough for bills to finish voting period
+    # See also:
+    # https://docs.celeryproject.org/en/latest/getting-started/backends-and-brokers/redis.html#visibility-timeout
+    "visibility_timeout": (60 * 60 * 24 * (7 + 1))  # voting period + 1 days in seconds
+}
 # http://docs.celeryproject.org/en/latest/userguide/configuration.html#std:setting-result_backend
 CELERY_RESULT_BACKEND = CELERY_BROKER_URL
 # http://docs.celeryproject.org/en/latest/userguide/configuration.html#std:setting-accept_content
@@ -270,10 +276,8 @@ CELERY_TASK_SERIALIZER = "json"
 # http://docs.celeryproject.org/en/latest/userguide/configuration.html#std:setting-result_serializer
 CELERY_RESULT_SERIALIZER = "json"
 # http://docs.celeryproject.org/en/latest/userguide/configuration.html#task-time-limit
-# TODO: set to whatever value is adequate in your circumstances
 CELERY_TASK_TIME_LIMIT = 5 * 60
 # http://docs.celeryproject.org/en/latest/userguide/configuration.html#task-soft-time-limit
-# TODO: set to whatever value is adequate in your circumstances
 CELERY_TASK_SOFT_TIME_LIMIT = 60
 # http://docs.celeryproject.org/en/latest/userguide/configuration.html#beat-scheduler
 CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
@@ -281,17 +285,75 @@ CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
 # django-allauth
 # ------------------------------------------------------------------------------
 ACCOUNT_ALLOW_REGISTRATION = env.bool("DJANGO_ACCOUNT_ALLOW_REGISTRATION", True)
+# Local registration is currently disabled, accounts must be created through a provider
+ACCOUNT_ALLOW_LOCAL_REGISTRATION = env.bool(
+    "DJANGO_ACCOUNT_ALLOW_LOCAL_REGISTRATION", ACCOUNT_ALLOW_REGISTRATION
+)
+ACCOUNT_ALLOW_SOCIAL_REGISTRATION = env.bool(
+    "DJANGO_ACCOUNT_ALLOW_SOCIAL_REGISTRATION", ACCOUNT_ALLOW_REGISTRATION
+)
 # https://django-allauth.readthedocs.io/en/latest/configuration.html
-ACCOUNT_AUTHENTICATION_METHOD = "username"
-# https://django-allauth.readthedocs.io/en/latest/configuration.html
+ACCOUNT_AUTHENTICATION_METHOD = "email"
 ACCOUNT_EMAIL_REQUIRED = True
-# https://django-allauth.readthedocs.io/en/latest/configuration.html
 ACCOUNT_EMAIL_VERIFICATION = "mandatory"
-# https://django-allauth.readthedocs.io/en/latest/configuration.html
+ACCOUNT_MAX_EMAIL_ADDRESSES = 1
+ACCOUNT_FORMS = {
+    "change_password": "democrasite.users.forms.DisabledChangePasswordForm",
+    "set_password": "democrasite.users.forms.DisabledSetPasswordForm",
+    "reset_password": "democrasite.users.forms.DisabledResetPasswordForm",
+    "reset_password_from_key": "allauth.account.forms.DisabledResetPasswordKeyForm",
+}
+ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_ADAPTER = "democrasite.users.adapters.AccountAdapter"
-# https://django-allauth.readthedocs.io/en/latest/configuration.html
 SOCIALACCOUNT_ADAPTER = "democrasite.users.adapters.SocialAccountAdapter"
+# Enable social logins
+INSTALLED_APPS += [
+    "allauth.socialaccount.providers.github",
+    "allauth.socialaccount.providers.google",
+]
+# https://django-allauth.readthedocs.io/en/latest/providers.html
+SOCIALACCOUNT_PROVIDERS = {
+    # https://django-allauth.readthedocs.io/en/latest/providers.html#github
+    "github": {
+        "APP": {
+            "client_id": env("GITHUB_CLIENT_ID", default=""),
+            "secret": env("GITHUB_SECRET", default=""),
+        },
+        # Assert that this provider verifies the user's email address.
+        # Eventually I'd like to manually verify all accounts but doing so makes it
+        # difficult to link addresses to existing accounts.
+        "VERIFIED_EMAIL": True,
+    },
+    # https://django-allauth.readthedocs.io/en/latest/providers.html#google
+    "google": {
+        "APP": {
+            "client_id": env("GOOGLE_CLIENT_ID", default=""),
+            "secret": env("GOOGLE_SECRET", default=""),
+        },
+        # https://django-allauth.readthedocs.io/en/latest/providers.html#django-configuration
+        # See also https://developers.google.com/identity/protocols/oauth2/web-server#offline
+        "AUTH_PARAMS": {"access_type": "online"},
+        "VERIFIED_EMAIL": True,
+    },
+}
 
-
-# Your stuff...
+# Webiscite
 # ------------------------------------------------------------------------------
+# Github Webhook secret, used to verify requests in webiscite/webhook.py
+# https://docs.github.com/en/developers/webhooks-and-events/webhooks/creating-webhooks
+WEBISCITE_GITHUB_WEBHOOK_SECRET = env("GITHUB_WEBHOOK_SECRET", default="")
+# User token for requests to Github API
+# https://docs.github.com/en/github/authenticating-to-github/keeping-your-account-and-data-secure/creating-a-personal-access-token
+WEBISCITE_GITHUB_TOKEN = env("GITHUB_TOKEN", default="")
+# Github repo on which this app operates
+# NOTE: this setting has no effect on the host server, so you can't just change it to
+# host your own repo on my site
+WEBISCITE_REPO = "mfosterw/cookiestocracy"
+# Minimum total votes for a bill to pass
+WEBISCITE_MINIMUM_QUORUM = 5 if not DEBUG else 1  # No vote minimum for testing
+# Proportion of yes votes for a normal bill to pass
+WEBISCITE_NORMAL_MAJORITY = 1 / 2
+# Proportion of yes votes for an amendment to the constitution to pass
+WEBISCITE_SUPERMAJORITY = 2 / 3
+# Length, in days, that bills are up for vote
+WEBISCITE_VOTING_PERIOD = 7

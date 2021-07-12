@@ -1,0 +1,24 @@
+/** This script contains the voting logic and is thus only loaded for logged-in users */
+
+$(document).ready(function(){
+  const csrftoken = $('[name=csrfmiddlewaretoken]')[0].value
+  console.log(csrftoken)
+  $('.vote').click(function(){
+    // Don't let users vote on expired bills
+    if ($(this).parent().hasClass('inactive')){ return; }
+
+    $.ajax($(this).attr('action'), {
+      method: 'POST',
+      headers: {'X-CSRFToken': csrftoken},
+      data: {vote: $(this).attr('value')},
+      context: $(this)
+    }).done(function(data){
+      this.toggleClass('font-weight-bold')
+      this.siblings('.vote').removeClass('font-weight-bold')
+      num = this.attr('id').split('-').slice(-1)[0]
+      $('#num-yes-votes-' + num).text(data['yes-votes'])
+      $('#num-no-votes-' + num).text(data['no-votes'])
+      update_progress(0, this.siblings('.progress'))
+    })
+  })
+})
