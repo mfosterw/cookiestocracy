@@ -7,6 +7,15 @@ Democrasite
 .. image:: https://img.shields.io/badge/code%20style-black-000000.svg
      :target: https://github.com/ambv/black
      :alt: Black code style
+.. image:: https://github.com/mfosterw/cookiestocracy/actions/workflows/ci.yml/badge.svg
+     :target: (https://github.com/mfosterw/cookiestocracy/actions/workflows/ci.yml)
+     :alt: Continuous integration
+.. image:: https://codecov.io/gh/mfosterw/cookiestocracy/branch/master/graph/badge.svg?token=NPV1TLXZIW
+     :target: https://codecov.io/gh/mfosterw/cookiestocracy
+     :alt: Coverage report
+.. image:: https://readthedocs.org/projects/cookiestocracy/badge/?version=latest
+     :target: https://cookiestocracy.readthedocs.io/en/latest/?badge=latest
+     :alt: Documentation status
 
 :License: MIT
 
