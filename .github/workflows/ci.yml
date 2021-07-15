@@ -85,5 +85,8 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements/local.txt
 
-      - name: Test with pytest
-        run:  pytest
+      - name: Test with pytest and coverage
+        run: coverage run -m pytest
+
+      - name: Send coverage report to codecov
+        uses: codecov/codecov-action@v1
