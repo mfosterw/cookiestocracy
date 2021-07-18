@@ -42,8 +42,6 @@ class SocialAccountAdapter(DefaultSocialAccountAdapter):
         try:
             user = User.objects.get(email=sociallogin.email_addresses[0].email)
         except User.DoesNotExist:
-            # Require new users to verify email
-            sociallogin.email_addresses[0].verified = False
             return
 
         # If user exists, connect the account to the existing account and login
