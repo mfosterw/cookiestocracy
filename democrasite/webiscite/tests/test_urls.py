@@ -55,6 +55,6 @@ def test_github_hook():
         hook_urls.append(hook.config["url"])
 
     assert any(
-        url == (Site.objects.get(id=settings.SITE_ID).domain + "/hooks/github/")
+        (Site.objects.get(id=settings.SITE_ID).domain + "/hooks/github/") in url
         for url in hook_urls
     )

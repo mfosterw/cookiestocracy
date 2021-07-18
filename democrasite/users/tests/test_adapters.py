@@ -61,11 +61,8 @@ class TestSocialAccountAdapter:
 
         # Assert that the user and their social account exist
         assert user.pk is not None
-        assert (
-            User.objects.get(pk=user.pk)
-            .socialaccount_set.filter(provider=account.provider)
-            .exists()
-        )
+        assert user.socialaccount_set.filter(provider=account.provider).exists()
+        assert EmailAddress.objects.get(user=user).verified is False
 
     def test_connect(self, user: User, rf: RequestFactory):
         """Test that social accounts are automatically linked by email"""
