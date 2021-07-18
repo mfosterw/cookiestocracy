@@ -225,7 +225,7 @@ EMAIL_TIMEOUT = 5
 # ADMIN
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#admins
-ADMINS = [("Matthew Foster Walsh", "mfosterwalsh@gmail.com")]
+ADMINS = [("Admin", "admin@democrasite.tech")]
 # https://docs.djangoproject.com/en/dev/ref/settings/#managers
 MANAGERS = ADMINS
 
