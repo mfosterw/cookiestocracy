@@ -82,6 +82,12 @@ class TestPagesTemplates:
         assert response.status_code == 200
         assert response.templates[0].name == "pages/about.html"
 
+    def test_privacy(self, client: Client):
+        response = client.get(reverse("privacy"))
+
+        assert response.status_code == 200
+        assert response.templates[0].name == "pages/privacy.html"
+
 
 class TestUsersTemplates:
     def test_user_detail(self, client: Client, user: User):
