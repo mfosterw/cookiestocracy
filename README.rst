@@ -8,7 +8,7 @@ Democrasite
      :target: https://github.com/ambv/black
      :alt: Black code style
 .. image:: https://github.com/mfosterw/cookiestocracy/actions/workflows/ci.yml/badge.svg
-     :target: (https://github.com/mfosterw/cookiestocracy/actions/workflows/ci.yml)
+     :target: https://github.com/mfosterw/cookiestocracy/actions/workflows/ci.yml
      :alt: Continuous integration
 .. image:: https://codecov.io/gh/mfosterw/cookiestocracy/branch/master/graph/badge.svg?token=NPV1TLXZIW
      :target: https://codecov.io/gh/mfosterw/cookiestocracy
