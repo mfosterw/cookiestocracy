@@ -257,7 +257,10 @@ LOGGING = {
 # https://docs.djangoproject.com/en/3.2/ref/settings/#ignorable-404-urls
 # An issue with subdomain link forwarding seems to cause the favicon to 404 in certain
 # requests originating in email links which spams my email
-IGNORABLE_404_URLS = [re.compile(r"^/favicon\.ico$")]
+IGNORABLE_404_URLS = [
+    re.compile(r"^/favicon\.ico$"),
+    re.compile(r"^/ls/click\?upn="),
+]
 
 # Celery
 # ------------------------------------------------------------------------------
