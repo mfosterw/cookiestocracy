@@ -259,7 +259,7 @@ LOGGING = {
 # requests originating in email links which spams my email
 IGNORABLE_404_URLS = [
     re.compile(r"^/favicon\.ico$"),
-    re.compile(r"^/ls/click\?upn="),
+    re.compile(r"^/ls/click\?upn=.*"),
 ]
 
 # Celery
