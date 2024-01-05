@@ -235,7 +235,7 @@ index 1f38447..0000000
 -This file will be removed."""
         mock_constitution.return_value = {}
 
-        assert is_constitutional(diff) == []
+        assert not is_constitutional(diff)
 
 
 class TestUpdateConstitution:

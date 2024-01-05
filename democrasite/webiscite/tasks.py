@@ -7,7 +7,7 @@ from celery.utils.log import get_task_logger
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.utils import timezone
-from github import Github
+from github import Auth, Github
 
 from . import constitution
 from .models import Bill
@@ -58,7 +58,7 @@ def pr_opened(pr: dict[str, Any]):
         logger.info("PR %s: No bill created (user does not exist)", pr["number"])
         return
 
-    diff = requests.get(pr["diff_url"]).text
+    diff = requests.get(pr["diff_url"], timeout=60).text
     constitutional = constitution.is_constitutional(diff)
 
     bill = Bill(
@@ -110,7 +110,9 @@ def submit_bill(bill_id: int):
         bill_id: The id of the bill to submit
     """
     bill = Bill.objects.get(pk=bill_id)
-    repo = Github(settings.WEBISCITE_GITHUB_TOKEN).get_repo(settings.WEBISCITE_REPO)
+    repo = Github(auth=Auth.Token(settings.WEBISCITE_GITHUB_TOKEN)).get_repo(
+        settings.WEBISCITE_REPO
+    )
     pull = repo.get_pull(bill.pr_num)
 
     # Bill was closed before voting period ended
@@ -163,7 +165,7 @@ def submit_bill(bill_id: int):
 
     # Automatically update constitution line numbers if necessary
     if not bill.constitutional:
-        diff = requests.get(pull.diff_url).text
+        diff = requests.get(pull.diff_url, timeout=60).text
         con_update = constitution.update_constitution(diff)
         if con_update:
             con_sha = repo.get_contents("democrasite/webiscite/constitution.json").sha  # type: ignore [union-attr]

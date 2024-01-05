@@ -44,7 +44,7 @@ def _github_hook(request: HttpRequest) -> HttpResponse:
     # For info on the GitHub Webhook API, see
     # https://docs.github.com/en/developers/webhooks-and-events/webhook-events-and-payloads
     event = request.META.get("HTTP_X_GITHUB_EVENT", "ping")
-    payload = json.loads(request.POST["payload"])
+    payload = json.loads(request.body.decode("utf-8"))
 
     if event == "ping":
         return HttpResponse("ping received")

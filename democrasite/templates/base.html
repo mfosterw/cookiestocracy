@@ -23,7 +23,7 @@
     <!-- Your stuff: Third-party CSS libraries go here -->
     <!-- This file stores project-specific CSS -->
     <link href="{% static 'css/project.css' %}" rel="stylesheet">
-    {% endblock %}
+    {% endblock css %}
     <!-- Le javascript
     ================================================== -->
     {# Placed at the top of the document so pages load faster with defer #}
@@ -40,13 +40,11 @@
 
     {% endblock javascript %}
     {% block extra_head %}
-    {% endblock %}
+    {% endblock extra_head %}
 
   </head>
 
   <body>
-    {% get_providers as socialaccount_providers %}
-
     <div class="mb-1">
       <nav class="navbar navbar-expand-md navbar-light bg-light">
         <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbar-supported-content" aria-controls="navbar-supported-content" aria-expanded="false" aria-label="Toggle navigation">
@@ -54,53 +52,63 @@
         </button>
         <a class="navbar-brand" href="{% url 'webiscite:index' %}">Democrasite</a>
 
-        <div class="collapse navbar-collapse" id="navbar-supported-content">
-          <ul class="navbar-nav mr-auto">
-            {% if request.user.is_authenticated %}
-              <li class="nav-item">
-                {# URL provided by django-allauth/account/urls.py #}
-                <a class="nav-link" href="{% url 'users:detail' request.user.username  %}">{% trans 'Profile' %}</a>
-              </li>
-              {# lazy way to check if user is logged in with github #}
-              {% for provider in socialaccount_providers %}
-                {% if provider.id == 'github' %}
-                  <li class="nav-item">
-                    <a href="{% url 'webiscite:my-bills' %}" class="nav-link">{% trans 'Proposals' %}</a>
-                  </li>
-                {% endif %}
-              {% endfor %}
-              <li class="nav-item">
-                <a href="{% url 'webiscite:my-bill-votes' %}" class="nav-link">{% trans 'Votes Cast' %}</a>
-              </li>
-              <li class="nav-item">
-                {# URL provided by django-allauth/account/urls.py #}
-                {# Use a little Javascript to log out with a POST request #}
-                <a id="logout-link" class="nav-link" href="#">{% trans 'Log out' %}</a>
-                <form id="logout-form" style="display:none" method="post" action="{% url 'account_logout' %}?next={{ request.path }}">{% csrf_token %}</form>
-              </li>
-            {% else %}
-              <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle" href="#" id="login-dropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                  {% trans 'Log in' %}
-                </a>
-                <div class="dropdown-menu dropdown-menu-right py-0" aria-labelledby="login-dropdown">
-                  {% for provider in socialaccount_providers %}
-                    <a title="{{ provider.name }}" class="dropdown-item px-3 socialaccount_provider {{provider.id}}" href="{% provider_login_url provider.id next=request.path %}">{{ provider.name }}</a>
-                  {% endfor %}
-                </div>
-              </li>
-            {% endif %}
-          </ul>
-        </div>
-      </nav>
+        {% block navbar %}
+          {% get_providers as socialaccount_providers %}
+          <div class="collapse navbar-collapse" id="navbar-supported-content">
+            <ul class="navbar-nav mr-auto">
+              {% if request.user.is_authenticated %}
+                <li class="nav-item">
+                  {# URL provided by django-allauth/account/urls.py #}
+                  <a class="nav-link" href="{% url 'users:detail' request.user.username %}">{% trans 'Profile' %}</a>
+                </li>
+                {# lazy way to check if user is logged in with github #}
+                {% for provider in socialaccount_providers %}
+                  {% if provider.id == 'github' %}
+                    <li class="nav-item">
+                      <a href="{% url 'webiscite:my-bills' %}" class="nav-link">{% trans 'Proposals' %}</a>
+                    </li>
+                  {% endif %}
+                {% endfor %}
+                <li class="nav-item">
+                  <a href="{% url 'webiscite:my-bill-votes' %}" class="nav-link">{% trans 'Votes Cast' %}</a>
+                </li>
+                <li class="nav-item">
+                  {# For security, we use POST to log the user out #}
+                  <form id="logout-form" action="{% url 'account_logout' %}?next={{ request.path }}" method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ request.path }}" />
+                    <button type="submit" class="btn nav-link">{% trans 'Log out' %}</button>
+                  </form>
+                </li>
+              {% else %}
+                <li class="nav-item dropdown">
+                  <a class="nav-link dropdown-toggle" href="#" id="login-dropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    {% trans 'Log in' %}
+                  </a>
+                  <div class="dropdown-menu dropdown-menu-right py-0" aria-labelledby="login-dropdown">
+                    {% for provider in socialaccount_providers %}
+                    {# For security, we use POST to log the user in #}
+                      <form action="{% provider_login_url provider.id next=request.path %}" method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="next" value="{{ request.path }}" />
+                        <button type="submit" class="dropdown-item px-3 socialaccount_provider {{ provider.id }}">{{ provider.name }}</button>
+                      </form>
+                    {% endfor %}
+                  </div>
+                </li>
+              {% endif %}
+            </ul>
+          </div>
+        {% endblock navbar %}
 
+      </nav>
     </div>
 
     <div class="container">
 
       {% if messages %}
           {% for message in messages %}
-              <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">{{ message }}<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button></div>
+              <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">{{ message }}<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">×</span></button></div>
           {% endfor %}
       {% endif %}
 
@@ -125,7 +133,7 @@
             {% endif %}
           </div>
         </div>
-      {% endblock %}
+      {% endblock footer %}
     </footer>
 
     {% block inline_javascript %}

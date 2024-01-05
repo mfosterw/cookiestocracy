@@ -30,8 +30,6 @@ LANGUAGE_CODE = "en-us"
 SITE_ID = 1
 # https://docs.djangoproject.com/en/dev/ref/settings/#use-i18n
 USE_I18N = True
-# https://docs.djangoproject.com/en/dev/ref/settings/#use-l10n
-USE_L10N = True
 # https://docs.djangoproject.com/en/dev/ref/settings/#use-tz
 USE_TZ = True
 # https://docs.djangoproject.com/en/dev/ref/settings/#locale-paths
@@ -40,11 +38,12 @@ LOCALE_PATHS = [str(ROOT_DIR / "locale")]
 # DATABASES
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#databases
-
 DATABASES = {
     "default": env.db("DATABASE_URL", default="postgres:///democrasite"),
 }
 DATABASES["default"]["ATOMIC_REQUESTS"] = True
+# https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # URLS
 # ------------------------------------------------------------------------------
@@ -68,6 +67,7 @@ DJANGO_APPS = [
 
 THIRD_PARTY_APPS = [
     "crispy_forms",
+    "crispy_bootstrap4",
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
@@ -134,6 +134,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "allauth.account.middleware.AccountMiddleware",
 ]
 
 # STATIC
@@ -258,7 +259,7 @@ if USE_TZ:
     # http://docs.celeryproject.org/en/latest/userguide/configuration.html#std:setting-timezone
     CELERY_TIMEZONE = TIME_ZONE
 # http://docs.celeryproject.org/en/latest/userguide/configuration.html#std:setting-broker_url
-CELERY_BROKER_URL = env("CELERY_BROKER_URL")
+CELERY_BROKER_URL = env("CELERY_BROKER_URL", default="")
 # https://docs.celeryproject.org/en/latest/userguide/configuration.html#std-setting-broker_transport_options
 CELERY_BROKER_TRANSPORT_OPTIONS = {
     # Allow tasks to remain in queue long enough for bills to finish voting period
@@ -294,7 +295,8 @@ ACCOUNT_ALLOW_SOCIAL_REGISTRATION = env.bool(
 # https://django-allauth.readthedocs.io/en/latest/configuration.html
 ACCOUNT_AUTHENTICATION_METHOD = "email"
 ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_EMAIL_VERIFICATION = "mandatory"
+# If email verification is used I would like to apply it to each linked account individually
+ACCOUNT_EMAIL_VERIFICATION = "none"
 ACCOUNT_MAX_EMAIL_ADDRESSES = 1
 ACCOUNT_FORMS = {
     "change_password": "democrasite.users.forms.DisabledChangePasswordForm",
@@ -304,7 +306,10 @@ ACCOUNT_FORMS = {
 }
 ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_ADAPTER = "democrasite.users.adapters.AccountAdapter"
-SOCIALACCOUNT_ADAPTER = "democrasite.users.adapters.SocialAccountAdapter"
+# https://docs.allauth.org/en/latest/socialaccount/configuration.html
+# TODO: determine if adapters should stay
+# SOCIALACCOUNT_ADAPTER = "democrasite.users.adapters.SocialAccountAdapter"
+SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
 # Enable social logins
 INSTALLED_APPS += [
     "allauth.socialaccount.providers.github",
@@ -319,9 +324,7 @@ SOCIALACCOUNT_PROVIDERS = {
             "secret": env("GITHUB_SECRET", default=""),
         },
         # Assert that this provider verifies the user's email address.
-        # Eventually I'd like to manually verify all accounts but doing so makes it
-        # difficult to link addresses to existing accounts.
-        "VERIFIED_EMAIL": True,
+        "EMAIL_AUTHENTICATION": True,
     },
     # https://django-allauth.readthedocs.io/en/latest/providers.html#google
     "google": {
@@ -332,7 +335,7 @@ SOCIALACCOUNT_PROVIDERS = {
         # https://django-allauth.readthedocs.io/en/latest/providers.html#django-configuration
         # See also https://developers.google.com/identity/protocols/oauth2/web-server#offline
         "AUTH_PARAMS": {"access_type": "online"},
-        "VERIFIED_EMAIL": True,
+        "EMAIL_AUTHENTICATION": True,
     },
 }
 

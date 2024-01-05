@@ -46,7 +46,7 @@ def test_vote(bill: Bill):
 
 
 @pytest.mark.skipif(
-    settings.WEBISCITE_GITHUB_TOKEN == "", reason="requires Github token"
+    settings.WEBISCITE_GITHUB_TOKEN == "ABC123", reason="requires Github token"
 )
 def test_github_hook():
     hook_urls = []

@@ -13,7 +13,7 @@ Democrasite Documentation
    howto
    users
    webiscite
-   api/modules
+   api/democrasite
 
 
 

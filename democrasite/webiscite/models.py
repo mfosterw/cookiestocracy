@@ -1,6 +1,7 @@
 from typing import Any
 
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import AbstractBaseUser
 from django.db import models
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
@@ -49,8 +50,12 @@ class Bill(models.Model):
 
     # Automatic fields
     prop_date = models.DateTimeField(_("date proposed"), auto_now_add=True)
-    yes_votes = models.ManyToManyField(User, related_name="yes_votes", blank=True)
-    no_votes = models.ManyToManyField(User, related_name="no_votes", blank=True)
+    yes_votes: "models.ManyToManyField[AbstractBaseUser, Any]" = models.ManyToManyField(
+        User, related_name="yes_votes", blank=True
+    )
+    no_votes: "models.ManyToManyField[AbstractBaseUser, Any]" = models.ManyToManyField(
+        User, related_name="no_votes", blank=True
+    )
 
     def __str__(self) -> str:
         return f"{self.name} (PR #{self.pr_num})"
