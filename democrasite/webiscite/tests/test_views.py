@@ -3,6 +3,7 @@ import json
 
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
+from django.http import HttpResponseRedirect
 from django.test import Client, RequestFactory
 from django.urls import reverse
 
@@ -94,6 +95,7 @@ class TestBillUpdateView:
 
         bad_response = bill_update_view(bad_request, pk=bill.id)
 
+        assert isinstance(bad_response, HttpResponseRedirect)
         assert bad_response.status_code == 302
         assert bad_response.url == reverse(settings.LOGIN_URL) + "?next=/fake-url/"
 

@@ -86,15 +86,21 @@ class TestProcessPull:
 
 class TestSubmitBill:
     @patch("github.Github.get_repo")
-    def test_bill_not_open(self, mock_repo):
+    @patch("github.Auth.Token", spec=True)
+    def test_bill_not_open(self, mock_token, mock_repo):
         bill = BillFactory(state=Bill.CLOSED)
 
         submit_bill(bill.id)
 
+        mock_token.assert_called_once_with(settings.WEBISCITE_GITHUB_TOKEN)
         mock_repo().get_pull().edit.assert_called_once_with(state="closed")
 
+    @patch("requests.get")
     @patch("github.Github.get_repo")
-    def test_insufficient_votes(self, mock_repo):
+    @patch("github.Auth.Token", spec=True)
+    def test_insufficient_votes(
+        self, mock_token, mock_repo, mock_get
+    ):  # pylint: disable=unused-argument
         bill = BillFactory(state=Bill.OPEN)  # total votes is 0 by default
 
         submit_bill(bill.id)
@@ -104,7 +110,10 @@ class TestSubmitBill:
         mock_repo().get_pull().edit.assert_called_once_with(state="closed")
 
     @patch("github.Github.get_repo")
-    def test_bill_rejected(self, mock_repo):
+    @patch("github.Auth.Token", spec=True)
+    def test_bill_rejected(
+        self, mock_token, mock_repo
+    ):  # pylint: disable=unused-argument
         bill = BillFactory(state=Bill.OPEN)
         voters = UserFactory.create_batch(settings.WEBISCITE_MINIMUM_QUORUM)
         for voter in voters:
@@ -117,7 +126,10 @@ class TestSubmitBill:
         mock_repo().get_pull().edit.assert_called_once_with(state="closed")
 
     @patch("github.Github.get_repo")
-    def test_constitutional_bill_rejected(self, mock_repo):
+    @patch("github.Auth.Token", spec=True)
+    def test_constitutional_bill_rejected(
+        self, mock_token, mock_repo
+    ):  # pylint: disable=unused-argument
         bill = BillFactory(state=Bill.OPEN, constitutional=True)
         voters = UserFactory.create_batch(settings.WEBISCITE_MINIMUM_QUORUM)
         for voter in voters:
@@ -132,8 +144,9 @@ class TestSubmitBill:
     @patch.object(constitution, "update_constitution")
     @patch("requests.get")  # patch out requests.get to avoid using internet
     @patch("github.Github.get_repo")
+    @patch("github.Auth.Token", spec=True)
     def test_bill_passed(
-        self, mock_repo, mock_get, mock_constitution
+        self, mock_token, mock_repo, mock_get, mock_constitution
     ):  # pylint: disable=unused-argument
         bill = BillFactory(state=Bill.OPEN, constitutional=False)
         voters = UserFactory.create_batch(settings.WEBISCITE_MINIMUM_QUORUM)

@@ -1,13 +1,16 @@
 democrasite package
 ===================
 
+.. automodule:: democrasite
+   :members:
+   :show-inheritance:
+
 Subpackages
 -----------
 
 .. toctree::
    :maxdepth: 4
 
-   democrasite.contrib
    democrasite.users
    democrasite.utils
    democrasite.webiscite
@@ -15,18 +18,7 @@ Subpackages
 Submodules
 ----------
 
-democrasite.conftest module
----------------------------
+.. toctree::
+   :maxdepth: 4
 
-.. automodule:: democrasite.conftest
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-Module contents
----------------
-
-.. automodule:: democrasite
-   :members:
-   :undoc-members:
-   :show-inheritance:
+   democrasite.conftest

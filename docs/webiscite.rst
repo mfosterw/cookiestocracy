@@ -12,13 +12,16 @@ Pull Request Process
 
 When a pull request is created on `GitHub <https://github.com/mfosterw/cookiestocracy>`_,
 a `webhook <https://docs.github.com/en/developers/webhooks-and-events/webhooks/about-webhooks>`_
-makes a request to the GitHub webhook :func:`view <democrasite.webiscite.webhooks.github_hook>`.
+makes a request to the GitHub webhook
+:func:`view <democrasite.webiscite.webhooks.github_hook>`.
 
-This method parses the data from the request and calls :func:`process_pull <democrasite.webiscite.tasks.process_pull>`
+This method parses the data from the request and calls
+:func:`process_pull <democrasite.webiscite.tasks.process_pull>`
 which itself calls :func:`pr_opened <democrasite.webiscite.tasks.pr_opened>`
 in the even a new pull request was created.
 
-If the user who created the pull request has a democrasite account, a new :class:`Bill <democrasite.webiscite.models.Bill>`
+If the user who created the pull request has a democrasite account, a new
+:class:`Bill <democrasite.webiscite.models.Bill>`
 is created with the information from the pull request and made visible on the
 homepage immediately.
 

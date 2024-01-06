@@ -7,7 +7,7 @@ from celery.utils.log import get_task_logger
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.utils import timezone
-from github import Github
+from github import Auth, Github
 
 from . import constitution
 from .models import Bill
@@ -58,12 +58,12 @@ def pr_opened(pr: dict[str, Any]):
         logger.info("PR %s: No bill created (user does not exist)", pr["number"])
         return
 
-    diff = requests.get(pr["diff_url"]).text
+    diff = requests.get(pr["diff_url"], timeout=60).text
     constitutional = constitution.is_constitutional(diff)
 
     bill = Bill(
         name=pr["title"],
-        description=pr["body"],
+        description=pr["body"] or "",
         pr_num=pr["number"],
         author=author,
         additions=pr["additions"],
@@ -110,9 +110,12 @@ def submit_bill(bill_id: int):
         bill_id: The id of the bill to submit
     """
     bill = Bill.objects.get(pk=bill_id)
-    repo = Github(settings.WEBISCITE_GITHUB_TOKEN).get_repo(settings.WEBISCITE_REPO)
+    repo = Github(auth=Auth.Token(settings.WEBISCITE_GITHUB_TOKEN)).get_repo(
+        settings.WEBISCITE_REPO
+    )
     pull = repo.get_pull(bill.pr_num)
 
+    # Bill was closed before voting period ended
     if bill.state != Bill.OPEN:
         pull.edit(state="closed")  # Close failed pull request
         logger.info("PR %s: bill %s was not open", bill.pr_num, bill.id)
@@ -121,6 +124,7 @@ def submit_bill(bill_id: int):
     ayes = bill.yes_votes.count()
     nays = bill.no_votes.count()
     total_votes = ayes + nays
+    # Bill failed to meet quorum
     if total_votes < settings.WEBISCITE_MINIMUM_QUORUM:
         bill.state = Bill.FAILED
         bill.save()
@@ -138,35 +142,37 @@ def submit_bill(bill_id: int):
     else:
         approved = approval > settings.WEBISCITE_NORMAL_MAJORITY
 
-    if approved:
-        bill.state = Bill.APPROVED
-        bill.save()
-        logger.info(
-            "PR %s: Pull request passed with %s%% of votes",
-            bill.pr_num,
-            approval * 100,
-        )
-        merge = pull.merge(merge_method="squash", sha=bill.sha)
-        logger.info("PR %s: merged (%s)", bill.pr_num, merge.merged)
-
-        # Automatically update constitution line numbers if necessary
-        if not bill.constitutional:
-            diff = requests.get(pull.diff_url).text
-            con_update = constitution.update_constitution(diff)
-            if con_update:
-                con_sha = repo.get_contents("democrasite/webiscite/constitution.json").sha  # type: ignore [union-attr]
-                repo.update_file(
-                    "democrasite/webiscite/constitution.json",
-                    message=f"Update Constitution for PR {bill.pr_num}",
-                    content=con_update,
-                    sha=con_sha,
-                )
-                logger.info("PR %s: constitution updated", bill.pr_num)
-
-    else:
+    # Bill failed to meet approval threshold
+    if not approved:
         bill.state = Bill.REJECTED
         bill.save()
         pull.edit(state="closed")  # Close failed pull request
         logger.info(
             "PR %s: Pull request failed with %s%% of votes", bill.pr_num, approval
         )
+        return
+
+    # Bill passed
+    bill.state = Bill.APPROVED
+    bill.save()
+    logger.info(
+        "PR %s: Pull request passed with %s%% of votes",
+        bill.pr_num,
+        approval * 100,
+    )
+    merge = pull.merge(merge_method="squash", sha=bill.sha)
+    logger.info("PR %s: merged (%s)", bill.pr_num, merge.merged)
+
+    # Automatically update constitution line numbers if necessary
+    if not bill.constitutional:
+        diff = requests.get(pull.diff_url, timeout=60).text
+        con_update = constitution.update_constitution(diff)
+        if con_update:
+            con_sha = repo.get_contents("democrasite/webiscite/constitution.json").sha  # type: ignore [union-attr]
+            repo.update_file(
+                "democrasite/webiscite/constitution.json",
+                message=f"Update Constitution for PR {bill.pr_num}",
+                content=con_update,
+                sha=con_sha,
+            )
+            logger.info("PR %s: constitution updated", bill.pr_num)

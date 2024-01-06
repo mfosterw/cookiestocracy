@@ -12,7 +12,7 @@ from ..webhooks import github_hook
 
 
 class TestGithubHookView:
-    test_data = {"payload": json.dumps({"action": "none", "pull_request": "-1"})}
+    test_data = json.dumps({"action": "none", "pull_request": "-1"})
 
     def test_no_signature(self, rf: RequestFactory):
         request = rf.post("/fake-url/")
@@ -31,7 +31,12 @@ class TestGithubHookView:
         assert response.content == b"Invalid signature"
 
     def test_ping(self, rf: RequestFactory):
-        request = rf.post("/fake-url/", data=self.test_data)
+        request = rf.post(
+            "/fake-url/",
+            data=self.test_data,
+            content_type="application/json",
+            HTTP_X_GITHUB_EVENT="ping",
+        )
 
         request.META["HTTP_X_HUB_SIGNATURE"] = (
             "sha1="
@@ -50,7 +55,10 @@ class TestGithubHookView:
     @patch.object(process_pull, "delay")
     def test_pull_request(self, mock_delay: MagicMock, rf: RequestFactory):
         request = rf.post(
-            "/fake-url/", data=self.test_data, HTTP_X_GITHUB_EVENT="pull_request"
+            "/fake-url/",
+            data=self.test_data,
+            content_type="application/json",
+            HTTP_X_GITHUB_EVENT="pull_request",
         )
 
         request.META["HTTP_X_HUB_SIGNATURE"] = (
@@ -70,7 +78,12 @@ class TestGithubHookView:
         assert response.content == b"pull request acknowledged"
 
     def test_unknown_action(self, rf: RequestFactory):
-        request = rf.post("/fake-url/", data=self.test_data, HTTP_X_GITHUB_EVENT="test")
+        request = rf.post(
+            "/fake-url/",
+            data=self.test_data,
+            content_type="application/json",
+            HTTP_X_GITHUB_EVENT="test",
+        )
 
         request.META["HTTP_X_HUB_SIGNATURE"] = (
             "sha1="

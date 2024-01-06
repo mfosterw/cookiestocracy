@@ -7,9 +7,10 @@ from django.utils.translation import gettext_lazy as _
 class User(AbstractUser):
     """Default user for Democrasite."""
 
-    #: First and last name do not cover name patterns around the globe
     name = CharField(_("Name of User"), blank=True, max_length=255)
+    #: :meta private:
     first_name = None  # type: ignore
+    #: :meta private:
     last_name = None  # type: ignore
 
     def get_absolute_url(self):

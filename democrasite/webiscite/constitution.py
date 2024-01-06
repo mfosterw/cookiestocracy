@@ -6,7 +6,7 @@ constitution for changes which edit files included in the constitution without
 resulting in constitutional amendments
 """
 import json
-from typing import Optional
+from typing import Optional, cast
 
 from django.conf import settings
 from unidiff import PatchedFile, PatchSet
@@ -55,7 +55,7 @@ def read_constitution() -> dict[str, Optional[list[list[int]]]]:
     """
     Read the constitution and return it as a type-annotated dict
     """
-    with open(settings.ROOT_DIR / "constitution.json") as f:
+    with open(settings.ROOT_DIR / "constitution.json", encoding="utf-8") as f:
         return json.load(f)
 
 
@@ -74,19 +74,24 @@ def is_constitutional(diff_str: str) -> list[str]:
     matched_files: list[str] = []
 
     for file in patch:
-        if file.path in constitution:
-            locks = constitution[file.path]
+        file = cast(PatchedFile, file)
+        if file.is_rename:
+            # Get source file path for renamed files
+            filepath = file.source_file[2:]  # Remove "a/" from start of path
+        else:
+            filepath = file.path
+
+        if filepath in constitution:
+            locks = constitution[filepath]
             # File removed or renamed
-            if file.is_removed_file or (
-                file.source_file.split("/")[-1] != file.target_file.split("/")[-1]
-            ):
-                matched_files.append(file.path)
+            if file.is_removed_file or file.is_rename:
+                matched_files.append(filepath)
             # Entire file included in constitution
             elif locks is None:
-                matched_files.append(file.path)
+                matched_files.append(filepath)
             # File overlaps with at least one protected hunk
             elif _check_hunks(file, locks):
-                matched_files.append(file.path)
+                matched_files.append(filepath)
 
     return matched_files
 

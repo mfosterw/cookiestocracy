@@ -65,6 +65,9 @@ target/
 # celery beat schedule file
 celerybeat-schedule
 
+# redis data dump file, in case it is started here
+dump.rdb
+
 # Environments
 .venv
 venv/

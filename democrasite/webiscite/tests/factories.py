@@ -10,7 +10,6 @@ from democrasite.webiscite.models import Bill
 
 
 class BillFactory(DjangoModelFactory):
-
     name = Faker("text", max_nb_chars=50)
     description = Faker("paragraph")
     pr_num = Sequence(lambda n: -n)  # Use negative numbers to represent fake PRs
@@ -29,7 +28,9 @@ class BillFactory(DjangoModelFactory):
 
 class SocialAccountFactory(DjangoModelFactory):
     user = SubFactory(UserFactory)
-    provider = LazyFunction(lambda: random.choice(providers.registry.get_list()).id)
+    provider = LazyFunction(
+        lambda: random.choice(providers.registry.get_class_list()).id
+    )
     uid = Faker("random_int")
 
     class Meta:
