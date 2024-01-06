@@ -45,9 +45,8 @@ def test_vote(bill: Bill):
     assert resolve(f"/bills/{bill.id}/vote/").view_name == "webiscite:bill-vote"
 
 
-@pytest.mark.skipif(
-    settings.WEBISCITE_GITHUB_TOKEN is None, reason="requires Github token"
-)
+# Disable if Github token is None or empty
+@pytest.mark.skipif(not settings.WEBISCITE_GITHUB_TOKEN, reason="requires Github token")
 def test_github_hook():
     hook_urls = []
     repo = Github(auth=Auth.Token(settings.WEBISCITE_GITHUB_TOKEN)).get_repo(
