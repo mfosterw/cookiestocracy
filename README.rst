@@ -35,7 +35,11 @@ Democrasite is a website which automatically merges changes based on popular app
 Contributing
 ------------
 
-Please read the `contribution guide`_ and then see the basic commands below. It is also recommended that you rename ".env.sample" in the root of the repository to ".env" and set the environment variable ``DJANGO_READ_DOT_ENV_FILE=True`` so you can more easily keep track of your environment variables.
+Please read the `contribution guide`_ and then see the basic commands below.
+It is also recommended that you rename ".env.sample" in the root of the
+repository to ".env" and set the environment variable
+``DJANGO_READ_DOT_ENV_FILE=True`` so you can more easily keep track of your
+environment variables.
 
 .. _`contribution guide`: https://github.com/mfosterw/cookiestocracy/blob/master/CONTRIBUTING.rst
 
@@ -101,7 +105,8 @@ To run a celery worker:
 
 .. code-block:: bash
 
-    cd democrasite
     celery -A config.celery_app worker -l info
 
-Please note: For Celery's import magic to work, it is important *where* the celery commands are run. If you are in the same folder with *manage.py*, you should be right.
+Please note: For Celery's import magic to work, it is important *where* the
+celery commands are run. If you are in the same folder with *manage.py*, you
+should be right.

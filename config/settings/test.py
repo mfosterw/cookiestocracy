@@ -41,5 +41,3 @@ EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
 
 # Your stuff...
 # ------------------------------------------------------------------------------
-# Testing hooks requires a github token
-WEBISCITE_GITHUB_TOKEN = "ABC123"

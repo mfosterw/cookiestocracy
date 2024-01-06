@@ -2,7 +2,7 @@ import pytest
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.urls import resolve, reverse
-from github import Github
+from github import Auth, Github
 
 from ..models import Bill
 
@@ -46,11 +46,13 @@ def test_vote(bill: Bill):
 
 
 @pytest.mark.skipif(
-    settings.WEBISCITE_GITHUB_TOKEN == "ABC123", reason="requires Github token"
+    settings.WEBISCITE_GITHUB_TOKEN is None, reason="requires Github token"
 )
 def test_github_hook():
     hook_urls = []
-    repo = Github(settings.WEBISCITE_GITHUB_TOKEN).get_repo(settings.WEBISCITE_REPO)
+    repo = Github(auth=Auth.Token(settings.WEBISCITE_GITHUB_TOKEN)).get_repo(
+        settings.WEBISCITE_REPO
+    )
     for hook in repo.get_hooks():
         hook_urls.append(hook.config["url"])
 

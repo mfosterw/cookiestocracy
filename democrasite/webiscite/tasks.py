@@ -63,7 +63,7 @@ def pr_opened(pr: dict[str, Any]):
 
     bill = Bill(
         name=pr["title"],
-        description=pr["body"],
+        description=pr["body"] or "",
         pr_num=pr["number"],
         author=author,
         additions=pr["additions"],

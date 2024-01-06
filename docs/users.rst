@@ -3,7 +3,7 @@
 Users
 ======================================================================
 
-Starting a new project, it’s highly recommended to set up a custom user model,
+Starting a new project, it's highly recommended to set up a custom user model,
 even if the default User model is sufficient.
 
 This model behaves identically to the default user model, but it can be
