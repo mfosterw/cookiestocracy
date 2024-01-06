@@ -1,3 +1,15 @@
+"""Models related to users and accounts.
+
+Starting a new project, it's highly recommended to set up a custom user model,
+even if the default User model is sufficient.
+
+This model behaves identically to the default user model, but it can be
+customized in the future if the need arises.
+
+Additional fields can be added to the model in other apps by creating a new
+model with a OneToOneField to the User model.
+"""
+
 from django.contrib.auth.models import AbstractUser
 from django.db.models import CharField
 from django.urls import reverse

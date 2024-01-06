@@ -10,6 +10,8 @@ Democrasite Documentation
    :maxdepth: 2
    :caption: Contents:
 
+   README
+   CONTRIBUTING
    howto
    users
    webiscite

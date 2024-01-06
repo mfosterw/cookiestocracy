@@ -1,4 +1,4 @@
-"""This module contains the URLs for Webiscite pages."""
+"""URLs for Webiscite views."""
 from django.urls import path
 
 from .views import (

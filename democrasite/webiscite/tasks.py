@@ -1,3 +1,10 @@
+"""All celery tasks should be defined in this module
+
+This module contains all of the celery tasks used by the webiscite app.
+Currently, the defined tasks are all related to processing pull requests
+from :func:`democrasite.webiscite.webhooks`.
+"""
+
 from datetime import timedelta
 from typing import Any
 

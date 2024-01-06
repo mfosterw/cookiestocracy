@@ -307,8 +307,7 @@ ACCOUNT_FORMS = {
 ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_ADAPTER = "democrasite.users.adapters.AccountAdapter"
 # https://docs.allauth.org/en/latest/socialaccount/configuration.html
-# TODO: determine if adapters should stay
-# SOCIALACCOUNT_ADAPTER = "democrasite.users.adapters.SocialAccountAdapter"
+SOCIALACCOUNT_ADAPTER = "democrasite.users.adapters.SocialAccountAdapter"
 SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
 # Enable social logins
 INSTALLED_APPS += [
