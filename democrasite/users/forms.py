@@ -1,3 +1,4 @@
+"""Override forms from allauth."""
 from allauth.account.forms import (
     ChangePasswordForm,
     ResetPasswordForm,
@@ -13,11 +14,15 @@ User = get_user_model()
 
 
 class UserChangeForm(auth_forms.UserChangeForm):
+    """Override UserChangeForm to use custom User model."""
+
     class Meta(auth_forms.UserChangeForm.Meta):
         model = User
 
 
 class UserCreationForm(auth_forms.UserCreationForm):
+    """Override UserCreationForm to use custom User model."""
+
     class Meta(auth_forms.UserCreationForm.Meta):
         model = User
 
@@ -27,20 +32,32 @@ class UserCreationForm(auth_forms.UserCreationForm):
 
 
 class DisabledChangePasswordForm(ChangePasswordForm):
+    """Substitute form to disable password changes."""
+
     def clean(self):
+        """Always raise a validation error."""
         raise ValidationError(_("You cannot change your password."))
 
 
 class DisabledSetPasswordForm(SetPasswordForm):
+    """Substitute form to disable password set."""
+
     def clean(self):
+        """Always raise a validation error."""
         raise ValidationError(_("You cannot set a password."))
 
 
 class DisabledResetPasswordForm(ResetPasswordForm):
+    """Substitute form to disable password reset."""
+
     def clean(self):
+        """Always raise a validation error."""
         raise ValidationError(_("You cannot reset your password."))
 
 
 class DisabledResetPasswordKeyForm(ResetPasswordKeyForm):
+    """Substitute form to disable password reset."""
+
     def clean(self):
+        """Always raise a validation error."""
         raise ValidationError(_("You cannot reset your password."))

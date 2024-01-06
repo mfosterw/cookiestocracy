@@ -1,3 +1,4 @@
+# pylint: disable=missing-module-docstring
 __version__ = "0.1.0"
 __version_info__ = tuple(  # pylint: disable=consider-using-generator
     [

@@ -1,3 +1,5 @@
+"""Global context processors for the democrasite app."""
+
 from django.conf import settings
 
 

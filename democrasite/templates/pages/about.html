@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% load i18n %}
-{% block title %}{% trans "About" %} - {{ block.super }}{% endblock %}
+{% block title %}{% trans "About" %} - {{ block.super }}{% endblock title %}
 
 {% block content %}
   <div class="row text-center justify-content-center">
@@ -54,7 +54,7 @@
             <div class="progress-bar bg-danger" role="progressbar"></div>
           </div>
           <a href="javascript:;" class="float-left text-success mt-2 vote">
-            &check; {% trans "Yes" %}: <span class="num-yes-votes">0</span>
+            ✓ {% trans "Yes" %}: <span class="num-yes-votes">0</span>
           </a>
           <a href="javascript:;" class="float-right text-danger mt-2 vote">
             X {% trans "No" %}: <span class="num-no-votes">0</span>
@@ -67,4 +67,4 @@
     <br>
     <p><a href="{% url 'privacy' %}">Privacy Policy</a></p>
   </div>
-{% endblock %}
+{% endblock content %}

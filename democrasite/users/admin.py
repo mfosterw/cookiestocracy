@@ -1,3 +1,4 @@
+"""Registration of the User model in the admin site."""
 from django.contrib import admin
 from django.contrib.auth import admin as auth_admin
 from django.contrib.auth import get_user_model
@@ -10,6 +11,8 @@ User = get_user_model()
 
 @admin.register(User)
 class UserAdmin(auth_admin.UserAdmin):
+    """Define admin model for custom User model with no email field."""
+
     form = UserChangeForm
     add_form = UserCreationForm
     fieldsets = (

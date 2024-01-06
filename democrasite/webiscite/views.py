@@ -1,3 +1,5 @@
+"""Views for the webiscite app."""
+
 from typing import Callable
 
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin

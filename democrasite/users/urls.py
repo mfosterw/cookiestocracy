@@ -1,3 +1,5 @@
+"""URLs relating to users and accounts, if not defined in allauth."""
+
 from django.urls import path
 
 from democrasite.users.views import (

@@ -5,14 +5,6 @@ democrasite.webiscite package
    :members:
    :show-inheritance:
 
-Subpackages
------------
-
-.. toctree::
-   :maxdepth: 4
-
-   democrasite.webiscite.tests
-
 Submodules
 ----------
 

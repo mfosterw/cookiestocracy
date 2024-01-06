@@ -14,11 +14,3 @@ Subpackages
    democrasite.users
    democrasite.utils
    democrasite.webiscite
-
-Submodules
-----------
-
-.. toctree::
-   :maxdepth: 4
-
-   democrasite.conftest

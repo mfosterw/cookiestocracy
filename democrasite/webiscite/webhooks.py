@@ -1,3 +1,7 @@
+"""Views for processing webhooks.
+
+Each service that sends webhooks should have its own function-based view."""
+
 import hmac
 import json
 from typing import Callable

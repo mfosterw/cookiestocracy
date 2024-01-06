@@ -10,15 +10,10 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 
-import inspect
 import os
 import sys
-from typing import cast
 
 import django
-from django.db import models
-from django.utils.encoding import force_str
-from django.utils.html import strip_tags
 
 if os.getenv("READTHEDOCS", default="False") == "True":
     sys.path.insert(0, os.path.abspath(".."))
