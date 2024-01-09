@@ -1,16 +1,10 @@
 """Views for the webiscite app."""
 
-from typing import Callable
+from collections.abc import Callable
 
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.messages.views import SuccessMessageMixin
-from django.http import (
-    HttpRequest,
-    HttpResponse,
-    HttpResponseBadRequest,
-    HttpResponseForbidden,
-    JsonResponse,
-)
+from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, JsonResponse
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_POST
 from django.views.generic import DetailView, ListView, UpdateView
@@ -58,7 +52,7 @@ class BillVotesView(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         """
-        Return the list of items for this view – bills voted on by the current user.
+        Return the list of items for this view - bills voted on by the current user.
         """
         return self.request.user.yes_votes.all() | self.request.user.no_votes.all()  # type: ignore [union-attr]
 

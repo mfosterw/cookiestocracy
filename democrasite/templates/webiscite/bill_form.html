@@ -1,7 +1,8 @@
 {% extends 'base.html' %}
 
-{% block title %}{{ bill.name }} - {{ block.super }}{% endblock %}
-
+{% block title %}
+  {{ bill.name }} - {{ block.super }}
+{% endblock title %}
 {% load i18n %}
 {% load crispy_forms_tags %}
 
@@ -15,4 +16,4 @@
       </div>
     </div>
   </form>
-{% endblock%}
+{% endblock content %}
