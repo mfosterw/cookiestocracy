@@ -13,7 +13,11 @@ class TestUserAdmin:
         admin_client.logout()
         url = reverse("admin:login")
         response = admin_client.get(url, follow=True)
+        print(response.request)
+        print(response.content)
+        print(settings.DJANGO_ADMIN_FORCE_ALLAUTH)
         assert response.request["PATH_INFO"] == reverse(settings.LOGIN_URL)
+        assert False
 
     def test_changelist(self, admin_client: Client):
         url = reverse("admin:users_user_changelist")
