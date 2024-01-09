@@ -2,10 +2,10 @@
 
 {% load i18n %}
 
-{% block head_title %}{% trans "Sign Up Closed" %}{% endblock %}
-
+{% block head_title %}
+  {% trans "Sign Up Closed" %}
+{% endblock head_title %}
 {% block inner %}
-<h1>{% trans "Sign Up Closed" %}</h1>
-
-<p>{% trans "Signing up with this method is currently disabled." %}</p>
-{% endblock %}
+  <h1>{% trans "Sign Up Closed" %}</h1>
+  <p>{% trans "Signing up with this method is currently disabled." %}</p>
+{% endblock inner %}

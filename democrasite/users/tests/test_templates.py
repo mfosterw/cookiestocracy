@@ -29,23 +29,15 @@ class TestRootTemplates:
 
         assert response.status_code == 200
         assert b"This is a test message" in response.content
-        assert (
-            b"login-dropdown" in response.content
-        ), "should be visible to logged out users"
-        assert (
-            b"logout-form" not in response.content
-        ), "should not be visible to logged out users"
+        assert b"login-dropdown" in response.content, "should be visible to logged out users"
+        assert b"logout-form" not in response.content, "should not be visible to logged out users"
 
         request.user = user
 
         response = render(request, "base.html")
 
-        assert (
-            b"login-dropdown" not in response.content
-        ), "should not be visible to logged in users"
-        assert (
-            b"logout-form" in response.content
-        ), "should be visible to logged out users"
+        assert b"login-dropdown" not in response.content, "should not be visible to logged in users"
+        assert b"logout-form" in response.content, "should be visible to logged out users"
 
     def test_403(self, client: Client):
         response = client.get("/403/")

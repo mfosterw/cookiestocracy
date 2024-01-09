@@ -25,9 +25,7 @@ class SocialAccountAdapter(DefaultSocialAccountAdapter):
     """Adapter for social accounts, overwritten to allow disabling social
     account registration with a setting"""
 
-    def is_open_for_signup(
-        self, request: HttpRequest, sociallogin: SocialLogin
-    ) -> bool:
+    def is_open_for_signup(self, request: HttpRequest, sociallogin: SocialLogin) -> bool:
         return getattr(settings, "ACCOUNT_ALLOW_REGISTRATION", True)
 
     # TODO: Allow requiring verification for each social account via setting

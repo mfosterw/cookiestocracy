@@ -98,9 +98,7 @@ class TestSubmitBill:
     @patch("requests.get")
     @patch("github.Github.get_repo")
     @patch("github.Auth.Token", spec=True)
-    def test_insufficient_votes(
-        self, mock_token, mock_repo, mock_get
-    ):  # pylint: disable=unused-argument
+    def test_insufficient_votes(self, mock_token, mock_repo, mock_get):  # pylint: disable=unused-argument
         bill = BillFactory(state=Bill.OPEN)  # total votes is 0 by default
 
         submit_bill(bill.id)
@@ -111,9 +109,7 @@ class TestSubmitBill:
 
     @patch("github.Github.get_repo")
     @patch("github.Auth.Token", spec=True)
-    def test_bill_rejected(
-        self, mock_token, mock_repo
-    ):  # pylint: disable=unused-argument
+    def test_bill_rejected(self, mock_token, mock_repo):  # pylint: disable=unused-argument
         bill = BillFactory(state=Bill.OPEN)
         voters = UserFactory.create_batch(settings.WEBISCITE_MINIMUM_QUORUM)
         for voter in voters:
@@ -127,9 +123,7 @@ class TestSubmitBill:
 
     @patch("github.Github.get_repo")
     @patch("github.Auth.Token", spec=True)
-    def test_constitutional_bill_rejected(
-        self, mock_token, mock_repo
-    ):  # pylint: disable=unused-argument
+    def test_constitutional_bill_rejected(self, mock_token, mock_repo):  # pylint: disable=unused-argument
         bill = BillFactory(state=Bill.OPEN, constitutional=True)
         voters = UserFactory.create_batch(settings.WEBISCITE_MINIMUM_QUORUM)
         for voter in voters:
@@ -145,9 +139,7 @@ class TestSubmitBill:
     @patch("requests.get")  # patch out requests.get to avoid using internet
     @patch("github.Github.get_repo")
     @patch("github.Auth.Token", spec=True)
-    def test_bill_passed(
-        self, mock_token, mock_repo, mock_get, mock_constitution
-    ):  # pylint: disable=unused-argument
+    def test_bill_passed(self, mock_token, mock_repo, mock_get, mock_constitution):  # pylint: disable=unused-argument
         bill = BillFactory(state=Bill.OPEN, constitutional=False)
         voters = UserFactory.create_batch(settings.WEBISCITE_MINIMUM_QUORUM)
         for voter in voters:
@@ -157,9 +149,5 @@ class TestSubmitBill:
 
         bill.refresh_from_db()
         assert bill.state == Bill.APPROVED
-        mock_repo().get_pull().merge.assert_called_once_with(
-            merge_method="squash", sha=bill.sha
-        )
-        mock_repo().get_contents.assert_called_once_with(
-            "democrasite/webiscite/constitution.json"
-        )
+        mock_repo().get_pull().merge.assert_called_once_with(merge_method="squash", sha=bill.sha)
+        mock_repo().get_contents.assert_called_once_with("democrasite/webiscite/constitution.json")

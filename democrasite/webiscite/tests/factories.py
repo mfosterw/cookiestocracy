@@ -28,9 +28,7 @@ class BillFactory(DjangoModelFactory):
 
 class SocialAccountFactory(DjangoModelFactory):
     user = SubFactory(UserFactory)
-    provider = LazyFunction(
-        lambda: random.choice(providers.registry.get_class_list()).id
-    )
+    provider = LazyFunction(lambda: random.choice(providers.registry.get_class_list()).id)
     uid = Faker("random_int")
 
     class Meta:
