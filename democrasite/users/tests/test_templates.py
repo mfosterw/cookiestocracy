@@ -8,6 +8,7 @@ from django.http import HttpRequest
 from django.shortcuts import render
 from django.test import Client, RequestFactory
 from django.urls import reverse
+from django.views.defaults import page_not_found, permission_denied
 
 from democrasite.users.models import User
 from democrasite.users.tests.factories import UserFactory
@@ -39,17 +40,41 @@ class TestRootTemplates:
         assert b"login-dropdown" not in response.content, "should not be visible to logged in users"
         assert b"logout-form" in response.content, "should be visible to logged out users"
 
-    def test_403(self, client: Client):
-        response = client.get("/403/")
+    def test_403_with_message(self, rf: RequestFactory):  # client: Client):
+        request = rf.get("/fake-url/")
+
+        response = permission_denied(request, exception=Exception("Test message"))
+        print(response.content)
 
         assert response.status_code == 403
-        assert response.templates[0].name == "403.html"
+        assert b"Test message" in response.content
 
-    def test_404(self, client: Client):
-        response = client.get("/404/")
+    def test_403_without_message(self, rf: RequestFactory):  # client: Client):
+        request = rf.get("/fake-url/")
+
+        response = permission_denied(request, exception=Exception(""))
+        print(response.content)
+
+        assert response.status_code == 403
+        assert b"You're not allowed to access this page." in response.content
+
+    def test_404_without_message(self, rf: RequestFactory):  # client: Client):
+        request = rf.get("/fake-url/")
+
+        response = page_not_found(request, exception=Exception(""))
+        print(response.content)
 
         assert response.status_code == 404
-        assert response.templates[0].name == "404.html"
+        assert b"This is not the page you were looking for." in response.content
+
+    def test_404_with_message(self, rf: RequestFactory):  # client: Client):
+        request = rf.get("/fake-url/")
+
+        response = page_not_found(request, exception=Exception("Test message"))
+        print(response.content)
+
+        assert response.status_code == 404
+        assert b"Test message" in response.content
 
     def test_500(self, client: Client):
         response = client.get("/500/")
