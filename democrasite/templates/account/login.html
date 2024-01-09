@@ -3,24 +3,17 @@
 {% load i18n %}
 {% load socialaccount %}
 
-{% block head_title %}{% trans "Sign In" %}{% endblock %}
-
+{% block head_title %}
+  {% trans "Sign In" %}
+{% endblock head_title %}
 {% block inner %}
-
-<h1>{% trans "Sign In" %}</h1>
-
-{% get_providers as socialaccount_providers %}
-
-<p>{% blocktrans %}Please log in or sign up with a third party account.{% endblocktrans %}</p>
-
-<div class="socialaccount_ballot">
-
-  <ul class="socialaccount_providers">
-    {% include "socialaccount/snippets/provider_list.html" with process="login" %}
-  </ul>
-
-</div>
-
-{% providers_media_js %}
-
-{% endblock %}
+  <h1>{% trans "Sign In" %}</h1>
+  {% get_providers as socialaccount_providers %}
+  <p>{% blocktrans %}Please log in or sign up with a third party account.{% endblocktrans %}</p>
+  <div class="socialaccount_ballot">
+    <ul class="socialaccount_providers">
+      {% include "socialaccount/snippets/provider_list.html" with process="login" %}
+    </ul>
+  </div>
+  {% providers_media_js %}
+{% endblock inner %}

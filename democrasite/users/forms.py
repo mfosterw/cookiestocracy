@@ -1,10 +1,5 @@
 """Override forms from allauth."""
-from allauth.account.forms import (
-    ChangePasswordForm,
-    ResetPasswordForm,
-    ResetPasswordKeyForm,
-    SetPasswordForm,
-)
+from allauth.account.forms import ChangePasswordForm, ResetPasswordForm, ResetPasswordKeyForm, SetPasswordForm
 from django.contrib.auth import forms as auth_forms
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
@@ -26,9 +21,7 @@ class UserCreationForm(auth_forms.UserCreationForm):
     class Meta(auth_forms.UserCreationForm.Meta):
         model = User
 
-        error_messages = {
-            "username": {"unique": _("This username has already been taken.")}
-        }
+        error_messages = {"username": {"unique": _("This username has already been taken.")}}
 
 
 class DisabledChangePasswordForm(ChangePasswordForm):

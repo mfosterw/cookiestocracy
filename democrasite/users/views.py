@@ -29,7 +29,9 @@ class UserUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     success_message = _("Information successfully updated")
 
     def get_success_url(self):
-        return self.request.user.get_absolute_url()  # type: ignore [union-attr]
+        # for mypy to know that the user is authenticated
+        assert self.request.user.is_authenticated
+        return self.request.user.get_absolute_url()
 
     def get_object(self):  # pylint: disable=arguments-differ
         return self.request.user

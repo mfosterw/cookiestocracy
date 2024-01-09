@@ -10,7 +10,6 @@ from django.urls import reverse
 
 from democrasite.users.forms import UserChangeForm
 from democrasite.users.models import User
-from democrasite.users.tests.factories import UserFactory
 from democrasite.users.views import UserRedirectView, UserUpdateView, user_detail_view
 
 
@@ -70,7 +69,7 @@ class TestUserRedirectView:
 class TestUserDetailView:
     def test_authenticated(self, user: User, rf: RequestFactory):
         request = rf.get("/fake-url/")
-        request.user = UserFactory()
+        request.user = user
 
         response = user_detail_view(request, username=user.username)
 

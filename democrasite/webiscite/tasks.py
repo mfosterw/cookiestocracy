@@ -56,9 +56,7 @@ def pr_opened(pr: dict[str, Any]):
         raise ValueError("Open bill with this PR already exists")
 
     try:
-        author = User.objects.filter(socialaccount__provider="github").get(
-            socialaccount__uid=pr["user"]["id"]
-        )
+        author = User.objects.filter(socialaccount__provider="github").get(socialaccount__uid=pr["user"]["id"])
     except User.DoesNotExist:
         # If the creator of the pull request does not have a linked account,
         # a Bill cannot be created and the pr is ignored.
@@ -117,9 +115,7 @@ def submit_bill(bill_id: int):
         bill_id: The id of the bill to submit
     """
     bill = Bill.objects.get(pk=bill_id)
-    repo = Github(auth=Auth.Token(settings.WEBISCITE_GITHUB_TOKEN)).get_repo(
-        settings.WEBISCITE_REPO
-    )
+    repo = Github(auth=Auth.Token(settings.WEBISCITE_GITHUB_TOKEN)).get_repo(settings.WEBISCITE_REPO)
     pull = repo.get_pull(bill.pr_num)
 
     # Bill was closed before voting period ended
@@ -154,9 +150,7 @@ def submit_bill(bill_id: int):
         bill.state = Bill.REJECTED
         bill.save()
         pull.edit(state="closed")  # Close failed pull request
-        logger.info(
-            "PR %s: Pull request failed with %s%% of votes", bill.pr_num, approval
-        )
+        logger.info("PR %s: Pull request failed with %s%% of votes", bill.pr_num, approval)
         return
 
     # Bill passed

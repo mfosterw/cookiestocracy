@@ -6,12 +6,7 @@ from django.conf import settings
 from unidiff import PatchSet
 
 from .. import constitution
-from ..constitution import (
-    _check_hunks,
-    is_constitutional,
-    read_constitution,
-    update_constitution,
-)
+from ..constitution import _check_hunks, is_constitutional, read_constitution, update_constitution
 
 
 class TestCheckHunks:
@@ -292,6 +287,4 @@ class TestConstitutionFiles:
     def test_constitution_files(self):
         """Ensure the files in constitution.json exist (does not check line numbers)"""
         for file in read_constitution():
-            assert isfile(
-                settings.ROOT_DIR / file
-            ), f"{file} from constitution.json not found"
+            assert isfile(settings.ROOT_DIR / file), f"{file} from constitution.json not found"

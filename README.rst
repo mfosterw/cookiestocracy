@@ -41,13 +41,12 @@ full version doesn't exist yet.
 Contributing
 ------------
 
-Please read the :ref:`contribution guide <contributing>` and then see the basic
-commands below. It is also recommended that you rename ".env.sample" in the
-root of the repository to ".env" and set the environment variable
+Please read the `contribution guide <CONTRIBUTING.rst>`_ and then see the
+basic commands below. It is also recommended that you rename ".env.sample" in
+the root of the repository to ".env" and set the environment variable
 ``DJANGO_READ_DOT_ENV_FILE=True`` so you can more easily keep track of your
 environment variables.
 
-.. _`contribution guide`: https://cookiestocracy.readthedocs.io/en/latest/CONTRIBUTING.html
 
 Basic Commands
 --------------

@@ -1,3 +1,4 @@
+"""Base URL configuration"""
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
@@ -6,9 +7,7 @@ from django.views import defaults as default_views
 from django.views.generic import TemplateView
 
 urlpatterns = [
-    path(
-        "about/", TemplateView.as_view(template_name="pages/about.html"), name="about"
-    ),
+    path("about/", TemplateView.as_view(template_name="pages/about.html"), name="about"),
     path(
         "privacy/",
         TemplateView.as_view(template_name="pages/privacy.html"),
@@ -27,7 +26,7 @@ urlpatterns = [
 if settings.DEBUG:
     # Django Admin, use {% url 'admin:index' %}
     # Admin site is only enabled during development
-    urlpatterns += [path("admin/", admin.site.urls)]
+    urlpatterns += [path(settings.ADMIN_URL, admin.site.urls)]
     # Disable "view site" link because it points to the production url instead of local
     admin.AdminSite.site_url = None  # type: ignore
 

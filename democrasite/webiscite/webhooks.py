@@ -4,7 +4,7 @@ Each service that sends webhooks should have its own function-based view."""
 
 import hmac
 import json
-from typing import Callable
+from collections.abc import Callable
 
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse, HttpResponseForbidden
@@ -30,7 +30,7 @@ def _github_hook(request: HttpRequest) -> HttpResponse:
         processed or rejected
     """
     # Verify the request signature
-    header_signature = request.META.get("HTTP_X_HUB_SIGNATURE")
+    header_signature = request.headers.get("x-hub-signature")
     if header_signature is None:
         return HttpResponseForbidden("Invalid signature")
 
@@ -47,7 +47,7 @@ def _github_hook(request: HttpRequest) -> HttpResponse:
     # Process the GitHub event
     # For info on the GitHub Webhook API, see
     # https://docs.github.com/en/developers/webhooks-and-events/webhook-events-and-payloads
-    event = request.META.get("HTTP_X_GITHUB_EVENT", "ping")
+    event = request.headers.get("x-github-event", "ping")
     payload = json.loads(request.body.decode("utf-8"))
 
     if event == "ping":

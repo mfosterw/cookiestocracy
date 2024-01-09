@@ -11,14 +11,7 @@ from democrasite.users.models import User
 from democrasite.users.tests.factories import UserFactory
 
 from ..models import Bill
-from ..views import (
-    BillListView,
-    BillProposalsView,
-    BillVotesView,
-    bill_detail_view,
-    bill_update_view,
-    vote_view,
-)
+from ..views import BillListView, BillProposalsView, BillVotesView, bill_detail_view, bill_update_view, vote_view
 from .factories import BillFactory
 
 

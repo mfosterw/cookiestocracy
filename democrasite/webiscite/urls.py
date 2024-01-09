@@ -1,14 +1,7 @@
 """URLs for Webiscite views."""
 from django.urls import path
 
-from .views import (
-    bill_detail_view,
-    bill_list_view,
-    bill_proposals_view,
-    bill_update_view,
-    bill_votes_view,
-    vote_view,
-)
+from .views import bill_detail_view, bill_list_view, bill_proposals_view, bill_update_view, bill_votes_view, vote_view
 from .webhooks import github_hook
 
 app_name = "webiscite"

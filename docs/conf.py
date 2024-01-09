@@ -29,7 +29,7 @@ django.setup()
 # -- Project information -----------------------------------------------------
 
 project = "Democrasite"
-copyright = """2021, Matthew Foster Walsh"""  # pylint: disable=redefined-builtin
+copyright = """2024, Matthew Foster Walsh"""  # pylint: disable=redefined-builtin
 author = "Matthew Foster Walsh"
 
 

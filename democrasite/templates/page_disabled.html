@@ -2,13 +2,15 @@
 
 {% load i18n %}
 
-{% block title %}{% trans 'Page Disabled' %} - {{ block.super }}{% endblock %}
-
+{% block title %}
+  {% trans 'Page Disabled' %} - {{ block.super }}
+{% endblock title %}
 {% block extra_head %}
-<meta name="robots" content="noindex" >
-{% endblock %}
-
+  <meta name="robots" content="noindex" />
+{% endblock extra_head %}
 {% block content %}
-<h1>{% trans 'Page Unavailable' %}</h1>
-<p>{% trans 'This page is disabled. Please navigate back to the previous page or return to the' %} <a href="{% url 'webiscite:index' %}">{% trans 'homepage.' %}</a></p>
-{% endblock %}
+  <h1>{% trans 'Page Unavailable' %}</h1>
+  <p>
+    {% trans 'This page is disabled. Please navigate back to the previous page or return to the' %} <a href="{% url 'webiscite:index' %}">{% trans 'homepage.' %}</a>
+  </p>
+{% endblock content %}

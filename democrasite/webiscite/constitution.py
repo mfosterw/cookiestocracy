@@ -6,7 +6,7 @@ constitution for changes which edit files included in the constitution without
 resulting in constitutional amendments
 """
 import json
-from typing import Optional, cast
+from typing import cast
 
 from django.conf import settings
 from unidiff import PatchedFile, PatchSet
@@ -51,7 +51,7 @@ def _check_hunks(hunks: PatchedFile, locks: list[list[int]]) -> bool:
     return False
 
 
-def read_constitution() -> dict[str, Optional[list[list[int]]]]:
+def read_constitution() -> dict[str, list[list[int]] | None]:
     """
     Read the constitution and return it as a type-annotated dict
     """

@@ -1,3 +1,4 @@
+"""Settings for development environment"""
 from .base import *  # noqa pylint: disable=wildcard-import,unused-wildcard-import
 from .base import env
 
@@ -28,9 +29,7 @@ CACHES = {
 # EMAIL
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#email-backend
-EMAIL_BACKEND = env(
-    "DJANGO_EMAIL_BACKEND", default="django.core.mail.backends.filebased.EmailBackend"
-)
+EMAIL_BACKEND = env("DJANGO_EMAIL_BACKEND", default="django.core.mail.backends.filebased.EmailBackend")
 # https://docs.djangoproject.com/en/dev/ref/settings/#email-file-path
 EMAIL_FILE_PATH = ROOT_DIR / "app-messages"  # noqa F405
 
@@ -61,9 +60,9 @@ INTERNAL_IPS = ["127.0.0.1", "10.0.2.2"]
 INSTALLED_APPS += ["django_extensions"]  # noqa F405
 # Celery
 # ------------------------------------------------------------------------------
-# http://docs.celeryproject.org/en/latest/userguide/configuration.html#task-always-eager
+# https://docs.celeryq.dev/en/stable/userguide/configuration.html#task-always-eager
 CELERY_TASK_ALWAYS_EAGER = True
-# http://docs.celeryproject.org/en/latest/userguide/configuration.html#task-eager-propagates
+# https://docs.celeryq.dev/en/stable/userguide/configuration.html#task-eager-propagates
 CELERY_TASK_EAGER_PROPAGATES = True
 # Your stuff...
 # ------------------------------------------------------------------------------

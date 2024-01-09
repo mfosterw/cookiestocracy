@@ -10,20 +10,15 @@
   {% elif request.resolver_match.url_name == 'my-bill-votes' %}
     {% trans 'My Votes' %} - {{ block.super }}
   {% endif %}
-{% endblock %}
-
+{% endblock title %}
 {% block content %}
   {% for bill in bill_list %}
-    {% if forloop.counter0|divisibleby:4 %}
-      <div class="row">
-    {% endif %}
+    {% if forloop.counter0|divisibleby:4 %}<div class="row">{% endif %}
       <div class="col-sm-12 col-md-6 col-lg-3">
         <div class="card text-center mb-4{% if bill.constitutional %} bg-light{% endif %}">
           <div class="card-body{% if bill.state != bill.OPEN %} inactive{% endif %}">
             <a class="card-link" href="{{ bill.get_absolute_url }}">
-              <h5 class="card-title">
-                  {{ bill }}
-              </h5>
+              <h5 class="card-title">{{ bill }}</h5>
               {% if bill.constitutional %}
                 <p class="text-info">{% trans 'Amendment to the Constitution' %}</p>
               {% endif %}
@@ -33,12 +28,12 @@
                 {{ bill.get_state_display }}
               </p>
             {% endif %}
-            <hr>
-            <div data-nosnippet class="card-text">
-              {{ bill.description|truncatewords:20 }}
-            </div>
+            <hr />
+            <div data-nosnippet class="card-text">{{ bill.description|truncatewords:20 }}</div>
             <div class="card-text text-right">
-              <a class="card-link git-pull-link" href="https://github.com/{{ github_repo }}/pull/{{ bill.pr_num }}/files" target="_blank">
+              <a class="card-link git-pull-link"
+                 href="https://github.com/{{ github_repo }}/pull/{{ bill.pr_num }}/files"
+                 target="_blank">
                 <span class="text-success">+{{ bill.additions }}</span>
                 <span class="text-danger">-{{ bill.deletions }}</span>
               </a>
@@ -61,28 +56,18 @@
                 {% endif %}
               {% endif %}
               >
-              &check; {% trans 'Yes' %}: <span class="num-yes-votes" id="num-yes-votes-{{ bill.id }}">{{ bill.yes_votes.count }}</span>
+              ✓ {% trans 'Yes' %}: <span class="num-yes-votes" id="num-yes-votes-{{ bill.id }}">{{ bill.yes_votes.count }}</span>
             </a>
-            <a href="javascript:;" class="float-right text-danger mt-2 vote{% if user in bill.no_votes.all %} font-weight-bold{% endif %}"
-            {% if bill.state == bill.OPEN %}
-              {% if user.is_authenticated %}
-                id="vote-no-{{ bill.id }}"
-                action="{% url 'webiscite:bill-vote' bill.id %}"
-                value="vote-no"
-              {% else %}
-                data-toggle="tooltip" data-placement="bottom"
-                title="{% trans 'Log in to vote' %}" data-trigger="click"
-              {% endif %}
-            {% endif %}
-            >
+            <a href="javascript:;"
+               class="float-right text-danger mt-2 vote{% if user in bill.no_votes.all %} font-weight-bold{% endif %}"
+               {% if bill.state == bill.OPEN %} {% if user.is_authenticated %} id="vote-no-{{ bill.id }}" action="{% url 'webiscite:bill-vote' bill.id %}" value="vote-no" {% else %} data-toggle="tooltip" data-placement="bottom" title="{% trans 'Log in to vote' %}" data-trigger="click" {% endif %}
+               {% endif %}>
               X {% trans 'No' %}: <span class="num-no-votes" id="num-no-votes-{{ bill.id }}">{{ bill.no_votes.count }}</span>
             </a>
           </div>
         </div>
       </div>
-    {% if forloop.counter|divisibleby:4 or forloop.last %}
-      </div>
-    {% endif %}
+      {% if forloop.counter|divisibleby:4 or forloop.last %}</div>{% endif %}
   {% empty %}
     {% if request.resolver_match.url_name == 'index' %}
       <p>{% trans 'No bills up for vote right now.' %}</p>
@@ -92,11 +77,10 @@
       <p>{% trans "Looks like you haven't voted on any bills yet." %}</p>
     {% endif %}
   {% endfor %}
-{% endblock %}
-
+{% endblock content %}
 {% block inline_javascript %}
   <script type="text/javascript" src="{% static 'js/bill.js' %}"></script>
   {% if user.is_authenticated %}
     <script type="text/javascript" src="{% static 'js/vote.js' %}"></script>
   {% endif %}
-{% endblock %}
+{% endblock inline_javascript %}

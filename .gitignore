@@ -65,9 +65,6 @@ target/
 # celery beat schedule file
 celerybeat-schedule
 
-# redis data dump file, in case it is started here
-dump.rdb
-
 # Environments
 .venv
 venv/
@@ -153,17 +150,12 @@ typings/
 # .nfs files are created when an open file is removed but is still being accessed
 .nfs*
 
-
 ### VisualStudioCode template
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
-
-
-
-
 
 ### Windows template
 # Windows thumbnail cache files
@@ -268,8 +260,10 @@ Session.vim
 # Auto-generated tag files
 tags
 
-### Project template
+# Redis dump file
+dump.rdb
 
+### Project template
 democrasite/media/
 
 .pytest_cache/
