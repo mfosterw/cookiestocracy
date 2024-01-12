@@ -2,7 +2,7 @@
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
-from django.urls import include, path, reverse
+from django.urls import include, path, reverse_lazy
 from django.views import defaults as default_views
 from django.views.generic import TemplateView
 
@@ -30,7 +30,7 @@ if settings.DEBUG:
     # Admin site is only enabled during development
     urlpatterns += [path(settings.ADMIN_URL, admin.site.urls)]
     # Overwrite view site link because it points to the production url instead of local
-    admin.AdminSite.site_url = reverse("webiscite:index")
+    admin.AdminSite.site_url = reverse_lazy("webiscite:index")
 
     # This allows the error pages to be debugged during development, just visit
     # these url in browser to see how these error pages look like.
