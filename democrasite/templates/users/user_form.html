@@ -3,9 +3,9 @@
 {% load i18n %}
 {% load crispy_forms_tags %}
 
-{% block title %}
-  {{ user.username }} - {{ block.super }}
-{% endblock title %}
+{% block sub_title %}
+  {{ user.username }}
+{% endblock sub_title %}
 {% block content %}
   <h1>{{ user.username }}</h1>
   <form class="form-horizontal"

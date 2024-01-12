@@ -2,9 +2,9 @@
 
 {% load i18n static %}
 
-{% block title %}
-  {{ bill.name }} - {{ block.super }}
-{% endblock title %}
+{% block sub_title %}
+  {{ bill.name }}
+{% endblock sub_title %}
 {% block content %}
   <div class="container">
     <div class="row">
@@ -14,9 +14,11 @@
           <p class="text-info">{% trans 'Amendment to the Constitution' %}</p>
         {% endif %}
         {% if bill.state != bill.OPEN %}
-          <p class="{% if bill.state == bill.APPROVED %}text-success{% else %}text-danger{% endif %}">
-            {{ bill.get_state_display }}
-          </p>
+          <p class="{% if bill.state == bill.APPROVED %}
+                      text-success
+                    {% else %}
+                      text-danger
+                    {% endif %}">{{ bill.get_state_display }}</p>
         {% endif %}
         <p>
           {{ bill.description }}
@@ -67,8 +69,14 @@
           ✓ {% trans 'Yes' %}: <span class="num-yes-votes" id="num-yes-votes-{{ bill.id }}">{{ bill.yes_votes.count }}</span>
         </a>
         <a href="javascript:;"
-           class="float-right text-danger mt-2 vote{% if user in bill.no_votes.all %} font-weight-bold{% endif %}"
-           {% if bill.state == bill.OPEN %} {% if user.is_authenticated %} id="vote-no-{{ bill.id }}" action="{% url 'webiscite:bill-vote' bill.id %}" value="vote-no" {% else %} data-toggle="tooltip" data-placement="bottom" title="{% trans 'Log in to vote' %}" data-trigger="click" {% endif %}
+           class="float-right text-danger mt-2 vote
+                  {% if user in bill.no_votes.all %}font-weight-bold{% endif %}"
+           {% if bill.state == bill.OPEN %}
+             {% if user.is_authenticated %}
+               id="vote-no-{{ bill.id }}" action="{% url 'webiscite:bill-vote' bill.id %}" value="vote-no"
+             {% else %}
+               data-toggle="tooltip" data-placement="bottom" title="{% trans 'Log in to vote' %}" data-trigger="click"
+             {% endif %}
            {% endif %}>
           X {% trans 'No' %}: <span class="num-no-votes" id="num-no-votes-{{ bill.id }}">{{ bill.no_votes.count }}</span>
         </a>

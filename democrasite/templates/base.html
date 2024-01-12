@@ -7,10 +7,17 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge" />
     <title>
       {% block title %}
-        Democrasite
+        {% if request.resolver_match.url_name == 'index' %}
+          Democrasite
+        {% else %}
+          {% block sub_title %}
+          {% endblock sub_title %}
+          - Democrasite
+        {% endif %}
       {% endblock title %}
     </title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="created" content="{% now 'jS M Y h:i' %}" />
     <meta name="description"
           content="A website which automatically incorporates changes from users based on popular approval" />
     <meta name="author" content="Matthew Foster Walsh" />
@@ -19,7 +26,7 @@
     <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
     <!--[if lt IE 9]>
       <script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.min.js"></script>
-<![endif]-->
+    <![endif]-->
     <link rel="icon" href="{% static 'images/favicons/favicon.ico' %}" />
     {% block css %}
       <!-- Latest compiled and minified Bootstrap CSS -->
@@ -57,17 +64,19 @@
   <body>
     <div class="mb-1">
       <nav class="navbar navbar-expand-md navbar-light bg-light">
-        <button class="navbar-toggler navbar-toggler-right"
-                type="button"
-                data-toggle="collapse"
-                data-target="#navbar-supported-content"
-                aria-controls="navbar-supported-content"
-                aria-expanded="false"
-                aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <a class="navbar-brand" href="{% url 'webiscite:index' %}">Democrasite</a>
         {% block navbar %}
+          <button class="navbar-toggler navbar-toggler-right"
+                  type="button"
+                  data-toggle="collapse"
+                  data-target="#navbar-supported-content"
+                  aria-controls="navbar-supported-content"
+                  aria-expanded="false"
+                  aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          {% block nav_brand %}
+            <a class="navbar-brand" href="{% url 'webiscite:index' %}">Democrasite</a>
+          {% endblock nav_brand %}
           {% get_providers as socialaccount_providers %}
           <div class="collapse navbar-collapse" id="navbar-supported-content">
             <ul class="navbar-nav mr-auto">
@@ -88,58 +97,70 @@
                 <li class="nav-item">
                   <a href="{% url 'webiscite:my-bill-votes' %}" class="nav-link">{% trans 'Votes Cast' %}</a>
                 </li>
-                <li class="nav-item">
-                  {# For security, we use POST to log the user out #}
-                  <form id="logout-form"
-                        action="{% url 'account_logout' %}?next={{ request.path }}"
-                        method="post">
-                    {% csrf_token %}
-                    <input type="hidden" name="next" value="{{ request.path }}" />
-                    <button type="submit" class="btn nav-link">{% trans 'Log out' %}</button>
-                  </form>
-                </li>
-              {% else %}
-                <li class="nav-item dropdown">
-                  <a class="nav-link dropdown-toggle"
-                     href="#"
-                     id="login-dropdown"
-                     role="button"
-                     data-toggle="dropdown"
-                     aria-haspopup="true"
-                     aria-expanded="false">{% trans 'Log in' %}</a>
-                  <div class="dropdown-menu dropdown-menu-right py-0"
-                       aria-labelledby="login-dropdown">
-                    {% for provider in socialaccount_providers %}
-                      {# For security, we use POST to log the user in #}
-                      <form action="{% provider_login_url provider.id next=request.path %}"
-                            method="post">
-                        {% csrf_token %}
-                        <input type="hidden" name="next" value="{{ request.path }}" />
-                        <button type="submit"
-                                class="dropdown-item px-3 socialaccount_provider {{ provider.id }}">
-                          {{ provider.name }}
-                        </button>
-                      </form>
-                    {% endfor %}
-                  </div>
-                </li>
               {% endif %}
+              {% block nav_authentication %}
+                {% if request.user.is_authenticated %}
+                  <li class="nav-item">
+                    {# Use a little Javascript to log out with a POST request for security #}
+                    {# If this used a button inside the form like the login dropdown, it wouldn't align correctly #}
+                    <a id="logout-link" class="nav-link form-submit" href="#">{% trans 'Log out' %}</a>
+                    <form id="logout-form"
+                          style="display:none"
+                          method="post"
+                          action="{% url 'account_logout' %}?next={{ request.path }}">
+                      {% csrf_token %}
+                    </form>
+                  </li>
+                {% else %}
+                  <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle"
+                       href="#"
+                       id="login-dropdown"
+                       role="button"
+                       data-toggle="dropdown"
+                       aria-haspopup="true"
+                       aria-expanded="false">{% trans 'Log in' %}</a>
+                    <div class="dropdown-menu dropdown-menu-right py-0"
+                         aria-labelledby="login-dropdown">
+                      {% for provider in socialaccount_providers %}
+                        {# For security, we use POST to log the user in #}
+                        <form action="{% provider_login_url provider.id next=request.path %}"
+                              method="post">
+                          {% csrf_token %}
+                          <button type="submit"
+                                  class="dropdown-item px-3 socialaccount_provider {{ provider.id }}">
+                            {{ provider.name }}
+                          </button>
+                        </form>
+                      {% endfor %}
+                    </div>
+                  </li>
+                {% endif %}
+              {% endblock nav_authentication %}
+              <li class="nav-item">
+                <a href="{% url 'forum:index' %}" class="nav-link">{% trans 'Forum' %}</a>
+              </li>
             </ul>
           </div>
         {% endblock navbar %}
       </nav>
     </div>
-    <div class="container">
-      {% if messages %}
-        {% for message in messages %}
-          <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
-            {{ message }}
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-              <span aria-hidden="true">×</span>
-            </button>
-          </div>
-        {% endfor %}
-      {% endif %}
+    <div class="container my-3">
+      {% block extra_header %}
+        {% block messages %}
+          {% if messages %}
+            {% for message in messages %}
+              <div class="alert
+                          {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+                {{ message }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                  <span aria-hidden="true">×</span>
+                </button>
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endblock messages %}
+      {% endblock extra_header %}
       {% block content %}
         <p>
           {% blocktrans %} This page is blank, but it probably shouldn't be. Please create an issue on <a href="https://github.com/{{ github_repo }}" target="_blank">Github</a>.{% endblocktrans %}
