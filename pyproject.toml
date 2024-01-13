@@ -73,6 +73,7 @@ generated-members = [
 [tool.djlint]
 blank_line_after_tag = "load,extends"
 close_void_tags = true
+# Necessary for formatting the vote buttons in bill_list.html and bill_detail.html
 format_attribute_template_tags = true
 format_css = true
 # TODO: remove T002 when fixed https://github.com/Riverside-Healthcare/djLint/issues/687

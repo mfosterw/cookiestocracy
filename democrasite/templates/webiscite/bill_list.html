@@ -43,20 +43,17 @@
               <div class="progress-bar bg-success" role="progressbar"></div>
               <div class="progress-bar bg-danger" role="progressbar"></div>
             </div>
-            <a href="javascript:;" class="float-left text-success mt-2 vote{% if user in bill.yes_votes.all %} font-weight-bold{% endif %}"
-              {% if bill.state == bill.OPEN %}
-                {% if user.is_authenticated %}
-                  {# if logged in, add vote-enabling logic #}
-                  id="vote-yes-{{ bill.id }}"
-                  action="{% url 'webiscite:bill-vote' bill.id %}"
-                  value="vote-yes"
-                {% else %}
-                  {# otherwise, add a "log in to vote" popup #}
-                  data-toggle="tooltip" data-placement="bottom"
-                  title="Log in to vote" data-trigger="click"
-                {% endif %}
-              {% endif %}
-              >
+            {# If the user is logged in then add vote-enabling logic, otherwise add a "log in to vote" popup #}
+            <a href="javascript:;"
+               class="float-left text-success mt-2 vote
+                      {% if user in bill.yes_votes.all %}font-weight-bold{% endif %}"
+               {% if bill.state == bill.OPEN %}
+                 {% if user.is_authenticated %}
+                   id="vote-yes-{{ bill.id }}" action="{% url 'webiscite:bill-vote' bill.id %}" value="vote-yes"
+                 {% else %}
+                   data-toggle="tooltip" data-placement="bottom" title="Log in to vote" data-trigger="click"
+                 {% endif %}
+               {% endif %}>
               ✓ {% trans 'Yes' %}: <span class="num-yes-votes" id="num-yes-votes-{{ bill.id }}">{{ bill.yes_votes.count }}</span>
             </a>
             <a href="javascript:;"
