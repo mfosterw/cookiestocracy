@@ -3,7 +3,6 @@
 minversion = "6.0"
 addopts = "--reuse-db"
 DJANGO_SETTINGS_MODULE = "config.settings.test"
-django_debug_mode = "True"
 python_files = ["tests.py", "test_*.py"]
 
 # ==== Coverage ====
