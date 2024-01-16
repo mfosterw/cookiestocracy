@@ -8,6 +8,11 @@ from democrasite.users.models import User
 
 
 class TestUserAdmin:
+    @pytest.fixture(autouse=True)
+    def enable_admin(self, settings):
+        # Admin site is only enabled during development
+        settings.DEBUG = True
+
     # TODO: Test DJANGO_ADMIN_FORCE_ALLAUTH setting
     @pytest.mark.xfail(reason="This test fails on GitHub Actions for some reason")
     @override_settings(DJANGO_ADMIN_FORCE_ALLAUTH=True)

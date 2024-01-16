@@ -14,13 +14,19 @@ SECRET_KEY = env(
 )
 # https://docs.djangoproject.com/en/dev/ref/settings/#test-runner
 TEST_RUNNER = "django.test.runner.DiscoverRunner"
-# Admin site is only enabled during development
+# Admin site is not available in production, but should still be tested
 INSTALLED_APPS += ["django.contrib.admin"]  # noqa F405
 
 # PASSWORDS
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#password-hashers
 PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]
+
+# TEMPLATES
+# ------------------------------------------------------------------------------
+# https://docs.djangoproject.com/en/dev/ref/settings/#templates
+# Needed to let template test coverage be detected
+TEMPLATES[0]["OPTIONS"]["debug"] = True  # type: ignore[index] # noqa F405
 
 # EMAIL
 # ------------------------------------------------------------------------------
