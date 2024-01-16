@@ -1,10 +1,6 @@
-.. _contributing:
-
 ***************************
 Contributing to Democrasite
 ***************************
-
-.. index:: pip, virtualenv, PostgreSQL
 
 
 What to contribute

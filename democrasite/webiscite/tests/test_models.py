@@ -17,29 +17,25 @@ class TestBill:
     def test_bill_get_absolute_url(self, bill: Bill):
         assert bill.get_absolute_url() == f"/bills/{bill.id}/"
 
-    def test_bill_vote_yes_toggle(self, user: Any):
-        bill = BillFactory(state=Bill.OPEN)
+    def test_bill_vote_yes_toggle(self, bill: Bill, user: Any):
         bill.vote(True, user)
         assert bill.yes_votes.filter(pk=user.id).exists()
         bill.vote(True, user)
         assert not bill.yes_votes.filter(pk=user.id).exists()
 
-    def test_bill_vote_no_toggle(self, user: Any):
-        bill = BillFactory(state=Bill.OPEN)
+    def test_bill_vote_no_toggle(self, bill: Bill, user: Any):
         bill.vote(False, user)
         assert bill.no_votes.filter(pk=user.id).exists()
         bill.vote(False, user)
         assert not bill.no_votes.filter(pk=user.id).exists()
 
-    def test_bill_vote_yes_to_no_switch(self, user: Any):
-        bill = BillFactory(state=Bill.OPEN)
+    def test_bill_vote_yes_to_no_switch(self, bill: Bill, user: Any):
         bill.vote(True, user)
         bill.vote(False, user)
         assert not bill.yes_votes.filter(pk=user.id).exists()
         assert bill.no_votes.filter(pk=user.id).exists()
 
-    def test_bill_vote_no_to_yes_switch(self, user: Any):
-        bill = BillFactory(state=Bill.OPEN)
+    def test_bill_vote_no_to_yes_switch(self, bill: Bill, user: Any):
         bill.vote(False, user)
         bill.vote(True, user)
         assert not bill.no_votes.filter(pk=user.id).exists()

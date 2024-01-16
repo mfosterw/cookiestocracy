@@ -13,8 +13,7 @@ from .factories import BillFactory, SocialAccountFactory
 
 
 class TestProcessPull:
-    def test_pr_opened_bill_exists(self):
-        bill = BillFactory(state=Bill.OPEN)
+    def test_pr_opened_bill_exists(self, bill: Bill):
         pr = {"number": bill.pr_num}
 
         with pytest.raises(ValueError):
@@ -69,8 +68,7 @@ class TestProcessPull:
         bill.refresh_from_db()
         assert bill.state == Bill.FAILED
 
-    def test_pr_closed(self):
-        bill = BillFactory(state=Bill.OPEN)
+    def test_pr_closed(self, bill: Bill):
         pr = {"number": bill.pr_num}
 
         process_pull("closed", pr)
@@ -98,9 +96,7 @@ class TestSubmitBill:
     @patch("requests.get")
     @patch("github.Github.get_repo")
     @patch("github.Auth.Token", spec=True)
-    def test_insufficient_votes(self, mock_token, mock_repo, mock_get):  # pylint: disable=unused-argument
-        bill = BillFactory(state=Bill.OPEN)  # total votes is 0 by default
-
+    def test_insufficient_votes(self, mock_token, mock_repo, mock_get, bill: Bill):  # pylint: disable=unused-argument
         submit_bill(bill.id)
 
         bill.refresh_from_db()
@@ -109,8 +105,7 @@ class TestSubmitBill:
 
     @patch("github.Github.get_repo")
     @patch("github.Auth.Token", spec=True)
-    def test_bill_rejected(self, mock_token, mock_repo):  # pylint: disable=unused-argument
-        bill = BillFactory(state=Bill.OPEN)
+    def test_bill_rejected(self, mock_token, mock_repo, bill: Bill):  # pylint: disable=unused-argument
         voters = UserFactory.create_batch(settings.WEBISCITE_MINIMUM_QUORUM)
         for voter in voters:
             bill.vote(False, voter)
@@ -139,8 +134,9 @@ class TestSubmitBill:
     @patch("requests.get")  # patch out requests.get to avoid using internet
     @patch("github.Github.get_repo")
     @patch("github.Auth.Token", spec=True)
-    def test_bill_passed(self, mock_token, mock_repo, mock_get, mock_constitution):  # pylint: disable=unused-argument
-        bill = BillFactory(state=Bill.OPEN, constitutional=False)
+    def test_bill_passed(
+        self, mock_token, mock_repo, mock_get, mock_constitution, bill: Bill
+    ):  # pylint: disable=unused-argument
         voters = UserFactory.create_batch(settings.WEBISCITE_MINIMUM_QUORUM)
         for voter in voters:
             bill.vote(True, voter)

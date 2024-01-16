@@ -15,7 +15,7 @@ from democrasite.users.tests.factories import UserFactory
 
 
 class TestRootTemplates:
-    # I couldn't think of a better place to put these tests but they don't belong here
+    # TODO: These should be somewhere else
     def dummy_get_response(self, request: HttpRequest):
         return None
 
@@ -92,7 +92,7 @@ class TestRootTemplates:
 
 
 class TestPagesTemplates:
-    # This should also be somewhere else
+    # TODO: These should be somewhere else
     def test_about(self, client: Client):
         response = client.get(reverse("about"))
 

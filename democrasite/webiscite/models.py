@@ -21,7 +21,8 @@ class Bill(models.Model):
     description = models.TextField()
     # Github info
     pr_num = models.IntegerField(_("Pull request number"))
-    author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    # Users should be anonymized, not deleted
+    author = models.ForeignKey(User, on_delete=models.PROTECT)
     additions = models.IntegerField(help_text=_("Lines added"))
     deletions = models.IntegerField(help_text=_("Lines removed"))
     sha = models.CharField(max_length=40, help_text=_("Unique identifier of PR commit"))

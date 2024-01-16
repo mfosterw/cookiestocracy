@@ -136,31 +136,28 @@ class TestVoteView:
         assert response.status_code == 403
         assert response.content == b"Bill may not be voted on"
 
-    def test_vote_not_present(self, user: User, rf: RequestFactory):
+    def test_vote_not_present(self, rf: RequestFactory, user: User, bill: Bill):
         request = rf.post("/fake-url/")
         request.user = user
 
-        bill = BillFactory(state=Bill.OPEN)
         response = vote_view(request, bill.id)
 
         assert response.status_code == 400
         assert response.content == b'"vote" data expected'
 
-    def test_invalid_vote(self, user: User, rf: RequestFactory):
+    def test_invalid_vote(self, rf: RequestFactory, user: User, bill: Bill):
         request = rf.post("/fake-url/", data={"vote": "idk"})
         request.user = user
 
-        bill = BillFactory(state=Bill.OPEN)
         response = vote_view(request, bill.id)
 
         assert response.status_code == 400
         assert response.content == b'"vote" must be one of ("vote-yes", "vote-no")'
 
-    def test_vote_yes(self, user: User, rf: RequestFactory):
+    def test_vote_yes(self, rf: RequestFactory, user: User, bill: Bill):
         request = rf.post("/fake-url/", data={"vote": "vote-yes"})
         request.user = user
 
-        bill = BillFactory(state=Bill.OPEN)
         response = vote_view(request, bill.id)
 
         assert response.status_code == 200
@@ -170,11 +167,10 @@ class TestVoteView:
         assert data["no-votes"] == 0
         assert bill.yes_votes.filter(pk=user.pk).exists()
 
-    def test_vote_no(self, user: User, rf: RequestFactory):
+    def test_vote_no(self, rf: RequestFactory, user: User, bill: Bill):
         request = rf.post("/fake-url/", data={"vote": "vote-no"})
         request.user = user
 
-        bill = BillFactory(state=Bill.OPEN)
         response = vote_view(request, bill.id)
 
         assert response.status_code == 200

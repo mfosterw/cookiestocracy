@@ -4,6 +4,7 @@ Base settings to build other settings files upon.
 from pathlib import Path
 
 import environ
+from machina import MACHINA_MAIN_STATIC_DIR, MACHINA_MAIN_TEMPLATE_DIR
 
 ROOT_DIR = Path(__file__).resolve(strict=True).parent.parent.parent
 # democrasite/
@@ -72,10 +73,26 @@ THIRD_PARTY_APPS = [
     "allauth.account",
     "allauth.socialaccount",
     "django_celery_beat",
+    # Machina (forum) dependencies:
+    "mptt",
+    "haystack",
+    "widget_tweaks",
+    # Machina (forum) apps:
+    "machina",
+    "machina.apps.forum",
+    "machina.apps.forum_conversation",
+    "machina.apps.forum_conversation.forum_attachments",
+    "machina.apps.forum_conversation.forum_polls",
+    "machina.apps.forum_feeds",
+    "machina.apps.forum_moderation",
+    "machina.apps.forum_search",
+    "machina.apps.forum_tracking",
+    "machina.apps.forum_member",
+    "machina.apps.forum_permission",
 ]
 
 LOCAL_APPS = [
-    # custom apps go here
+    # Custom apps
     "democrasite.users",
     "democrasite.webiscite",
 ]
@@ -133,6 +150,8 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "allauth.account.middleware.AccountMiddleware",
+    # Machina
+    "machina.apps.forum_permission.middleware.ForumPermissionMiddleware",
 ]
 
 # STATIC
@@ -142,7 +161,7 @@ STATIC_ROOT = str(ROOT_DIR / "staticfiles")
 # https://docs.djangoproject.com/en/dev/ref/settings/#static-url
 STATIC_URL = "/static/"
 # https://docs.djangoproject.com/en/dev/ref/contrib/staticfiles/#std:setting-STATICFILES_DIRS
-STATICFILES_DIRS = [str(APPS_DIR / "static")]
+STATICFILES_DIRS = [str(APPS_DIR / "static"), MACHINA_MAIN_STATIC_DIR]
 # https://docs.djangoproject.com/en/dev/ref/contrib/staticfiles/#staticfiles-finders
 STATICFILES_FINDERS = [
     "django.contrib.staticfiles.finders.FileSystemFinder",
@@ -159,12 +178,13 @@ MEDIA_URL = "/media/"
 # TEMPLATES
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#templates
+
 TEMPLATES = [
     {
         # https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-TEMPLATES-BACKEND
         "BACKEND": "django.template.backends.django.DjangoTemplates",
         # https://docs.djangoproject.com/en/dev/ref/settings/#dirs
-        "DIRS": [str(APPS_DIR / "templates")],
+        "DIRS": [str(APPS_DIR / "templates"), MACHINA_MAIN_TEMPLATE_DIR],
         # https://docs.djangoproject.com/en/dev/ref/settings/#app-dirs
         "APP_DIRS": True,
         "OPTIONS": {
@@ -178,7 +198,10 @@ TEMPLATES = [
                 "django.template.context_processors.static",
                 "django.template.context_processors.tz",
                 "django.contrib.messages.context_processors.messages",
+                # Custom context processors
                 "democrasite.utils.context_processors.settings_context",
+                # Machina (forum)
+                "machina.core.context_processors.metadata",
             ],
         },
     }
@@ -342,6 +365,32 @@ SOCIALACCOUNT_PROVIDERS = {
         # See also https://developers.google.com/identity/protocols/oauth2/web-server#offline
         "AUTH_PARAMS": {"access_type": "online"},
         "EMAIL_AUTHENTICATION": True,
+    },
+}
+
+# Machina (forum)
+# ------------------------------------------------------------------------------
+# https://django-machina.readthedocs.io/en/stable/settings.html#machina-forum-name
+MACHINA_FORUM_NAME = "Democrasite Forum"
+# https://django-machina.readthedocs.io/en/stable/settings.html#machina-default-authenticated-user-forum-permissions
+# Default permissions for authenticated users on new forums. All other
+# permissions, including for anonymous users, must be added directly to the
+# database (i.e. through the admin site)
+MACHINA_DEFAULT_AUTHENTICATED_USER_FORUM_PERMISSIONS = [
+    "can_see_forum",
+    "can_read_forum",
+    "can_start_new_topics",
+    "can_reply_to_topics",
+    "can_edit_own_posts",
+    "can_create_polls",
+    "can_vote_in_polls",
+    "can_download_file",
+]
+# https://django-haystack.readthedocs.io/en/master/settings.html#haystack-connections
+HAYSTACK_CONNECTIONS = {
+    # TODO: Switch to a real search engine, use across all apps
+    "default": {
+        "ENGINE": "haystack.backends.simple_backend.SimpleEngine",
     },
 }
 
