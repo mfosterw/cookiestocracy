@@ -1,8 +1,11 @@
 # pylint: disable=too-few-public-methods,no-self-use
+from importlib import reload
+
 import pytest
-from django.conf import settings
-from django.test import Client, override_settings
+from django.contrib.admin.sites import AlreadyRegistered
+from django.test import Client
 from django.urls import reverse
+from pytest_django.asserts import assertRedirects
 
 from democrasite.users.models import User
 
@@ -13,16 +16,24 @@ class TestUserAdmin:
         # Admin site is only enabled during development
         settings.DEBUG = True
 
-    # TODO: Test DJANGO_ADMIN_FORCE_ALLAUTH setting
-    @pytest.mark.xfail(reason="This test fails on GitHub Actions for some reason")
-    @override_settings(DJANGO_ADMIN_FORCE_ALLAUTH=True)
-    def test_allauth_login(self, admin_client: Client):
-        # Client starts logged in for some reason
-        admin_client.logout()
-        url = reverse("admin:login")
-        response = admin_client.get(url, follow=True)
+    @pytest.fixture
+    def force_allauth(self, settings):
+        settings.DJANGO_ADMIN_FORCE_ALLAUTH = True
+        # Reload the admin module to apply the setting change
+        import democrasite.users.admin as users_admin  # pylint: disable=import-outside-toplevel
 
-        assert response.request["PATH_INFO"] == reverse(settings.LOGIN_URL)
+        try:
+            reload(users_admin)
+        except AlreadyRegistered:
+            pass
+
+    @pytest.mark.usefixtures("force_allauth")
+    def test_allauth_login(self, client: Client, settings):
+        url = reverse("admin:login")
+        response = client.get(url)
+
+        expected_url = reverse(settings.LOGIN_URL) + "?next=" + url
+        assertRedirects(response, expected_url, status_code=302, target_status_code=200)
 
     def test_changelist(self, admin_client: Client):
         url = reverse("admin:users_user_changelist")
