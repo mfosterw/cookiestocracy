@@ -1,4 +1,5 @@
 """Render each branch on each template to ensure there are no rendering errors."""
+
 # pylint: disable=too-few-public-methods,no-self-use
 from django.test import Client
 from django.urls import reverse

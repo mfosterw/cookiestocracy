@@ -3,6 +3,7 @@
 The adapters are used to customize the behavior of allauth accounts. These are
 used to allow disabling local and social account registration via settings.
 """
+
 from allauth.account.adapter import DefaultAccountAdapter
 from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
 from allauth.socialaccount.models import SocialLogin

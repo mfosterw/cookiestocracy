@@ -1,4 +1,5 @@
 """Override forms from allauth."""
+
 from allauth.account.forms import ChangePasswordForm, ResetPasswordForm, ResetPasswordKeyForm, SetPasswordForm
 from django.contrib.auth import forms as auth_forms
 from django.contrib.auth import get_user_model

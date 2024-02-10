@@ -1,4 +1,5 @@
 """Global test fixtures for the project."""
+
 import pytest
 
 from democrasite.users.models import User

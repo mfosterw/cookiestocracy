@@ -5,6 +5,7 @@ a diff contain constitutional amendments, and automatically update the
 constitution for changes which edit files included in the constitution without
 resulting in constitutional amendments
 """
+
 import json
 from typing import cast
 
