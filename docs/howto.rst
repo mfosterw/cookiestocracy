@@ -4,7 +4,7 @@ How To - Project Documentation
 Get Started
 ----------------------------------------------------------------------
 
-Documentation can be written as rst files in the `democrasite/docs` directory.
+Documentation can be written as rst files in `democrasite/docs`.
 
 
 To build and serve docs, use the command::

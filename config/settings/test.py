@@ -22,16 +22,15 @@ INSTALLED_APPS += ["django.contrib.admin"]  # noqa F405
 # https://docs.djangoproject.com/en/dev/ref/settings/#password-hashers
 PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]
 
-# TEMPLATES
-# ------------------------------------------------------------------------------
-# https://docs.djangoproject.com/en/dev/ref/settings/#templates
-# Needed to let template test coverage be detected
-TEMPLATES[0]["OPTIONS"]["debug"] = True  # type: ignore[index] # noqa F405
-
 # EMAIL
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#email-backend
 EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
+
+# DEBUGGING FOR TEMPLATES
+# ------------------------------------------------------------------------------
+# https://docs.djangoproject.com/en/dev/ref/settings/#templates
+TEMPLATES[0]["OPTIONS"]["debug"] = True  # type: ignore[index] # noqa F405
 
 # Your stuff...
 # ------------------------------------------------------------------------------
