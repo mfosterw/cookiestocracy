@@ -1,6 +1,7 @@
 """Global test fixtures for the project."""
 
 import pytest
+from rest_framework.test import APIRequestFactory
 
 from democrasite.users.models import User
 from democrasite.users.tests.factories import UserFactory
@@ -21,3 +22,8 @@ def enable_db_access_for_all_tests(db):  # pylint: disable=unused-argument
 def user() -> User:
     """Return a User instance."""
     return UserFactory()
+
+
+@pytest.fixture
+def api_rf():
+    return APIRequestFactory()
