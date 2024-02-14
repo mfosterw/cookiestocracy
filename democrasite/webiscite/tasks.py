@@ -32,7 +32,7 @@ def process_pull(action: str, pr: dict[str, Any]):
         action: A string extracted from the request representing the action that occurred.
         pr: The parsed JSON object representing the pull request
     """
-    if action in ("opened", "reopened"):
+    if action in {"opened", "reopened"}:
         pr_opened(pr)
 
     elif action == "closed":

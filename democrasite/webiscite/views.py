@@ -124,20 +124,20 @@ def _vote_view(request: HttpRequest, pk: int) -> HttpResponse:
     if not request.user.is_authenticated:
         return HttpResponse("Login required", status=401)  # 401 means unauthorized
 
+    vote_val = request.POST.get("vote")
+    if not vote_val:
+        return HttpResponseBadRequest('"vote" data expected')
+    elif vote_val not in {"vote-yes", "vote-no"}:
+        return HttpResponseBadRequest('"vote" must be one of ("vote-yes", "vote-no")')
+
     bill = Bill.objects.get(pk=pk)
     if bill.state != Bill.States.OPEN:
         return HttpResponseForbidden("Bill may not be voted on")  # status 403
 
-    vote_val = request.POST.get("vote")
-    if not vote_val:
-        return HttpResponseBadRequest('"vote" data expected')
-
     if vote_val == "vote-yes":
-        bill.vote(True, request.user)
+        bill.vote(request.user, True)
     elif vote_val == "vote-no":
-        bill.vote(False, request.user)
-    else:
-        return HttpResponseBadRequest('"vote" must be one of ("vote-yes", "vote-no")')
+        bill.vote(request.user, False)
 
     return JsonResponse(
         {

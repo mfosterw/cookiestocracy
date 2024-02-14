@@ -40,9 +40,6 @@ def test_vote(bill: Bill):
 # Disable if Github token is None or empty
 @pytest.mark.skipif(not settings.WEBISCITE_GITHUB_TOKEN, reason="requires Github token")
 def test_github_hook():
-    hook_urls = []
     repo = Github(auth=Auth.Token(settings.WEBISCITE_GITHUB_TOKEN)).get_repo(settings.WEBISCITE_REPO)
-    for hook in repo.get_hooks():
-        hook_urls.append(hook.config["url"])
-
-    assert any((Site.objects.get(id=settings.SITE_ID).domain + "/hooks/github/") in url for url in hook_urls)
+    hook_urls = [hook.config["url"] for hook in repo.get_hooks()]
+    assert any(f"{Site.objects.get(id=settings.SITE_ID).domain}/hooks/github/" in url for url in hook_urls)

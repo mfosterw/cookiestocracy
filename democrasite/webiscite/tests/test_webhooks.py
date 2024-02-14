@@ -17,18 +17,12 @@ class TestGithubHookView:
     def test_no_signature(self, rf: RequestFactory):
         request = rf.post("/fake-url/")
 
-        response = github_hook(request)
-
-        assert response.status_code == 403
-        assert response.content == b"Invalid signature"
+        self.check_response(request, 403, b"Invalid signature")
 
     def test_invalid_signature(self, rf: RequestFactory):
         request = rf.post("/fake-url/", HTTP_X_HUB_SIGNATURE="test=test")
 
-        response = github_hook(request)
-
-        assert response.status_code == 403
-        assert response.content == b"Invalid signature"
+        self.check_response(request, 403, b"Invalid signature")
 
     def test_ping(self, rf: RequestFactory):
         request = rf.post(
@@ -47,10 +41,13 @@ class TestGithubHookView:
             ).hexdigest()
         )
 
+        self.check_response(request, 200, b"ping received")
+
+    def check_response(self, request, status, content):
         response = github_hook(request)
 
-        assert response.status_code == 200
-        assert response.content == b"ping received"
+        assert response.status_code == status
+        assert response.content == content
 
     @patch.object(process_pull, "delay")
     def test_pull_request(self, mock_delay: MagicMock, rf: RequestFactory):

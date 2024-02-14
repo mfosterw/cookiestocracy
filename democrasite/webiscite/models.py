@@ -79,12 +79,12 @@ class Bill(models.Model):
         """
         return reverse("webiscite:bill-detail", kwargs={"pk": self.id})
 
-    def vote(self, support: bool, user: Any):
+    def vote(self, user: Any, support: bool):
         """Sets the given user's vote based on the support parameter
 
         If the user already voted the way the method would set, their vote is
-        removed from the bill (i.e. if user is in bill.yes_votes and support is
-        True, user is removed from bill.yes_votes)
+        removed from the bill (i.e. if ``user`` is in ``bill.yes_votes`` and support is
+        ``True``, ``user`` is removed from ``bill.yes_votes``)
         """
         assert self.state == self.States.OPEN, "Only open bills may be voted on"
 
