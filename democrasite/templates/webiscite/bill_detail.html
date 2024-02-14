@@ -13,8 +13,8 @@
         {% if bill.constitutional %}
           <p class="text-info">{% trans 'Amendment to the Constitution' %}</p>
         {% endif %}
-        {% if bill.state != bill.OPEN %}
-          <p class="{% if bill.state == bill.APPROVED %}
+        {% if bill.state != bill.States.OPEN %}
+          <p class="{% if bill.state == bill.States.APPROVED %}
                       text-success
                     {% else %}
                       text-danger
@@ -22,7 +22,7 @@
         {% endif %}
         <p>
           {{ bill.description }}
-          {% if bill.author == user and bill.state == bill.OPEN %}
+          {% if bill.author == user and bill.state == bill.States.OPEN %}
             <a href="{% url 'webiscite:bill-update' bill.id %}">
               <svg xmlns="http://www.w3.org/2000/svg"
                    width="16"
@@ -47,13 +47,14 @@
       </div>
     </div>
     <div class="row">
-      <div class="col-3{% if bill.state != bill.OPEN %} inactive{% endif %}">
+      <div class="col-3
+                  {% if bill.state != bill.States.OPEN %}inactive{% endif %}">
         <div class="progress">
           <div class="progress-bar bg-success" role="progressbar"></div>
           <div class="progress-bar bg-danger" role="progressbar"></div>
         </div>
         <a href="javascript:;" class="float-left text-success mt-2 vote{% if user in bill.yes_votes.all %} font-weight-bold{% endif %}"
-          {% if bill.state == bill.OPEN %}
+          {% if bill.state == bill.States.OPEN %}
             {% if user.is_authenticated %}
               {# if logged in, add vote-enabling logic #}
               id="vote-yes-{{ bill.id }}"
@@ -71,7 +72,7 @@
         <a href="javascript:;"
            class="float-right text-danger mt-2 vote
                   {% if user in bill.no_votes.all %}font-weight-bold{% endif %}"
-           {% if bill.state == bill.OPEN %}
+           {% if bill.state == bill.States.OPEN %}
              {% if user.is_authenticated %}
                id="vote-no-{{ bill.id }}" action="{% url 'webiscite:bill-vote' bill.id %}" value="vote-no"
              {% else %}
@@ -86,7 +87,7 @@
 {% endblock content %}
 {% block inline_javascript %}
   <script type="text/javascript" src="{% static 'js/bill.js' %}"></script>
-  {% if user.is_authenticated and bill.state == bill.OPEN %}
+  {% if user.is_authenticated and bill.state == bill.States.OPEN %}
     <script type="text/javascript" src="{% static 'js/vote.js' %}"></script>
   {% endif %}
 {% endblock inline_javascript %}

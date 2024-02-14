@@ -18,7 +18,7 @@ class BillFactory(DjangoModelFactory):
     deletions = Faker("random_int")
     sha = Faker("pystr", min_chars=40, max_chars=40)
     # Fields with defaults
-    state = Bill.OPEN
+    state = Bill.States.OPEN
     constitutional = False
     # Currently yes_votes and no_votes are initialized as empty. If values are needed
     # for them, a post-generation hook can be written to generate and insert the users

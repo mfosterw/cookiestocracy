@@ -2,8 +2,14 @@
 
 from pathlib import Path
 
+import django_stubs_ext
 import environ
 from machina import MACHINA_MAIN_STATIC_DIR, MACHINA_MAIN_TEMPLATE_DIR
+
+# Monkeypatching Django, so stubs will work for all generics,
+# see: https://github.com/typeddjango/django-stubs
+django_stubs_ext.monkeypatch()
+
 
 ROOT_DIR = Path(__file__).resolve(strict=True).parent.parent.parent
 # democrasite/

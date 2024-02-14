@@ -20,7 +20,7 @@ class TestProcessPull:
             process_pull("reopened", pr)
 
     def test_pr_opened_no_user(self):
-        bill = BillFactory(state=Bill.CLOSED)
+        bill = BillFactory(state=Bill.States.CLOSED)
         pr = {"number": bill.pr_num, "user": {"id": -1}}
 
         process_pull("reopened", pr)
@@ -30,7 +30,7 @@ class TestProcessPull:
     @patch.object(submit_bill, "apply_async")
     @patch("requests.get")
     def test_pr_opened(self, mock_get, mock_submit):
-        bill = BillFactory(state=Bill.CLOSED)
+        bill = BillFactory(state=Bill.States.CLOSED)
         # Create user account using SocialAccountFactory to mock linked github
         github_account = SocialAccountFactory(provider="github")
         mock_get().text = ""  # diff text
@@ -52,7 +52,7 @@ class TestProcessPull:
 
         process_pull("reopened", pr)
 
-        new_bill = Bill.objects.get(name=bill.name, state=Bill.OPEN)
+        new_bill = Bill.objects.get(name=bill.name, state=Bill.States.OPEN)
         assert new_bill.pr_num == bill.pr_num
         assert new_bill.author == github_account.user
         assert new_bill.constitutional is False
@@ -60,13 +60,13 @@ class TestProcessPull:
         assert mock_submit.call_args[0][0][0] == new_bill.id
 
     def test_pr_closed_bill_not_open(self):
-        bill = BillFactory(state=Bill.FAILED)
+        bill = BillFactory(state=Bill.States.FAILED)
         pr = {"number": bill.pr_num}
 
         process_pull("closed", pr)
 
         bill.refresh_from_db()
-        assert bill.state == Bill.FAILED
+        assert bill.state == Bill.States.FAILED
 
     def test_pr_closed(self, bill: Bill):
         pr = {"number": bill.pr_num}
@@ -74,7 +74,7 @@ class TestProcessPull:
         process_pull("closed", pr)
 
         bill.refresh_from_db()
-        assert bill.state == Bill.CLOSED
+        assert bill.state == Bill.States.CLOSED
 
     def test_other_action(self):
         pr = {"number": -1}
@@ -86,7 +86,7 @@ class TestSubmitBill:
     @patch("github.Github.get_repo")
     @patch("github.Auth.Token", spec=True)
     def test_bill_not_open(self, mock_token, mock_repo):
-        bill = BillFactory(state=Bill.CLOSED)
+        bill = BillFactory(state=Bill.States.CLOSED)
 
         submit_bill(bill.id)
 
@@ -100,7 +100,7 @@ class TestSubmitBill:
         submit_bill(bill.id)
 
         bill.refresh_from_db()
-        assert bill.state == Bill.FAILED
+        assert bill.state == Bill.States.FAILED
         mock_repo().get_pull().edit.assert_called_once_with(state="closed")
 
     @patch("github.Github.get_repo")
@@ -113,13 +113,13 @@ class TestSubmitBill:
         submit_bill(bill.id)
 
         bill.refresh_from_db()
-        assert bill.state == Bill.REJECTED
+        assert bill.state == Bill.States.REJECTED
         mock_repo().get_pull().edit.assert_called_once_with(state="closed")
 
     @patch("github.Github.get_repo")
     @patch("github.Auth.Token", spec=True)
     def test_constitutional_bill_rejected(self, mock_token, mock_repo):  # pylint: disable=unused-argument
-        bill = BillFactory(state=Bill.OPEN, constitutional=True)
+        bill = BillFactory(state=Bill.States.OPEN, constitutional=True)
         voters = UserFactory.create_batch(settings.WEBISCITE_MINIMUM_QUORUM)
         for voter in voters:
             bill.vote(False, voter)
@@ -127,7 +127,7 @@ class TestSubmitBill:
         submit_bill(bill.id)
 
         bill.refresh_from_db()
-        assert bill.state == Bill.REJECTED
+        assert bill.state == Bill.States.REJECTED
         mock_repo().get_pull().edit.assert_called_once_with(state="closed")
 
     @patch.object(constitution, "update_constitution")
@@ -144,6 +144,6 @@ class TestSubmitBill:
         submit_bill(bill.id)
 
         bill.refresh_from_db()
-        assert bill.state == Bill.APPROVED
+        assert bill.state == Bill.States.APPROVED
         mock_repo().get_pull().merge.assert_called_once_with(merge_method="squash", sha=bill.sha)
         mock_repo().get_contents.assert_called_once_with("democrasite/webiscite/constitution.json")

@@ -17,8 +17,8 @@ from .factories import BillFactory
 
 class TestBillListView:
     def test_queryset(self):
-        open_bill = BillFactory(state=Bill.OPEN)
-        closed_bill = BillFactory(state=Bill.CLOSED)
+        open_bill = BillFactory(state=Bill.States.OPEN)
+        closed_bill = BillFactory(state=Bill.States.CLOSED)
 
         assert open_bill in BillListView.queryset
         assert closed_bill not in BillListView.queryset
@@ -43,7 +43,7 @@ class TestBillProposalsView:
 class TestBillVotesView:
     def test_get_queryset(self, rf: RequestFactory):
         views = (BillVotesView(), BillVotesView())
-        bills = (BillFactory(state=Bill.OPEN), BillFactory(state=Bill.OPEN))
+        bills = (BillFactory(), BillFactory())
         users = (UserFactory(), UserFactory())
         requests = (rf.get("/fake-url/"), rf.get("/fake-url/"))
 
@@ -130,7 +130,7 @@ class TestVoteView:
         request = rf.post("/fake-url/")
         request.user = user
 
-        bill = BillFactory(state=Bill.CLOSED)
+        bill = BillFactory(state=Bill.States.CLOSED)
         response = vote_view(request, bill.id)
 
         assert response.status_code == 403

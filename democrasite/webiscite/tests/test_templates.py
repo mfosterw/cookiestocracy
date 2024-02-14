@@ -3,6 +3,7 @@
 # pylint: disable=too-few-public-methods,no-self-use
 from django.test import Client
 from django.urls import reverse
+from django.utils.html import escape
 
 from ..models import Bill
 from .factories import BillFactory
@@ -61,12 +62,13 @@ class TestBillUpdateTemplate:
 class TestBillListTemplate:
     def test_empty(self, client: Client):
         response = client.get(reverse("webiscite:index"))
+        content = response.content.decode()
 
         assert response.status_code == 200
         assert response.templates[0].name == "webiscite/bill_list.html"
-        assert b"No bills" in response.content
-        assert b"you haven't proposed any bills" not in response.content
-        assert b"you haven't voted on any bills" not in response.content
+        assert "No bills" in content
+        assert escape("you haven't proposed any bills") not in content
+        assert escape("you haven't voted on any bills") not in content
 
     def test_logged_out(self, bill: Bill, client: Client):
         response = client.get(reverse("webiscite:index"))
@@ -99,13 +101,14 @@ class TestBillListTemplate:
         client.force_login(user)
 
         response = client.get(reverse("webiscite:my-bills"))
+        content = response.content.decode()
 
-        assert b"No bills" not in response.content
-        assert b"you haven't proposed any bills" in response.content
-        assert b"you haven't voted on any bills" not in response.content
+        assert "No bills" not in content
+        assert escape("you haven't proposed any bills") in content
+        assert escape("you haven't voted on any bills") not in content
 
     def test_my_bills_approved(self, client: Client):
-        bill = BillFactory(state=Bill.APPROVED)
+        bill = BillFactory(state=Bill.States.APPROVED)
         client.force_login(bill.author)
 
         response = client.get(reverse("webiscite:my-bills"))
@@ -115,7 +118,7 @@ class TestBillListTemplate:
         assert b"vote.js" in response.content
 
     def test_my_bills_failed(self, client: Client):
-        bill = BillFactory(state=Bill.FAILED)
+        bill = BillFactory(state=Bill.States.FAILED)
         client.force_login(bill.author)
 
         response = client.get(reverse("webiscite:my-bills"))
@@ -128,10 +131,11 @@ class TestBillListTemplate:
         client.force_login(user)
 
         response = client.get(reverse("webiscite:my-bill-votes"))
+        content = response.content.decode()
 
-        assert b"No bills" not in response.content
-        assert b"you haven't proposed any bills" not in response.content
-        assert b"you haven't voted on any bills" in response.content
+        assert "No bills" not in content
+        assert escape("you haven't proposed any bills") not in content
+        assert escape("you haven't voted on any bills") in content
 
     def test_my_bill_votes_populated(self, bill: Bill, client: Client, user):
         bill.vote(True, user)

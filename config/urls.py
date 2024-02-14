@@ -23,9 +23,7 @@ urlpatterns = [
     path("forum/", include("machina.urls")),
     # webiscite
     path("", include("democrasite.webiscite.urls", namespace="webiscite")),
-] + static(
-    settings.MEDIA_URL, document_root=settings.MEDIA_ROOT
-)  # type: ignore
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 
 # API URLS
@@ -73,4 +71,4 @@ if settings.DEBUG:
     if "debug_toolbar" in settings.INSTALLED_APPS:
         import debug_toolbar
 
-        urlpatterns = [path("__debug__/", include(debug_toolbar.urls))] + urlpatterns  # type: ignore
+        urlpatterns = [path("__debug__/", include(debug_toolbar.urls))] + urlpatterns

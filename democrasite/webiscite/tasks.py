@@ -6,7 +6,7 @@ from :func:`democrasite.webiscite.webhooks`.
 """
 
 from datetime import timedelta
-from typing import Any
+from typing import Any, cast
 
 import requests
 from celery import shared_task
@@ -15,6 +15,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from github import Auth, Github
+from github.PullRequest import PullRequest
 
 from . import constitution
 from .models import Bill
@@ -49,7 +50,7 @@ def pr_opened(pr: dict[str, Any]):
     """
     # Ensure open bill for this PR does not exist
     try:
-        bill = Bill.objects.filter(pr_num=pr["number"]).get(state=Bill.OPEN)
+        bill = Bill.objects.filter(pr_num=pr["number"]).get(state=Bill.States.OPEN)
     except Bill.DoesNotExist:
         pass
     else:
@@ -74,7 +75,7 @@ def pr_opened(pr: dict[str, Any]):
         additions=pr["additions"],
         deletions=pr["deletions"],
         sha=pr["head"]["sha"],
-        state=Bill.OPEN,
+        state=Bill.States.OPEN,
         constitutional=bool(constitutional),
     )
     bill.save()
@@ -92,11 +93,11 @@ def pr_closed(pr: dict[str, Any]):
         pr: The parsed JSON object representing the pull request
     """
     try:
-        bill = Bill.objects.filter(pr_num=pr["number"]).get(state=Bill.OPEN)
+        bill = Bill.objects.filter(pr_num=pr["number"]).get(state=Bill.States.OPEN)
     except Bill.DoesNotExist:
         logger.info("PR %s: No modification (no open bill)", pr["number"])
         return
-    bill.state = Bill.CLOSED
+    bill.state = Bill.States.CLOSED
     bill.save()
     logger.info("PR %s: Bill %s set to closed", pr["number"], bill.id)
 
@@ -118,27 +119,23 @@ def submit_bill(bill_id: int):
     repo = Github(auth=Auth.Token(settings.WEBISCITE_GITHUB_TOKEN)).get_repo(settings.WEBISCITE_REPO)
     pull = repo.get_pull(bill.pr_num)
 
+    log: tuple[Any, ...]
     # Bill was closed before voting period ended
-    if bill.state != Bill.OPEN:
-        pull.edit(state="closed")  # Close failed pull request
-        logger.info("PR %s: bill %s was not open", bill.pr_num, bill.id)
+    if bill.state != Bill.States.OPEN:
+        log = ("PR %s: bill %s was not open", bill.pr_num, bill.id)
+        # Mypy doesn't make the connection that bill.state is a States enum apparently
+        bill.state = cast(Bill.States, bill.state)
+        _reject_bill(bill, bill.state, pull, *log)
+        return
+
+    total_votes = bill.votes.count()
+    # Bill failed to meet quorum
+    if total_votes < settings.WEBISCITE_MINIMUM_QUORUM:
+        log = ("PR %s: bill %s rejected with insufficient votes", bill.pr_num, bill.id)
+        _reject_bill(bill, Bill.States.FAILED, pull, *log)
         return
 
     ayes = bill.yes_votes.count()
-    nays = bill.no_votes.count()
-    total_votes = ayes + nays
-    # Bill failed to meet quorum
-    if total_votes < settings.WEBISCITE_MINIMUM_QUORUM:
-        bill.state = Bill.FAILED
-        bill.save()
-        pull.edit(state="closed")  # Close failed pull request
-        logger.info(
-            "PR %s: bill %s rejected with insufficient votes",
-            bill.pr_num,
-            bill.id,
-        )
-        return
-
     approval = ayes / (total_votes)
     if bill.constitutional:
         approved = approval > settings.WEBISCITE_SUPERMAJORITY
@@ -147,14 +144,12 @@ def submit_bill(bill_id: int):
 
     # Bill failed to meet approval threshold
     if not approved:
-        bill.state = Bill.REJECTED
-        bill.save()
-        pull.edit(state="closed")  # Close failed pull request
-        logger.info("PR %s: Pull request failed with %s%% of votes", bill.pr_num, approval)
+        log = ("PR %s: bill %s rejected with %s%% of votes", bill.pr_num, bill.id, approval * 100)
+        _reject_bill(bill, Bill.States.REJECTED, pull, *log)
         return
 
     # Bill passed
-    bill.state = Bill.APPROVED
+    bill.state = Bill.States.APPROVED
     bill.save()
     logger.info(
         "PR %s: Pull request passed with %s%% of votes",
@@ -177,3 +172,19 @@ def submit_bill(bill_id: int):
                 sha=con_sha,
             )
             logger.info("PR %s: constitution updated", bill.pr_num)
+
+
+def _reject_bill(bill: Bill, state: Bill.States, pull: PullRequest, msg: str, *args):
+    """Rejects a bill and closes the associated pull request
+
+    Args:
+        bill: The bill to reject
+        state: The state to set the bill to
+        pull: The pull request to close
+        msg: The message to log
+        *args: Arguments for the log message
+    """
+    bill.state = state
+    bill.save()
+    pull.edit(state="closed")  # Close failed pull request
+    logger.info(msg, *args)
