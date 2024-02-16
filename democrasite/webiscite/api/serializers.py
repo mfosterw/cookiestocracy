@@ -1,7 +1,23 @@
 from django.contrib.auth.models import AbstractBaseUser
-from rest_framework.serializers import HyperlinkedModelSerializer, HyperlinkedRelatedField, PrimaryKeyRelatedField
+from rest_framework.serializers import HyperlinkedModelSerializer, HyperlinkedRelatedField
 
 from democrasite.webiscite.models import Bill, PullRequest
+
+
+class PullRequestSerializer(HyperlinkedModelSerializer):
+    bill_set: "HyperlinkedRelatedField[Bill]" = HyperlinkedRelatedField(
+        view_name="bill-detail", many=True, read_only=True
+    )
+
+    class Meta:
+        model = PullRequest
+        fields = ["title", "author_name", "additions", "deletions", "sha", "prop_date", "bill_set", "url"]
+
+    def create(self, validated_data):
+        raise NotImplementedError("Pull requests are read-only")
+
+    def update(self, instance, validated_data):
+        raise NotImplementedError("Pull requests are read-only")
 
 
 class BillSerializer(HyperlinkedModelSerializer):
@@ -11,7 +27,6 @@ class BillSerializer(HyperlinkedModelSerializer):
     no_votes: "HyperlinkedRelatedField[AbstractBaseUser]" = HyperlinkedRelatedField(
         view_name="user-detail", many=True, lookup_field="username", read_only=True
     )
-    pull_request: "PrimaryKeyRelatedField[PullRequest]" = PrimaryKeyRelatedField(read_only=True)
 
     class Meta:
         model = Bill

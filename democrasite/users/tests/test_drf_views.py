@@ -19,7 +19,6 @@ class TestUserViewSet:
         assert user in view.get_queryset()
 
     def test_me(self, api_rf: APIRequestFactory, user: User, view: UserViewSet):
-        view = UserViewSet()
         request = api_rf.get("/fake-url/")
         request.user = user
 
