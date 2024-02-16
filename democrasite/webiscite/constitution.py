@@ -10,7 +10,7 @@ import json
 from typing import cast
 
 from django.conf import settings
-from unidiff import PatchedFile, PatchSet
+from unidiff import Hunk, PatchedFile, PatchSet
 
 # Each filename corresponds to a list of pairs representing protected line
 # ranges within that file, or None to protect the entire file
@@ -21,6 +21,7 @@ def _check_hunks(hunks: PatchedFile, locks: list[list[int]]) -> bool:
     Check if any portions of an edit overlap with constitutional protections
     """
     for hunk in hunks:
+        hunk = cast(Hunk, hunk)
         # diff shows 3 lines above and below for context
         # If the diff starts beyond line 1, remove the top 3 lines
         if hunk.source_start == 1:

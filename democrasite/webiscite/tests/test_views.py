@@ -9,7 +9,6 @@ from django.test import Client, RequestFactory
 from django.urls import reverse
 
 from democrasite.users.models import User
-from democrasite.users.tests.factories import UserFactory
 
 from ..models import Bill
 from ..views import BillListView, BillProposalsView, BillVotesView, bill_detail_view, bill_update_view, vote_view
@@ -42,33 +41,27 @@ class TestBillProposalsView:
 
 
 class TestBillVotesView:
-    def test_get_queryset(self, rf: RequestFactory):
-        views = (BillVotesView(), BillVotesView())
-        bills = (BillFactory(), BillFactory())
-        users = (UserFactory(), UserFactory())
-        requests = (rf.get("/fake-url/"), rf.get("/fake-url/"))
+    def test_get_queryset(self, rf: RequestFactory, bill: Bill):
+        # Note that this function depends heavily on the vote method, which is tested in test_models.py
+        user = bill.author  # could be any user, this is just for convenience
+        request = rf.get("/fake-url/")
+        request.user = user
+
+        view = BillVotesView()
+        view.request = request
+        assert bill not in view.get_queryset()
 
         # Make sure positive votes are included
-        bills[0].vote(True, users[0])
-
-        requests[0].user = users[0]
-        views[0].request = requests[0]
-
-        assert bills[0] in views[0].get_queryset()
-        assert bills[1] not in views[0].get_queryset()
+        bill.vote(user, True)
+        assert bill in view.get_queryset()
 
         # Make sure negative votes are included
-        bills[0].vote(False, users[1])
-
-        requests[1].user = users[1]
-        views[1].request = requests[1]
-
-        assert bills[0] in views[1].get_queryset()
-        assert bills[1] not in views[1].get_queryset()
+        bill.vote(user, False)
+        assert bill in view.get_queryset()
 
         # Make sure when a vote is undone it gets removed from queryset
-        bills[0].vote(True, users[0])
-        assert bills[0] not in views[0].get_queryset()
+        bill.vote(user, False)
+        assert bill not in view.get_queryset()
 
 
 class TestBillDetailView:

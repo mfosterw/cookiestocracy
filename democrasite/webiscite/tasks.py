@@ -15,12 +15,13 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from github import Auth, Github
-from github.PullRequest import PullRequest
+from github.PullRequest import PullRequest as PullRequestType
 
 from . import constitution
-from .models import Bill
+from .models import Bill, PullRequest
 
 User = get_user_model()
+# TODO: Improve logging
 logger = get_task_logger(__name__)
 
 
@@ -48,37 +49,39 @@ def pr_opened(pr: dict[str, Any]):
     Args:
         pr: The parsed JSON object representing the pull request
     """
-    # Ensure open bill for this PR does not exist
-    try:
-        bill = Bill.objects.filter(pr_num=pr["number"]).get(state=Bill.States.OPEN)
-    except Bill.DoesNotExist:
-        pass
+    pull_request, created = PullRequest.objects.update_or_create(
+        pr_num=pr["number"],
+        defaults={
+            "title": pr["title"],
+            "author_name": pr["user"]["login"],
+            "state": pr["state"],
+            "additions": pr["additions"],
+            "deletions": pr["deletions"],
+            "sha": pr["head"]["sha"],
+        },
+    )
+    if created:
+        logger.info("PR %s: Pull request created", pr["number"])
     else:
-        raise ValueError("Open bill with this PR already exists")
+        logger.info("PR %s: Pull request updated", pr["number"])
+
+    diff = requests.get(pr["diff_url"], timeout=60).text
+    constitutional = bool(constitution.is_constitutional(diff))
 
     try:
-        author = User.objects.filter(socialaccount__provider="github").get(socialaccount__uid=pr["user"]["id"])
+        bill = Bill.objects.create(
+            name=pr["title"],
+            description=pr["body"] or "",
+            author=pr["user"]["id"],
+            pull_request=pull_request,
+            state=Bill.States.OPEN,
+            constitutional=constitutional,
+        )
     except User.DoesNotExist:
         # If the creator of the pull request does not have a linked account,
         # a Bill cannot be created and the pr is ignored.
-        logger.info("PR %s: No bill created (user does not exist)", pr["number"])
+        logger.warning("PR %s: No bill created (user does not exist)", pr["number"])
         return
-
-    diff = requests.get(pr["diff_url"], timeout=60).text
-    constitutional = constitution.is_constitutional(diff)
-
-    bill = Bill(
-        name=pr["title"],
-        description=pr["body"] or "",
-        pr_num=pr["number"],
-        author=author,
-        additions=pr["additions"],
-        deletions=pr["deletions"],
-        sha=pr["head"]["sha"],
-        state=Bill.States.OPEN,
-        constitutional=bool(constitutional),
-    )
-    bill.save()
 
     voting_ends = timezone.now() + timedelta(days=settings.WEBISCITE_VOTING_PERIOD)
     # Pass id rather than bill object to avoid potential issues with database refresh
@@ -93,7 +96,7 @@ def pr_closed(pr: dict[str, Any]):
         pr: The parsed JSON object representing the pull request
     """
     try:
-        bill = Bill.objects.filter(pr_num=pr["number"]).get(state=Bill.States.OPEN)
+        bill = Bill.objects.filter(pull_request__pr_num=pr["number"]).get(state=Bill.States.OPEN)
     except Bill.DoesNotExist:
         logger.info("PR %s: No modification (no open bill)", pr["number"])
         return
@@ -117,12 +120,12 @@ def submit_bill(bill_id: int):
     """
     bill = Bill.objects.get(pk=bill_id)
     repo = Github(auth=Auth.Token(settings.WEBISCITE_GITHUB_TOKEN)).get_repo(settings.WEBISCITE_REPO)
-    pull = repo.get_pull(bill.pr_num)
+    pull = repo.get_pull(bill.pull_request.pr_num)
 
     log: tuple[Any, ...]
     # Bill was closed before voting period ended
     if bill.state != Bill.States.OPEN:
-        log = ("PR %s: bill %s was not open", bill.pr_num, bill.id)
+        log = ("PR %s: bill %s was not open", bill.pull_request.pr_num, bill.id)
         # Mypy doesn't make the connection that bill.state is a States enum apparently
         bill.state = cast(Bill.States, bill.state)
         _reject_bill(bill, bill.state, pull, *log)
@@ -131,7 +134,7 @@ def submit_bill(bill_id: int):
     total_votes = bill.votes.count()
     # Bill failed to meet quorum
     if total_votes < settings.WEBISCITE_MINIMUM_QUORUM:
-        log = ("PR %s: bill %s rejected with insufficient votes", bill.pr_num, bill.id)
+        log = ("PR %s: bill %s rejected with insufficient votes", bill.pull_request.pr_num, bill.id)
         _reject_bill(bill, Bill.States.FAILED, pull, *log)
         return
 
@@ -144,7 +147,7 @@ def submit_bill(bill_id: int):
 
     # Bill failed to meet approval threshold
     if not approved:
-        log = ("PR %s: bill %s rejected with %s%% of votes", bill.pr_num, bill.id, approval * 100)
+        log = ("PR %s: bill %s rejected with %s%% of votes", bill.pull_request.pr_num, bill.id, approval * 100)
         _reject_bill(bill, Bill.States.REJECTED, pull, *log)
         return
 
@@ -153,11 +156,11 @@ def submit_bill(bill_id: int):
     bill.save()
     logger.info(
         "PR %s: Pull request passed with %s%% of votes",
-        bill.pr_num,
+        bill.pull_request.pr_num,
         approval * 100,
     )
-    merge = pull.merge(merge_method="squash", sha=bill.sha)
-    logger.info("PR %s: merged (%s)", bill.pr_num, merge.merged)
+    merge = pull.merge(merge_method="squash", sha=bill.pull_request.sha)
+    logger.info("PR %s: merged (%s)", bill.pull_request.pr_num, merge.merged)
 
     # Automatically update constitution line numbers if necessary
     if not bill.constitutional:
@@ -167,14 +170,14 @@ def submit_bill(bill_id: int):
             con_sha = repo.get_contents("democrasite/webiscite/constitution.json").sha  # type: ignore [union-attr]
             repo.update_file(
                 "democrasite/webiscite/constitution.json",
-                message=f"Update Constitution for PR {bill.pr_num}",
+                message=f"Update Constitution for PR {bill.pull_request.pr_num}",
                 content=con_update,
                 sha=con_sha,
             )
-            logger.info("PR %s: constitution updated", bill.pr_num)
+            logger.info("PR %s: constitution updated", bill.pull_request.pr_num)
 
 
-def _reject_bill(bill: Bill, state: Bill.States, pull: PullRequest, msg: str, *args):
+def _reject_bill(bill: Bill, state: Bill.States, pull: PullRequestType, msg: str, *args):
     """Rejects a bill and closes the associated pull request
 
     Args:

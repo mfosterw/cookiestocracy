@@ -11,9 +11,16 @@ from .factories import BillFactory
 
 
 class TestBillDetailTemplate:
+    def _test_get_response(self, client: Client, bill_id: int):
+        response = client.get(reverse("webiscite:bill-detail", args=(bill_id,)))
+        result = response.content.decode()
+
+        assert response.status_code == 200
+        assert response.templates[0].name == "webiscite/bill_detail.html"
+        return result
+
     def test_logged_out(self, bill: Bill, client: Client):
-        response = client.get(reverse("webiscite:bill-detail", args=(bill.id,)))
-        content = response.content.decode()
+        content = self._test_get_response(client, bill.id)
 
         assert "Log in to vote" in content
         assert "vote.js" not in content
@@ -21,8 +28,7 @@ class TestBillDetailTemplate:
     def test_logged_in(self, bill: Bill, client: Client):
         client.force_login(bill.author)
 
-        response = client.get(reverse("webiscite:bill-detail", args=(bill.id,)))
-        content = response.content.decode()
+        content = self._test_get_response(client, bill.id)
 
         assert "vote.js" in content
         assert "svg" in content
@@ -32,11 +38,8 @@ class TestBillDetailTemplate:
     def test_bill_closed(self, client: Client, user, state: Bill.States, constitutional: bool):
         bill = BillFactory(state=state, author=user, constitutional=constitutional)
 
-        response = client.get(reverse("webiscite:bill-detail", args=(bill.id,)))
-        content = response.content.decode()
+        content = self._test_get_response(client, bill.id)
 
-        assert response.status_code == 200
-        assert response.templates[0].name == "webiscite/bill_detail.html"
         assert "Log in to vote" not in content
         assert "vote.js" not in content
         assert "svg" not in content
@@ -81,23 +84,23 @@ class TestBillListTemplate:
         assert "vote.js" not in content
         assert ("Constitution" in content) == constitutional
 
-    def test_logged_in(self, bill: Bill, client: Client, user):
-        self._test_logged_in(client, user, "index", bill)
+    @pytest.mark.parametrize(
+        "view,state",
+        [
+            ("index", Bill.States.OPEN),
+            ("my-bills", Bill.States.APPROVED),
+            ("my-bills", Bill.States.REJECTED),
+            ("my-bill-votes", Bill.States.OPEN),
+            ("my-bill-votes", Bill.States.FAILED),
+        ],
+    )
+    def test_my_bills(self, state: Bill.States, view: str, bill: Bill, client: Client):
+        if view == "my-bill-votes":
+            bill.vote(bill.author, True)
+        bill.state = state
+        bill.save()
 
-    @pytest.mark.parametrize("state", [Bill.States.APPROVED, Bill.States.FAILED])
-    def test_my_bills(self, client: Client, state: Bill.States):
-        bill = BillFactory(state=state)
-        content = self._test_logged_in(client, bill.author, "my-bills", bill)
-
-        assert bill.get_state_display() in content
-
-    def test_my_bill_votes_populated(self, bill: Bill, client: Client, user):
-        bill.vote(True, user)
-        self._test_logged_in(client, user, "my-bill-votes", bill)
-
-    def _test_logged_in(self, client, user, view, bill):
-        """Test that the user is logged in and can vote on a bill."""
-        client.force_login(user)
+        client.force_login(bill.author)
         response = client.get(reverse(f"webiscite:{view}"))
         content = response.content.decode()
 
@@ -105,4 +108,4 @@ class TestBillListTemplate:
         assert bill.name in content
         assert "Log in to vote" not in content
         assert "vote.js" in content
-        return content
+        assert (bill.get_state_display() in content) == (bill.state != Bill.States.OPEN)
