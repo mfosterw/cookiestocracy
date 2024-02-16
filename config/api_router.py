@@ -13,6 +13,6 @@ else:
 router.register("users", UserViewSet)
 router.register("bills", BillViewSet)
 
-
-app_name = "api"
+# Unfortunately if we want to automatically create links between models we can't use a namespace
+# app_name = "api"
 urlpatterns = router.urls

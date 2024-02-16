@@ -1,24 +1,22 @@
-from rest_framework import serializers
+from django.contrib.auth.models import AbstractBaseUser
+from rest_framework.serializers import HyperlinkedModelSerializer, HyperlinkedRelatedField, PrimaryKeyRelatedField
 
-from democrasite.webiscite.models import Bill
+from democrasite.webiscite.models import Bill, PullRequest
 
 
-class BillSerializer(serializers.HyperlinkedModelSerializer):
-    author: serializers.RelatedField = serializers.HyperlinkedRelatedField(
-        view_name="api:user-detail", lookup_field="username", read_only=True
+class BillSerializer(HyperlinkedModelSerializer):
+    yes_votes: "HyperlinkedRelatedField[AbstractBaseUser]" = HyperlinkedRelatedField(
+        view_name="user-detail", many=True, lookup_field="username", read_only=True
     )
-    yes_votes: serializers.RelatedField = serializers.HyperlinkedRelatedField(
-        view_name="api:user-detail", many=True, lookup_field="username", read_only=True
+    no_votes: "HyperlinkedRelatedField[AbstractBaseUser]" = HyperlinkedRelatedField(
+        view_name="user-detail", many=True, lookup_field="username", read_only=True
     )
-    no_votes: serializers.RelatedField = serializers.HyperlinkedRelatedField(
-        view_name="api:user-detail", many=True, lookup_field="username", read_only=True
-    )
+    pull_request: "PrimaryKeyRelatedField[PullRequest]" = PrimaryKeyRelatedField(read_only=True)
 
     class Meta:
         model = Bill
-        fields = ["name", "description", "pr_num", "author", "prop_date", "yes_votes", "no_votes", "url"]
+        fields = ["name", "description", "prop_date", "author", "pull_request", "yes_votes", "no_votes", "url"]
         extra_kwargs = {
-            "pr_num": {"read_only": True},
+            "author": {"lookup_field": "username", "read_only": True},
             "prop_date": {"read_only": True},
-            "url": {"view_name": "api:bill-detail", "lookup_field": "pk"},
         }

@@ -109,11 +109,6 @@ class Bill(models.Model):
                 name="unique_open_pull_request",
                 violation_error_message=_("A Bill for this pull request is already open"),
             ),
-            models.CheckConstraint(
-                check=(models.Q(pull_request__state="open") | ~models.Q(state="o")),
-                name="pull_request_state",
-                violation_error_message=_("The pull request for this bill must be open for the bill to be open"),
-            ),
         ]
 
     def __str__(self) -> str:
