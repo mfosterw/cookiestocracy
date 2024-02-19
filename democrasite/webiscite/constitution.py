@@ -17,9 +17,7 @@ from unidiff import Hunk, PatchedFile, PatchSet
 
 
 def _check_hunks(hunks: PatchedFile, locks: list[list[int]]) -> bool:
-    """
-    Check if any portions of an edit overlap with constitutional protections
-    """
+    """Check if any portions of an edit overlap with constitutional protections"""
     for hunk in hunks:
         hunk = cast(Hunk, hunk)
         # diff shows 3 lines above and below for context
@@ -54,9 +52,7 @@ def _check_hunks(hunks: PatchedFile, locks: list[list[int]]) -> bool:
 
 
 def read_constitution() -> dict[str, list[list[int]] | None]:
-    """
-    Read the constitution and return it as a type-annotated dict
-    """
+    """Read the constitution and return it as a type-annotated dict"""
     with open(settings.ROOT_DIR / "constitution.json", encoding="utf-8") as f:
         return json.load(f)
 

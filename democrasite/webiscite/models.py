@@ -20,9 +20,7 @@ logger = getLogger(__name__)
 
 
 class Vote(models.Model):
-    """
-    A vote for or against a bill, with a timestamp
-    """
+    """A vote for or against a bill, with a timestamp"""
 
     bill = models.ForeignKey("Bill", on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)

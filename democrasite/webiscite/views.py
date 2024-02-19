@@ -1,7 +1,5 @@
 """Views for the webiscite app."""
 
-from collections.abc import Callable
-
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, JsonResponse
@@ -15,9 +13,7 @@ from .models import Bill
 
 
 class BillListView(ListView):
-    """
-    View listing all open bills. Used for webiscite:index.
-    """
+    """View listing all open bills. Used for webiscite:index."""
 
     model = Bill
     queryset = Bill.objects.filter(state=Bill.States.OPEN)
@@ -32,9 +28,7 @@ bill_list_view = BillListView.as_view()
 
 
 class BillProposalsView(LoginRequiredMixin, ListView):
-    """
-    View for listing bills proposed by the current user.
-    """
+    """View for listing bills proposed by the current user."""
 
     model = Bill
 
@@ -55,9 +49,7 @@ bill_proposals_view = BillProposalsView.as_view()
 
 
 class BillVotesView(LoginRequiredMixin, ListView):
-    """
-    View for listing bills voted on by the current user.
-    """
+    """View for listing bills voted on by the current user."""
 
     model = Bill
 
@@ -79,9 +71,7 @@ bill_votes_view = BillVotesView.as_view()
 
 
 class BillDetailView(DetailView):
-    """
-    View for one bill on its own page
-    """
+    """View for one bill on its own page."""
 
     model = Bill
 
@@ -106,7 +96,8 @@ bill_update_view = BillUpdateView.as_view()
 
 
 # Use vote_view below, this would be decorated if possible
-def _vote_view(request: HttpRequest, pk: int) -> HttpResponse:
+@require_POST
+def vote_view(request: HttpRequest, pk: int) -> HttpResponse:
     """View for ajax request made when a user votes on a bill
 
     Validates that vote is valid and, if so, registers it with the database and returns
@@ -145,7 +136,3 @@ def _vote_view(request: HttpRequest, pk: int) -> HttpResponse:
             "no-votes": bill.no_votes.count(),
         }
     )
-
-
-# mypy has trouble with decorators so I needed a workaround to annotate this
-vote_view: Callable[[HttpRequest, int], HttpResponse] = require_POST(_vote_view)
