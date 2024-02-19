@@ -8,7 +8,7 @@ from ..models import Bill, PullRequest
 class TestPullRequestViewSet:
     def test_viewset_fields(self, api_rf: APIRequestFactory, user):
         pr = PullRequest.objects.create(
-            pr_num=-1,
+            number=-1,
             title="Test PR",
             additions=0,
             deletions=0,
@@ -27,7 +27,7 @@ class TestPullRequestViewSet:
             >= {  # Subset of the response data
                 "title": pr.title,
                 "sha": pr.sha,
-                "prop_date": pr.prop_date.astimezone(get_current_timezone()).isoformat(),
+                "time_created": pr.time_created.astimezone(get_current_timezone()).isoformat(),
                 "url": f"http://testserver/api/pull-requests/{pr.pk}/",
             }.items()
         )
@@ -48,7 +48,7 @@ class TestBillViewSet:
             >= {  # Subset of the response data
                 "name": bill.name,
                 "description": bill.description,
-                "prop_date": bill.prop_date.astimezone(get_current_timezone()).isoformat(),
+                "time_created": bill.time_created.astimezone(get_current_timezone()).isoformat(),
                 "url": f"http://testserver/api/bills/{bill.pk}/",
             }.items()
         )

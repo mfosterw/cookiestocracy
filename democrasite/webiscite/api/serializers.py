@@ -11,7 +11,7 @@ class PullRequestSerializer(HyperlinkedModelSerializer):
 
     class Meta:
         model = PullRequest
-        fields = ["title", "author_name", "additions", "deletions", "sha", "prop_date", "bill_set", "url"]
+        fields = ["title", "author_name", "additions", "deletions", "sha", "time_created", "bill_set", "url"]
 
     def create(self, validated_data):
         raise NotImplementedError("Pull requests are read-only")
@@ -30,8 +30,8 @@ class BillSerializer(HyperlinkedModelSerializer):
 
     class Meta:
         model = Bill
-        fields = ["name", "description", "prop_date", "author", "pull_request", "yes_votes", "no_votes", "url"]
+        fields = ["name", "description", "time_created", "author", "pull_request", "yes_votes", "no_votes", "url"]
         extra_kwargs = {
             "author": {"lookup_field": "username", "read_only": True},
-            "prop_date": {"read_only": True},
+            "time_created": {"read_only": True},
         }

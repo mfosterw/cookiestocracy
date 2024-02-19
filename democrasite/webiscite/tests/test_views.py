@@ -51,17 +51,14 @@ class TestBillVotesView:
         view.request = request
         assert bill not in view.get_queryset()
 
-        # Make sure positive votes are included
         bill.vote(user, True)
-        assert bill in view.get_queryset()
+        assert bill in view.get_queryset(), "Positive votes are included"
 
-        # Make sure negative votes are included
         bill.vote(user, False)
-        assert bill in view.get_queryset()
+        assert bill in view.get_queryset(), "Negative votes are included"
 
-        # Make sure when a vote is undone it gets removed from queryset
         bill.vote(user, False)
-        assert bill not in view.get_queryset()
+        assert bill not in view.get_queryset(), "When a vote is undone it gets removed from queryset"
 
 
 class TestBillDetailView:
@@ -137,7 +134,7 @@ class TestVoteView:
             assert response.content == b"Bill may not be voted on"
 
     @pytest.mark.parametrize("vote", ["vote-yes", "vote-no"])
-    def test_vote_yes(self, rf: RequestFactory, user: User, bill: Bill, vote):
+    def test_vote(self, rf: RequestFactory, user: User, bill: Bill, vote):
         request = rf.post("/fake-url/", data={"vote": vote})
         request.user = user
 

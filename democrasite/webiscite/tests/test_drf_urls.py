@@ -10,7 +10,7 @@ def test_pull_request_list():
 
 def test_pull_request_detail():
     pr = PullRequest.objects.create(
-        pr_num=-1, title="Test PR", author_name="test", state="open", additions=0, deletions=0, sha="0" * 40
+        number=-1, title="Test PR", author_name="test", state="open", additions=0, deletions=0, sha="0" * 40
     )
     assert reverse("pullrequest-detail", kwargs={"pk": pr.pk}) == f"/api/pull-requests/{pr.pk}/"
     assert resolve(f"/api/pull-requests/{pr.pk}/").view_name == "pullrequest-detail"

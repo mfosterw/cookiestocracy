@@ -1,96 +1,129 @@
 # pylint: disable=too-few-public-methods,no-self-use
 import hmac
 import json
-from unittest.mock import MagicMock, patch
+from typing import cast
+from unittest.mock import patch
 
+import pytest
 from django.conf import settings
+from django.http import HttpResponse, JsonResponse
 from django.test import RequestFactory
 from django.utils.encoding import force_bytes
 
-from ..tasks import process_pull
-from ..webhooks import github_hook
+from democrasite.webiscite.tests.factories import PullRequestFactory
+
+from ..models import Bill, PullRequest
+from ..webhooks import GithubWebhookView, PullRequestHandler, github_webhook_view
 
 
 class TestGithubHookView:
-    test_data = json.dumps({"action": "none", "pull_request": "-1"})
-
-    def test_no_signature(self, rf: RequestFactory):
-        request = rf.post("/fake-url/")
-
-        self.check_response(request, 403, b"Invalid signature")
-
-    def test_invalid_signature(self, rf: RequestFactory):
-        request = rf.post("/fake-url/", HTTP_X_HUB_SIGNATURE="test=test")
-
-        self.check_response(request, 403, b"Invalid signature")
-
-    def test_ping(self, rf: RequestFactory):
-        request = rf.post(
-            "/fake-url/",
-            data=self.test_data,
-            content_type="application/json",
-            HTTP_X_GITHUB_EVENT="ping",
-        )
-
-        request.META["HTTP_X_HUB_SIGNATURE"] = (
-            "sha1="
-            + hmac.new(
-                force_bytes(settings.WEBISCITE_GITHUB_WEBHOOK_SECRET),
-                msg=request.body,
-                digestmod="sha1",
-            ).hexdigest()
-        )
-
-        self.check_response(request, 200, b"ping received")
-
     def check_response(self, request, status, content):
-        response = github_hook(request)
+        response = cast(HttpResponse, github_webhook_view(request))
 
         assert response.status_code == status
         assert response.content == content
 
-    @patch.object(process_pull, "delay")
-    def test_pull_request(self, mock_delay: MagicMock, rf: RequestFactory):
+    def test_no_signature(self, rf: RequestFactory):
+        request = rf.post("/fake-url/")
+
+        self.check_response(request, 400, b"Request does not contain X-HUB-SIGNATURE-256 header")
+
+    def test_no_event(self, rf: RequestFactory):
+        request = rf.post("/fake-url/", HTTP_X_HUB_SIGNATURE_256="test")
+
+        self.check_response(request, 400, b"Request does not contain X-GITHUB-EVENT header")
+
+    def test_invalid_signature_digest(self, rf: RequestFactory):
+        request = rf.post("/fake-url/", HTTP_X_HUB_SIGNATURE_256="test=test", HTTP_X_GITHUB_EVENT="test")
+
+        self.check_response(request, 400, b"Unsupported X-HUB-SIGNATURE-256 digest mode: test")
+
+    def test_invalid_signature(self, rf: RequestFactory):
+        request = rf.post("/fake-url/", HTTP_X_HUB_SIGNATURE_256="sha256=test", HTTP_X_GITHUB_EVENT="test")
+
+        self.check_response(request, 403, b"Invalid X-HUB-SIGNATURE-256 signature")
+
+    @pytest.fixture
+    def signed_request(self, rf: RequestFactory):
         request = rf.post(
             "/fake-url/",
-            data=self.test_data,
-            content_type="application/json",
-            HTTP_X_GITHUB_EVENT="pull_request",
-        )
-
-        request.META["HTTP_X_HUB_SIGNATURE"] = (
-            "sha1="
-            + hmac.new(
-                force_bytes(settings.WEBISCITE_GITHUB_WEBHOOK_SECRET),
-                msg=request.body,
-                digestmod="sha1",
-            ).hexdigest()
-        )
-
-        response = github_hook(request)
-
-        mock_delay.assert_called_once_with("none", "-1")
-
-        assert response.status_code == 200
-        assert response.content == b"pull request acknowledged"
-
-    def test_unknown_action(self, rf: RequestFactory):
-        request = rf.post(
-            "/fake-url/",
-            data=self.test_data,
+            data=json.dumps({"action": "none", "pull_request": "-1"}),
             content_type="application/json",
             HTTP_X_GITHUB_EVENT="test",
         )
 
-        request.META["HTTP_X_HUB_SIGNATURE"] = (
-            "sha1="
+        request.META["HTTP_X_HUB_SIGNATURE_256"] = (
+            "sha256="
             + hmac.new(
                 force_bytes(settings.WEBISCITE_GITHUB_WEBHOOK_SECRET),
                 msg=request.body,
-                digestmod="sha1",
+                digestmod="sha256",
             ).hexdigest()
         )
 
-        response = github_hook(request)
+        return request
 
-        assert response.status_code == 204
+    def test_unsupported_event(self, signed_request):
+        self.check_response(signed_request, 400, b"Unsupported X-GITHUB-EVENT header found: test")
+
+    def test_valid_request(self, signed_request):
+        signed_request.META["HTTP_X_GITHUB_EVENT"] = "ping"
+        self.check_response(signed_request, 200, b"pong")
+
+    def test_push(self):
+        response = GithubWebhookView().push({})
+
+        assert response.status_code == 200
+        assert response.content == b"push received"
+
+
+class TestPullRequestHandler:
+    @pytest.fixture
+    def pr_handler(self):
+        return GithubWebhookView().pull_request
+
+    @patch.object(PullRequestHandler, "opened")
+    def test_pr_handler_dispatch(self, mock_opened, bill, pr_handler):
+        mock_opened.return_value = (bill.pull_request, bill)
+
+        response = pr_handler({"action": "opened", "pull_request": {"number": 1}})
+
+        mock_opened.assert_called_once_with({"number": 1})
+        assert isinstance(response, JsonResponse)
+
+    def test_pr_handler_dispatch_invalid(self, pr_handler: PullRequestHandler):
+        response = pr_handler({"action": "test", "pull_request": {"number": 1}})
+
+        assert response.status_code == 400
+        assert response.content == b"Unsupported action: test"
+
+    def test_pr_handler_get_response(self, pr_handler: PullRequestHandler, bill: Bill):
+        response = pr_handler.get_response("test", bill.pull_request, bill)
+
+        assert json.loads(response.content) == {
+            "action": "test",
+            "pull_request": bill.pull_request.number,
+            "bill": bill.id,
+        }
+
+    @patch.object(Bill, "create_from_pr")
+    def test_opened(self, mock_create, pr_handler: PullRequestHandler):
+        pull_request = PullRequestFactory()
+        pr = {"number": pull_request.number, "title": "Test PR", "diff_url": "http://test.com/diff"}
+        mock_create.return_value = (pull_request, None)
+
+        response = pr_handler.opened(pr)
+
+        mock_create.assert_called_once_with(pr)
+        assert response == (pull_request, None)
+
+    def test_closed_no_pr(self, pr_handler: PullRequestHandler):
+        response = pr_handler.closed({"number": 1})
+        assert response == (None, None)
+
+    @patch.object(PullRequest, "close")
+    def test_closed(self, mock_close, pr_handler: PullRequestHandler, bill: Bill):
+        response = pr_handler.closed({"number": bill.pull_request.number})
+
+        assert response == (bill.pull_request, mock_close.return_value)
+        mock_close.assert_called_once()

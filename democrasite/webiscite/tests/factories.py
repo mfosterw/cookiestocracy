@@ -1,4 +1,4 @@
-from factory import Faker, Sequence, SubFactory
+from factory import DictFactory, Factory, Faker, SelfAttribute, Sequence, SubFactory
 from factory.django import DjangoModelFactory
 
 from democrasite.users.tests.factories import UserFactory
@@ -6,7 +6,7 @@ from democrasite.webiscite.models import Bill, PullRequest
 
 
 class PullRequestFactory(DjangoModelFactory):
-    pr_num = Sequence(lambda n: -n)  # Use negative numbers to represent fake PRs
+    number = Sequence(lambda n: -n)  # Use negative numbers to represent fake PRs
     title = Faker("text", max_nb_chars=50)
     author_name = Faker("user_name")
     state = Faker("random_element", elements=["open", "closed"])
@@ -31,3 +31,21 @@ class BillFactory(DjangoModelFactory):
 
     class Meta:
         model = Bill
+
+
+class GithubPullRequestFactory(Factory):
+    bill = SubFactory(BillFactory)
+
+    user = DictFactory(id=Faker("random_int"), login=Faker("user_name"))
+    head = DictFactory(sha=Faker("pystr", min_chars=40, max_chars=40))
+    title = SelfAttribute("bill.name")
+    body = SelfAttribute("bill.description")
+    number = SelfAttribute("bill.pull_request.number")
+    state = "open"
+    additions = SelfAttribute("bill.pull_request.additions")
+    deletions = SelfAttribute("bill.pull_request.deletions")
+    diff_url = ""  # Don't actually put something here so it errors if request.get isn't mocked
+
+    class Meta:
+        model = dict
+        exclude = ("bill",)
