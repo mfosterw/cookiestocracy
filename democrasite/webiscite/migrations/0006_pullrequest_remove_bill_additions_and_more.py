@@ -67,13 +67,4 @@ class Migration(migrations.Migration):
                 help_text="True if this bill is an amendment to the constitution",
             ),
         ),
-        migrations.AddConstraint(
-            model_name="bill",
-            constraint=models.UniqueConstraint(
-                condition=models.Q(("state", "o")),
-                fields=("pull_request",),
-                name="unique_open_pull_request",
-                violation_error_message="A Bill for this pull request is already open",
-            ),
-        ),
     ]
