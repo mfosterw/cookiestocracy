@@ -3,11 +3,7 @@
 {% load i18n static %}
 
 {% block sub_title %}
-  {% if request.resolver_match.url_name == 'my-bills' %}
-    {% trans 'My Bills' %}
-  {% elif request.resolver_match.url_name == 'my-bill-votes' %}
-    {% trans 'My Votes' %}
-  {% endif %}
+  {{ title }}
 {% endblock sub_title %}
 {% block content %}
   {% for bill in bill_list %}
@@ -15,28 +11,29 @@
       <div class="col-sm-12 col-md-6 col-lg-3">
         <div class="card text-center mb-4
                     {% if bill.constitutional %}bg-light{% endif %}">
-          <div class="card-body{% if bill.state != bill.OPEN %} inactive{% endif %}">
+          <div class="card-body
+                      {% if bill.state != bill.States.OPEN %}inactive{% endif %}">
             <a class="card-link" href="{{ bill.get_absolute_url }}">
               <h5 class="card-title">{{ bill }}</h5>
               {% if bill.constitutional %}
                 <p class="text-info">{% trans 'Amendment to the Constitution' %}</p>
               {% endif %}
             </a>
-            {% if bill.state != bill.OPEN %}
-              <p class="{% if bill.state == bill.APPROVED %}
+            {% if bill.state != bill.States.OPEN %}
+              <p class="{% if bill.state == bill.States.APPROVED %}
                           text-success
                         {% else %}
                           text-danger
                         {% endif %}">{{ bill.get_state_display }}</p>
             {% endif %}
             <hr />
-            <div data-nosnippet class="card-text">{{ bill.description|truncatewords:20 }}</div>
+            <div data-nosnippet class="card-text">{{ bill.description|truncatechars:80 }}</div>
             <div class="card-text text-right">
               <a class="card-link git-pull-link"
-                 href="https://github.com/{{ github_repo }}/pull/{{ bill.pr_num }}/files"
+                 href="https://github.com/{{ github_repo }}/pull/{{ bill.pull_request.pr_num }}/files"
                  target="_blank">
-                <span class="text-success">+{{ bill.additions }}</span>
-                <span class="text-danger">-{{ bill.deletions }}</span>
+                <span class="text-success">+{{ bill.pull_request.additions }}</span>
+                <span class="text-danger">-{{ bill.pull_request.deletions }}</span>
               </a>
             </div>
             <div class="progress">
@@ -47,7 +44,7 @@
             <a href="javascript:;"
                class="float-left text-success mt-2 vote
                       {% if user in bill.yes_votes.all %}font-weight-bold{% endif %}"
-               {% if bill.state == bill.OPEN %}
+               {% if bill.state == bill.States.OPEN %}
                  {% if user.is_authenticated %}
                    id="vote-yes-{{ bill.id }}" action="{% url 'webiscite:bill-vote' bill.id %}" value="vote-yes"
                  {% else %}
@@ -59,7 +56,7 @@
             <a href="javascript:;"
                class="float-right text-danger mt-2 vote
                       {% if user in bill.no_votes.all %}font-weight-bold{% endif %}"
-               {% if bill.state == bill.OPEN %}
+               {% if bill.state == bill.States.OPEN %}
                  {% if user.is_authenticated %}
                    id="vote-no-{{ bill.id }}" action="{% url 'webiscite:bill-vote' bill.id %}" value="vote-no"
                  {% else %}
@@ -73,13 +70,7 @@
       </div>
       {% if forloop.counter|divisibleby:4 or forloop.last %}</div>{% endif %}
   {% empty %}
-    {% if request.resolver_match.url_name == 'index' %}
-      <p>{% trans 'No bills up for vote right now.' %}</p>
-    {% elif request.resolver_match.url_name == 'my-bills' %}
-      <p>{% trans "Looks like you haven't proposed any bills yet." %}</p>
-    {% elif request.resolver_match.url_name == 'my-bill-votes' %}
-      <p>{% trans "Looks like you haven't voted on any bills yet." %}</p>
-    {% endif %}
+    {{ empty_message }}
   {% endfor %}
 {% endblock content %}
 {% block inline_javascript %}

@@ -41,7 +41,7 @@ user_update_view = UserUpdateView.as_view()
 
 
 class UserRedirectView(LoginRequiredMixin, RedirectView):
-    """Redirect to a user's profile."""
+    """Redirect to the logged-in user's profile."""
 
     permanent = False
 

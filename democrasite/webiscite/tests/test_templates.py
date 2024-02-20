@@ -1,50 +1,50 @@
 """Render each branch on each template to ensure there are no rendering errors."""
+
 # pylint: disable=too-few-public-methods,no-self-use
+import pytest
 from django.test import Client
 from django.urls import reverse
+from django.utils.html import escape
 
 from ..models import Bill
 from .factories import BillFactory
 
 
 class TestBillDetailTemplate:
-    def test_bill_open(self, bill: Bill, client: Client):
-        response = client.get(reverse("webiscite:bill-detail", args=(bill.id,)))
+    def _test_get_response(self, client: Client, bill_id: int):
+        response = client.get(reverse("webiscite:bill-detail", args=(bill_id,)))
+        result = response.content.decode()
 
-        assert b"Log in to vote" in response.content
+        assert response.status_code == 200
+        assert response.templates[0].name == "webiscite/bill_detail.html"
+        return result
 
+    def test_logged_out(self, bill: Bill, client: Client):
+        content = self._test_get_response(client, bill.id)
+
+        assert "Log in to vote" in content
+        assert "vote.js" not in content
+
+    def test_logged_in(self, bill: Bill, client: Client):
         client.force_login(bill.author)
 
-        response = client.get(reverse("webiscite:bill-detail", args=(bill.id,)))
+        content = self._test_get_response(client, bill.id)
 
-        assert b"vote.js" in response.content
-        assert b"svg" in response.content
-        assert bill.get_state_display().encode() not in response.content
+        assert "vote.js" in content
+        assert "svg" in content
+        assert bill.get_state_display() not in content
 
-    def test_bill_closed(self, client: Client, user):
-        bill = BillFactory(state=Bill.CLOSED, author=user)
+    @pytest.mark.parametrize("state,constitutional", [(Bill.States.FAILED, True), (Bill.States.APPROVED, False)])
+    def test_bill_closed(self, client: Client, user, state: Bill.States, constitutional: bool):
+        bill = BillFactory(state=state, author=user, constitutional=constitutional)
 
-        response = client.get(reverse("webiscite:bill-detail", args=(bill.id,)))
+        content = self._test_get_response(client, bill.id)
 
-        assert response.status_code == 200
-        assert response.templates[0].name == "webiscite/bill_detail.html"
-        assert b"Log in to vote" not in response.content
-        assert b"vote.js" not in response.content
-        assert b"svg" not in response.content
-        assert bill.get_state_display().encode() in response.content
-
-    def test_bill_approved(self, client: Client, user):
-        bill = BillFactory(state=Bill.APPROVED, author=user, constitutional=True)
-
-        response = client.get(reverse("webiscite:bill-detail", args=(bill.id,)))
-
-        assert response.status_code == 200
-        assert response.templates[0].name == "webiscite/bill_detail.html"
-        assert b"Log in to vote" not in response.content
-        assert b"vote.js" not in response.content
-        assert b"svg" not in response.content
-        assert bill.get_state_display().encode() in response.content
-        assert b"Constitution" in response.content
+        assert "Log in to vote" not in content
+        assert "vote.js" not in content
+        assert "svg" not in content
+        assert bill.get_state_display() in content
+        assert ("Constitution" in content) == constitutional
 
 
 class TestBillUpdateTemplate:
@@ -58,87 +58,54 @@ class TestBillUpdateTemplate:
 
 
 class TestBillListTemplate:
-    def test_empty(self, client: Client):
-        response = client.get(reverse("webiscite:index"))
+    @pytest.mark.parametrize("view", ["index", "my-bills", "my-bill-votes"])
+    def test_empty(self, client: Client, user, view):
+        client.force_login(user)
+
+        response = client.get(reverse(f"webiscite:{view}"))
+        content = response.content.decode()
 
         assert response.status_code == 200
         assert response.templates[0].name == "webiscite/bill_list.html"
-        assert b"No bills" in response.content
-        assert b"you haven't proposed any bills" not in response.content
-        assert b"you haven't voted on any bills" not in response.content
+        assert ("No bills" in content) == (view == "index")
+        assert (escape("you haven't proposed any bills") in content) == (view == "my-bills")
+        assert (escape("you haven't voted on any bills") in content) == (view == "my-bill-votes")
 
-    def test_logged_out(self, bill: Bill, client: Client):
-        response = client.get(reverse("webiscite:index"))
-
-        assert response.status_code == 200
-        assert bill.name.encode() in response.content
-        assert b"Log in to vote" in response.content
-        assert b"vote.js" not in response.content
-
-    def test_amendment(self, client: Client):
-        bill = BillFactory(constitutional=True)
+    @pytest.mark.parametrize("constitutional", [True, False])
+    def test_logged_out(self, client: Client, constitutional: bool):
+        bill = BillFactory(constitutional=constitutional)
 
         response = client.get(reverse("webiscite:index"))
+        content = response.content.decode()
 
         assert response.status_code == 200
-        assert bill.name.encode() in response.content
-        assert b"Constitution" in response.content
+        assert bill.name in content
+        assert "Log in to vote" in content
+        assert "vote.js" not in content
+        assert ("Constitution" in content) == constitutional
 
-    def test_logged_in(self, bill: Bill, client: Client, user):
-        client.force_login(user)
+    @pytest.mark.parametrize(
+        "view,state",
+        [
+            ("index", Bill.States.OPEN),
+            ("my-bills", Bill.States.APPROVED),
+            ("my-bills", Bill.States.REJECTED),
+            ("my-bill-votes", Bill.States.OPEN),
+            ("my-bill-votes", Bill.States.FAILED),
+        ],
+    )
+    def test_my_bills(self, state: Bill.States, view: str, bill: Bill, client: Client):
+        if view == "my-bill-votes":
+            bill.vote(bill.author, True)
+        bill.state = state
+        bill.save()
 
-        response = client.get(reverse("webiscite:index"))
-
-        assert response.status_code == 200
-        assert bill.name.encode() in response.content
-        assert b"Log in to vote" not in response.content
-        assert b"vote.js" in response.content
-
-    def test_my_bills_empty(self, client: Client, user):
-        client.force_login(user)
-
-        response = client.get(reverse("webiscite:my-bills"))
-
-        assert b"No bills" not in response.content
-        assert b"you haven't proposed any bills" in response.content
-        assert b"you haven't voted on any bills" not in response.content
-
-    def test_my_bills_approved(self, client: Client):
-        bill = BillFactory(state=Bill.APPROVED)
         client.force_login(bill.author)
-
-        response = client.get(reverse("webiscite:my-bills"))
-
-        assert response.status_code == 200
-        assert b"Log in to vote" not in response.content
-        assert b"vote.js" in response.content
-
-    def test_my_bills_failed(self, client: Client):
-        bill = BillFactory(state=Bill.FAILED)
-        client.force_login(bill.author)
-
-        response = client.get(reverse("webiscite:my-bills"))
+        response = client.get(reverse(f"webiscite:{view}"))
+        content = response.content.decode()
 
         assert response.status_code == 200
-        assert b"Log in to vote" not in response.content
-        assert b"vote.js" in response.content
-
-    def test_my_bill_votes_empty(self, client: Client, user):
-        client.force_login(user)
-
-        response = client.get(reverse("webiscite:my-bill-votes"))
-
-        assert b"No bills" not in response.content
-        assert b"you haven't proposed any bills" not in response.content
-        assert b"you haven't voted on any bills" in response.content
-
-    def test_my_bill_votes_populated(self, bill: Bill, client: Client, user):
-        bill.vote(True, user)
-        client.force_login(user)
-
-        response = client.get(reverse("webiscite:my-bill-votes"))
-
-        assert response.status_code == 200
-        assert bill.name.encode() in response.content
-        assert b"Log in to vote" not in response.content
-        assert b"vote.js" in response.content
+        assert bill.name in content
+        assert "Log in to vote" not in content
+        assert "vote.js" in content
+        assert (bill.get_state_display() in content) == (bill.state != Bill.States.OPEN)

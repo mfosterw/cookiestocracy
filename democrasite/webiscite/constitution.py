@@ -5,21 +5,21 @@ a diff contain constitutional amendments, and automatically update the
 constitution for changes which edit files included in the constitution without
 resulting in constitutional amendments
 """
+
 import json
 from typing import cast
 
 from django.conf import settings
-from unidiff import PatchedFile, PatchSet
+from unidiff import Hunk, PatchedFile, PatchSet
 
 # Each filename corresponds to a list of pairs representing protected line
 # ranges within that file, or None to protect the entire file
 
 
 def _check_hunks(hunks: PatchedFile, locks: list[list[int]]) -> bool:
-    """
-    Check if any portions of an edit overlap with constitutional protections
-    """
+    """Check if any portions of an edit overlap with constitutional protections"""
     for hunk in hunks:
+        hunk = cast(Hunk, hunk)
         # diff shows 3 lines above and below for context
         # If the diff starts beyond line 1, remove the top 3 lines
         if hunk.source_start == 1:
@@ -52,9 +52,7 @@ def _check_hunks(hunks: PatchedFile, locks: list[list[int]]) -> bool:
 
 
 def read_constitution() -> dict[str, list[list[int]] | None]:
-    """
-    Read the constitution and return it as a type-annotated dict
-    """
+    """Read the constitution and return it as a type-annotated dict"""
     with open(settings.ROOT_DIR / "constitution.json", encoding="utf-8") as f:
         return json.load(f)
 

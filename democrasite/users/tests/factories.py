@@ -1,6 +1,3 @@
-from collections.abc import Sequence
-from typing import Any
-
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AbstractBaseUser
 from factory import Faker, post_generation
@@ -13,21 +10,15 @@ class UserFactory(DjangoModelFactory):
     name = Faker("name")
 
     @post_generation
-    def password(
-        obj: AbstractBaseUser, create: bool, extracted: Sequence[Any], **kwargs
-    ):  # pylint: disable=unused-argument
-        password = (
-            extracted
-            if extracted
-            else Faker(
-                "password",
-                length=42,
-                special_chars=True,
-                digits=True,
-                upper_case=True,
-                lower_case=True,
-            ).evaluate(None, None, extra={"locale": None})
-        )
+    def password(obj: AbstractBaseUser, create: bool, extracted: str, **kwargs):  # pylint: disable=unused-argument
+        password = extracted or Faker(
+            "password",
+            length=42,
+            special_chars=True,
+            digits=True,
+            upper_case=True,
+            lower_case=True,
+        ).evaluate(None, None, extra={"locale": None})
         obj.set_password(password)
         obj.save()
 

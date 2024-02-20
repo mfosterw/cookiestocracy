@@ -1,4 +1,5 @@
 """Render each branch on each template to ensure there are no rendering errors."""
+
 # pylint: disable=too-few-public-methods,no-self-use
 from django.contrib import messages
 from django.contrib.auth.models import AnonymousUser

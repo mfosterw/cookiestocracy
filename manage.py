@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import os
 import sys
+from pathlib import Path
 
 if __name__ == "__main__":
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.local")
@@ -21,5 +22,10 @@ if __name__ == "__main__":
             )
 
         raise
+
+    # This allows easy placement of apps within the interior
+    # democrasite directory.
+    current_path = Path(__file__).parent.resolve()
+    sys.path.append(str(current_path / "democrasite"))
 
     execute_from_command_line(sys.argv)

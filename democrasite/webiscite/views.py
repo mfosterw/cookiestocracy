@@ -1,7 +1,5 @@
 """Views for the webiscite app."""
 
-from collections.abc import Callable
-
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, JsonResponse
@@ -15,38 +13,43 @@ from .models import Bill
 
 
 class BillListView(ListView):
-    """
-    View listing all open bills. Used for webiscite:index.
-    """
+    """View listing all open bills. Used for webiscite:index."""
 
     model = Bill
-    queryset = Bill.objects.filter(state=Bill.OPEN)
+    queryset = Bill.objects.filter(state=Bill.States.OPEN)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["empty_message"] = "No bills up for vote right now."
+        return context
 
 
 bill_list_view = BillListView.as_view()
 
 
 class BillProposalsView(LoginRequiredMixin, ListView):
-    """
-    View for listing bills proposed by the current user.
-    """
+    """View for listing bills proposed by the current user."""
 
     model = Bill
 
     def get_queryset(self):
         """
-        Return the list of items for this view – bills proposed by the current user.
+        Return the list of items for this view - bills proposed by the current user.
         """
         return self.request.user.bill_set.all()  # type: ignore [union-attr]
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["title"] = "My Bills"
+        context["empty_message"] = "Looks like you haven't proposed any bills yet."
+        return context
 
 
 bill_proposals_view = BillProposalsView.as_view()
 
 
 class BillVotesView(LoginRequiredMixin, ListView):
-    """
-    View for listing bills voted on by the current user.
-    """
+    """View for listing bills voted on by the current user."""
 
     model = Bill
 
@@ -54,16 +57,21 @@ class BillVotesView(LoginRequiredMixin, ListView):
         """
         Return the list of items for this view - bills voted on by the current user.
         """
-        return self.request.user.yes_votes.all() | self.request.user.no_votes.all()  # type: ignore [union-attr]
+        assert self.request.user.is_authenticated
+        return self.request.user.votes.all()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["title"] = "My Votes"
+        context["empty_message"] = "Looks like you haven't voted on any bills yet."
+        return context
 
 
 bill_votes_view = BillVotesView.as_view()
 
 
 class BillDetailView(DetailView):
-    """
-    View for one bill on its own page
-    """
+    """View for one bill on its own page."""
 
     model = Bill
 
@@ -81,14 +89,15 @@ class BillUpdateView(UserPassesTestMixin, SuccessMessageMixin, UpdateView):
     success_message = _("Information successfully updated")
 
     def test_func(self):
-        return self.get_object().author == self.request.user  # type: ignore [attr-defined]
+        return self.get_object().author == self.request.user
 
 
 bill_update_view = BillUpdateView.as_view()
 
 
 # Use vote_view below, this would be decorated if possible
-def _vote_view(request: HttpRequest, pk: int) -> HttpResponse:
+@require_POST
+def vote_view(request: HttpRequest, pk: int) -> HttpResponse:
     """View for ajax request made when a user votes on a bill
 
     Validates that vote is valid and, if so, registers it with the database and returns
@@ -106,20 +115,20 @@ def _vote_view(request: HttpRequest, pk: int) -> HttpResponse:
     if not request.user.is_authenticated:
         return HttpResponse("Login required", status=401)  # 401 means unauthorized
 
-    bill = Bill.objects.get(pk=pk)
-    if bill.state != Bill.OPEN:
-        return HttpResponseForbidden("Bill may not be voted on")  # status 403
-
     vote_val = request.POST.get("vote")
     if not vote_val:
         return HttpResponseBadRequest('"vote" data expected')
+    elif vote_val not in {"vote-yes", "vote-no"}:
+        return HttpResponseBadRequest('"vote" must be one of ("vote-yes", "vote-no")')
+
+    bill = Bill.objects.get(pk=pk)
+    if bill.state != Bill.States.OPEN:
+        return HttpResponseForbidden("Bill may not be voted on")  # status 403
 
     if vote_val == "vote-yes":
-        bill.vote(True, request.user)
+        bill.vote(request.user, True)
     elif vote_val == "vote-no":
-        bill.vote(False, request.user)
-    else:
-        return HttpResponseBadRequest('"vote" must be one of ("vote-yes", "vote-no")')
+        bill.vote(request.user, False)
 
     return JsonResponse(
         {
@@ -127,7 +136,3 @@ def _vote_view(request: HttpRequest, pk: int) -> HttpResponse:
             "no-votes": bill.no_votes.count(),
         }
     )
-
-
-# mypy has trouble with decorators so I needed a workaround to annotate this
-vote_view: Callable[[HttpRequest, int], HttpResponse] = require_POST(_vote_view)

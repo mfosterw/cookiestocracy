@@ -1,8 +1,9 @@
 """URLs for Webiscite views."""
+
 from django.urls import path
 
 from .views import bill_detail_view, bill_list_view, bill_proposals_view, bill_update_view, bill_votes_view, vote_view
-from .webhooks import github_hook
+from .webhooks import github_webhook_view
 
 app_name = "webiscite"
 urlpatterns = [
@@ -12,5 +13,5 @@ urlpatterns = [
     path("bills/<int:pk>/", bill_detail_view, name="bill-detail"),
     path("bills/<int:pk>/update/", bill_update_view, name="bill-update"),
     path("bills/<int:pk>/vote/", vote_view, name="bill-vote"),
-    path("hooks/github/", github_hook),
+    path("hooks/github/", github_webhook_view, name="github-webhook"),
 ]

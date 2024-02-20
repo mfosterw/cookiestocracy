@@ -1,6 +1,7 @@
 # pylint: disable=too-few-public-methods,no-self-use
 import json
 
+import pytest
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
 from django.http import HttpResponseRedirect
@@ -8,7 +9,6 @@ from django.test import Client, RequestFactory
 from django.urls import reverse
 
 from democrasite.users.models import User
-from democrasite.users.tests.factories import UserFactory
 
 from ..models import Bill
 from ..views import BillListView, BillProposalsView, BillVotesView, bill_detail_view, bill_update_view, vote_view
@@ -17,8 +17,8 @@ from .factories import BillFactory
 
 class TestBillListView:
     def test_queryset(self):
-        open_bill = BillFactory(state=Bill.OPEN)
-        closed_bill = BillFactory(state=Bill.CLOSED)
+        open_bill = BillFactory(state=Bill.States.OPEN)
+        closed_bill = BillFactory(state=Bill.States.CLOSED)
 
         assert open_bill in BillListView.queryset
         assert closed_bill not in BillListView.queryset
@@ -41,33 +41,24 @@ class TestBillProposalsView:
 
 
 class TestBillVotesView:
-    def test_get_queryset(self, rf: RequestFactory):
-        views = (BillVotesView(), BillVotesView())
-        bills = (BillFactory(state=Bill.OPEN), BillFactory(state=Bill.OPEN))
-        users = (UserFactory(), UserFactory())
-        requests = (rf.get("/fake-url/"), rf.get("/fake-url/"))
+    def test_get_queryset(self, rf: RequestFactory, bill: Bill):
+        # Note that this function depends heavily on the vote method, which is tested in test_models.py
+        user = bill.author  # could be any user, this is just for convenience
+        request = rf.get("/fake-url/")
+        request.user = user
 
-        # Make sure positive votes are included
-        bills[0].vote(True, users[0])
+        view = BillVotesView()
+        view.request = request
+        assert bill not in view.get_queryset()
 
-        requests[0].user = users[0]
-        views[0].request = requests[0]
+        bill.vote(user, True)
+        assert bill in view.get_queryset(), "Positive votes are included"
 
-        assert bills[0] in views[0].get_queryset()
-        assert bills[1] not in views[0].get_queryset()
+        bill.vote(user, False)
+        assert bill in view.get_queryset(), "Negative votes are included"
 
-        # Make sure negative votes are included
-        bills[0].vote(False, users[1])
-
-        requests[1].user = users[1]
-        views[1].request = requests[1]
-
-        assert bills[0] in views[1].get_queryset()
-        assert bills[1] not in views[1].get_queryset()
-
-        # Make sure when a vote is undone it gets removed from queryset
-        bills[0].vote(True, users[0])
-        assert bills[0] not in views[0].get_queryset()
+        bill.vote(user, False)
+        assert bill not in view.get_queryset(), "When a vote is undone it gets removed from queryset"
 
 
 class TestBillDetailView:
@@ -90,7 +81,7 @@ class TestBillUpdateView:
 
         assert isinstance(bad_response, HttpResponseRedirect)
         assert bad_response.status_code == 302
-        assert bad_response.url == reverse(settings.LOGIN_URL) + "?next=/fake-url/"
+        assert bad_response.url == f"{reverse(settings.LOGIN_URL)}?next=/fake-url/"
 
         # Expect success response because request passes test
         good_request = rf.get("/fake-url/")
@@ -126,36 +117,25 @@ class TestVoteView:
         assert response.status_code == 401
         assert response.content == b"Login required"
 
-    def test_not_open(self, user: User, rf: RequestFactory):
-        request = rf.post("/fake-url/")
+    @pytest.mark.parametrize("data,status", [(None, 400), ({"vote": "idk"}, 400), ({"vote": "vote-yes"}, 403)])
+    def test_not_open(self, user: User, rf: RequestFactory, data, status):
+        request = rf.post("/fake-url/", data=data)
         request.user = user
 
-        bill = BillFactory(state=Bill.CLOSED)
+        bill = BillFactory(state=Bill.States.CLOSED)
         response = vote_view(request, bill.id)
 
-        assert response.status_code == 403
-        assert response.content == b"Bill may not be voted on"
+        assert response.status_code == status
+        if data is None:
+            assert response.content == b'"vote" data expected'
+        elif data["vote"] == "idk":
+            assert response.content == b'"vote" must be one of ("vote-yes", "vote-no")'
+        else:
+            assert response.content == b"Bill may not be voted on"
 
-    def test_vote_not_present(self, rf: RequestFactory, user: User, bill: Bill):
-        request = rf.post("/fake-url/")
-        request.user = user
-
-        response = vote_view(request, bill.id)
-
-        assert response.status_code == 400
-        assert response.content == b'"vote" data expected'
-
-    def test_invalid_vote(self, rf: RequestFactory, user: User, bill: Bill):
-        request = rf.post("/fake-url/", data={"vote": "idk"})
-        request.user = user
-
-        response = vote_view(request, bill.id)
-
-        assert response.status_code == 400
-        assert response.content == b'"vote" must be one of ("vote-yes", "vote-no")'
-
-    def test_vote_yes(self, rf: RequestFactory, user: User, bill: Bill):
-        request = rf.post("/fake-url/", data={"vote": "vote-yes"})
+    @pytest.mark.parametrize("vote", ["vote-yes", "vote-no"])
+    def test_vote(self, rf: RequestFactory, user: User, bill: Bill, vote):
+        request = rf.post("/fake-url/", data={"vote": vote})
         request.user = user
 
         response = vote_view(request, bill.id)
@@ -163,19 +143,6 @@ class TestVoteView:
         assert response.status_code == 200
 
         data = json.loads(response.content)
-        assert data["yes-votes"] == 1
-        assert data["no-votes"] == 0
-        assert bill.yes_votes.filter(pk=user.pk).exists()
-
-    def test_vote_no(self, rf: RequestFactory, user: User, bill: Bill):
-        request = rf.post("/fake-url/", data={"vote": "vote-no"})
-        request.user = user
-
-        response = vote_view(request, bill.id)
-
-        assert response.status_code == 200
-
-        data = json.loads(response.content)
-        assert data["yes-votes"] == 0
-        assert data["no-votes"] == 1
-        assert bill.no_votes.filter(pk=user.pk).exists()
+        assert data["yes-votes"] == (1 if vote == "vote-yes" else 0)
+        assert data["no-votes"] == (1 if vote == "vote-no" else 0)
+        assert user.votes.filter(pk=bill.pk).exists()
