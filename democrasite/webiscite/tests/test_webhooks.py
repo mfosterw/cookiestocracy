@@ -10,8 +10,6 @@ from django.http import HttpResponse, JsonResponse
 from django.test import RequestFactory
 from django.utils.encoding import force_bytes
 
-from democrasite.webiscite.tests.factories import PullRequestFactory
-
 from ..models import Bill, PullRequest
 from ..webhooks import GithubWebhookView, PullRequestHandler, github_webhook_view
 
@@ -108,14 +106,19 @@ class TestPullRequestHandler:
 
     @patch.object(Bill, "create_from_pr")
     def test_opened(self, mock_create, pr_handler: PullRequestHandler):
-        pull_request = PullRequestFactory()
-        pr = {"number": pull_request.number, "title": "Test PR", "diff_url": "http://test.com/diff"}
-        mock_create.return_value = (pull_request, None)
+        # This just calls the create_from_pr method
+        response = pr_handler.opened({})
 
-        response = pr_handler.opened(pr)
+        mock_create.assert_called_once_with({})
+        assert response == mock_create.return_value
 
-        mock_create.assert_called_once_with(pr)
-        assert response == (pull_request, None)
+    @patch.object(Bill, "create_from_pr")
+    def test_reopened(self, mock_create, pr_handler: PullRequestHandler):
+        # This does the exact same thing
+        response = pr_handler.reopened({})
+
+        mock_create.assert_called_once_with({})
+        assert response == mock_create.return_value
 
     def test_closed_no_pr(self, pr_handler: PullRequestHandler):
         response = pr_handler.closed({"number": 1})

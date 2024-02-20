@@ -9,7 +9,7 @@ class PullRequestFactory(DjangoModelFactory):
     number = Sequence(lambda n: -n)  # Use negative numbers to represent fake PRs
     title = Faker("text", max_nb_chars=50)
     author_name = Faker("user_name")
-    state = Faker("random_element", elements=["open", "closed"])
+    state = "open"
     additions = Faker("random_int")
     deletions = Faker("random_int")
     sha = Faker("pystr", min_chars=40, max_chars=40)

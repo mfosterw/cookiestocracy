@@ -8,7 +8,7 @@ from collections.abc import Callable
 from logging import getLogger
 from typing import Any
 
-import requests
+# import requests
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, JsonResponse, request
@@ -130,23 +130,24 @@ class GithubWebhookView(View):
 
         return None
 
-    @staticmethod
-    def _validate_remote_addr(remote_addr: str) -> str:
-        """Validate the remote address of a request from a webhook
+    # Unused because I'm worried it will take too long
+    # @staticmethod
+    # def _validate_remote_addr(remote_addr: str) -> str:
+    #     """Validate the remote address of a request from a webhook
 
-        Args:
-            request: The request from the webhook
+    #     Args:
+    #         request: The request from the webhook
 
-        Returns:
-            str: Error message if the remote address is invalid, otherwise an empty string
-        """
-        # Get the list of IP addresses that GitHub uses to send webhooks
-        # This will slow the response but since it's not a frequent request, it's acceptable
-        webhook_allowed_hosts = requests.get("https://api.github.com/meta", timeout=5).json()["hooks"]
-        if remote_addr not in webhook_allowed_hosts:
-            return "Invalid remote address for GitHub webhook request"
+    #     Returns:
+    #         str: Error message if the remote address is invalid, otherwise an empty string
+    #     """
+    #     # Get the list of IP addresses that GitHub uses to send webhooks
+    #     # This will slow the response but since it's not a frequent request, it's acceptable
+    #     webhook_allowed_hosts = requests.get("https://api.github.com/meta", timeout=5).json()["hooks"]
+    #     if remote_addr not in webhook_allowed_hosts:
+    #         return "Invalid remote address for GitHub webhook request"
 
-        return ""
+    #     return ""
 
     def validate_request(self, headers: request.HttpHeaders, body: bytes) -> HttpResponse | None:
         return self._validate_header(headers) or self._validate_signature(headers["x-hub-signature-256"], body)

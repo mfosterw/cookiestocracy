@@ -1,34 +1,40 @@
+import pytest
 from django.utils.timezone import get_current_timezone
 from rest_framework.test import APIRequestFactory
 
+from democrasite.webiscite.api.serializers import PullRequestSerializer
+from democrasite.webiscite.tests.factories import PullRequestFactory
+
 from ..api.views import BillViewSet, PullRequestViewSet
-from ..models import Bill, PullRequest
+from ..models import Bill
+
+
+class TestPullRequestSerializer:
+    def test_serializer_read_only(self):
+        serializer = PullRequestSerializer(PullRequestFactory())
+        with pytest.raises(NotImplementedError):
+            serializer.create({})
+        with pytest.raises(NotImplementedError):
+            assert serializer.update({}, {})
 
 
 class TestPullRequestViewSet:
     def test_viewset_fields(self, api_rf: APIRequestFactory, user):
-        pr = PullRequest.objects.create(
-            number=-1,
-            title="Test PR",
-            additions=0,
-            deletions=0,
-            sha="123",
-            author_name=user.username,
-        )
+        pull_request = PullRequestFactory()
 
         view = PullRequestViewSet.as_view(actions={"get": "retrieve"})
         request = api_rf.get("/fake-url/")
         request.user = user
 
-        response = view(request, pk=pr.pk)
+        response = view(request, pk=pull_request.number)
 
         assert (
             response.data.items()
             >= {  # Subset of the response data
-                "title": pr.title,
-                "sha": pr.sha,
-                "time_created": pr.time_created.astimezone(get_current_timezone()).isoformat(),
-                "url": f"http://testserver/api/pull-requests/{pr.pk}/",
+                "title": pull_request.title,
+                "sha": pull_request.sha,
+                "time_created": pull_request.time_created.astimezone(get_current_timezone()).isoformat(),
+                "url": f"http://testserver/api/pull-requests/{pull_request.number}/",
             }.items()
         )
 

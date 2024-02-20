@@ -8,8 +8,16 @@ from django.forms import ValidationError
 from django_celery_beat.models import PeriodicTask
 from factory import Faker
 
-from ..models import Bill, PullRequest
-from .factories import BillFactory, GithubPullRequestFactory
+from ..models import Bill, PullRequest, Vote
+from .factories import BillFactory, GithubPullRequestFactory, PullRequestFactory
+
+
+class TestVote:
+    """Test class for all tests related to the Vote model"""
+
+    def test_vote_str(self, bill: Bill, user: Any):
+        bill.vote(user, True)
+        assert str(Vote.objects.get(user=user, support=True)) == f"{user} for {bill}"
 
 
 class TestPullRequest:
@@ -35,6 +43,16 @@ class TestPullRequest:
         pull_request.refresh_from_db()
         assert pull_request.state == "closed"
         assert not pull_request.bill_set.filter(state=Bill.States.OPEN).exists()
+
+    def test_close_no_bill(self):
+        pull_request = PullRequestFactory()
+        assert pull_request.state == "open"
+
+        pull_request.close()
+
+        pull_request.refresh_from_db()
+        assert pull_request.state == "closed"
+        assert not pull_request.bill_set.exists()
 
 
 class TestBill:
