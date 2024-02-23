@@ -33,5 +33,4 @@ class BillSerializer(ModelSerializer):
             "time_created",
             "yes_votes",
             "no_votes",
-            "url",
         ]

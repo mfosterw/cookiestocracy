@@ -1,19 +1,6 @@
 from django.urls import resolve, reverse
 
-from ..models import Bill, PullRequest
-
-
-def test_pull_request_list():
-    assert reverse("pullrequest-list") == "/api/pull-requests/"
-    assert resolve("/api/pull-requests/").view_name == "pullrequest-list"
-
-
-def test_pull_request_detail():
-    pr = PullRequest.objects.create(
-        number=-1, title="Test PR", author_name="test", state="open", additions=0, deletions=0, sha="0" * 40
-    )
-    assert reverse("pullrequest-detail", kwargs={"pk": pr.pk}) == f"/api/pull-requests/{pr.pk}/"
-    assert resolve(f"/api/pull-requests/{pr.pk}/").view_name == "pullrequest-detail"
+from ..models import Bill
 
 
 def test_bill_list():
