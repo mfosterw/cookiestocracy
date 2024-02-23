@@ -15,7 +15,7 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
+# lib/ clashes with nextjs app and (probably) shouldn't come up
 lib64/
 parts/
 sdist/
