@@ -1,37 +1,37 @@
 from django.contrib.auth.models import AbstractBaseUser
-from rest_framework.serializers import HyperlinkedModelSerializer, HyperlinkedRelatedField
+from rest_framework.serializers import CharField, ModelSerializer, SlugRelatedField
 
+from democrasite.users.api.serializers import UserSerializer
 from democrasite.webiscite.models import Bill, PullRequest
 
 
-class PullRequestSerializer(HyperlinkedModelSerializer):
-    bill_set: "HyperlinkedRelatedField[Bill]" = HyperlinkedRelatedField(
-        view_name="bill-detail", many=True, read_only=True
-    )
-
+class PullRequestSerializer(ModelSerializer):
     class Meta:
         model = PullRequest
-        fields = ["title", "author_name", "additions", "deletions", "sha", "time_created", "bill_set", "url"]
-
-    def create(self, validated_data):
-        raise NotImplementedError("Pull requests are read-only")
-
-    def update(self, instance, validated_data):
-        raise NotImplementedError("Pull requests are read-only")
+        fields = ["number", "title", "additions", "deletions", "time_created"]
+        read_only_fields = fields  # pull requests are read-only
 
 
-class BillSerializer(HyperlinkedModelSerializer):
-    yes_votes: "HyperlinkedRelatedField[AbstractBaseUser]" = HyperlinkedRelatedField(
-        view_name="user-detail", many=True, lookup_field="username", read_only=True
+class BillSerializer(ModelSerializer):
+    author = UserSerializer()
+    pull_request = PullRequestSerializer(read_only=True)
+    state = CharField(source="get_state_display")
+
+    yes_votes: "SlugRelatedField[AbstractBaseUser]" = SlugRelatedField(
+        many=True, read_only=True, slug_field="username"
     )
-    no_votes: "HyperlinkedRelatedField[AbstractBaseUser]" = HyperlinkedRelatedField(
-        view_name="user-detail", many=True, lookup_field="username", read_only=True
-    )
+    no_votes: "SlugRelatedField[AbstractBaseUser]" = SlugRelatedField(many=True, read_only=True, slug_field="username")
 
     class Meta:
         model = Bill
-        fields = ["name", "description", "time_created", "author", "pull_request", "yes_votes", "no_votes", "url"]
-        extra_kwargs = {
-            "author": {"lookup_field": "username", "read_only": True},
-            "time_created": {"read_only": True},
-        }
+        exclude = ["votes", "time_updated", "submit_task"]
+        read_only_fields = [
+            "author",
+            "pull_request",
+            "state",
+            "constitutional",
+            "time_created",
+            "yes_votes",
+            "no_votes",
+            "url",
+        ]
