@@ -119,6 +119,10 @@ class Bill(StatusModel, TimeStampedModel):
     pull_request = models.ForeignKey(PullRequest, on_delete=models.PROTECT)
 
     class Status(models.TextChoices):
+        """The possible statuses for a bill
+
+        :meta private:"""
+
         OPEN = "open", _("Open")
         APPROVED = "approved", _("Approved")
         REJECTED = "rejected", _("Rejected")
@@ -126,7 +130,7 @@ class Bill(StatusModel, TimeStampedModel):
         # Translators: PR is short for "pull request"
         CLOSED = "closed", _("PR Closed")  # PR closed on Github
 
-    #:
+    #:-: The possible statuses for a bill. Use ``Bill.Status.VALUE`` to access.
     STATUS = Status.choices
     status = StatusField(
         max_length=10,
