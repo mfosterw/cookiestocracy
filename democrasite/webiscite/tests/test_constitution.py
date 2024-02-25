@@ -1,12 +1,17 @@
-# pylint: disable=too-few-public-methods,no-self-use
-from os.path import isfile
+from typing import TYPE_CHECKING
 from unittest.mock import patch
 
 from django.conf import settings
 from unidiff import PatchSet
 
-from .. import constitution
-from ..constitution import _check_hunks, is_constitutional, read_constitution, update_constitution
+from democrasite.webiscite import constitution
+from democrasite.webiscite.constitution import _check_hunks
+from democrasite.webiscite.constitution import is_constitutional
+from democrasite.webiscite.constitution import read_constitution
+from democrasite.webiscite.constitution import update_constitution
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 class TestCheckHunks:
@@ -287,4 +292,5 @@ class TestConstitutionFiles:
     def test_constitution_files(self):
         """Ensure the files in constitution.json exist (does not check line numbers)"""
         for file in read_constitution():
-            assert isfile(settings.ROOT_DIR / file), f"{file} from constitution.json not found"
+            filepath: Path = settings.BASE_DIR / file
+            assert filepath.is_file(), f"{file} from constitution.json not found"

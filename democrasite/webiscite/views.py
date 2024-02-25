@@ -1,11 +1,14 @@
 """Views for the webiscite app."""
 
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django import http
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import UserPassesTestMixin
 from django.contrib.messages.views import SuccessMessageMixin
-from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, JsonResponse
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_POST
-from django.views.generic import DetailView, ListView, UpdateView
+from django.views.generic import DetailView
+from django.views.generic import ListView
+from django.views.generic import UpdateView
 
 from .models import Bill
 
@@ -97,7 +100,7 @@ bill_update_view = BillUpdateView.as_view()
 
 # Use vote_view below, this would be decorated if possible
 @require_POST
-def vote_view(request: HttpRequest, pk: int) -> HttpResponse:
+def vote_view(request: http.HttpRequest, pk: int) -> http.HttpResponse:
     """View for ajax request made when a user votes on a bill
 
     Validates that vote is valid and, if so, registers it with the database and returns
@@ -113,24 +116,26 @@ def vote_view(request: HttpRequest, pk: int) -> HttpResponse:
         request was valid, otherwise a client error response
     """
     if not request.user.is_authenticated:
-        return HttpResponse("Login required", status=401)  # 401 means unauthorized
+        return http.HttpResponse("Login required", status=401)  # 401 means unauthorized
 
     vote_val = request.POST.get("vote")
     if not vote_val:
-        return HttpResponseBadRequest('"vote" data expected')
-    elif vote_val not in {"vote-yes", "vote-no"}:
-        return HttpResponseBadRequest('"vote" must be one of ("vote-yes", "vote-no")')
+        return http.HttpResponseBadRequest('"vote" data expected')
+    if vote_val not in {"vote-yes", "vote-no"}:
+        return http.HttpResponseBadRequest(
+            '"vote" must be one of ("vote-yes", "vote-no")'
+        )
 
     bill = Bill.objects.get(pk=pk)
     if bill.state != Bill.States.OPEN:
-        return HttpResponseForbidden("Bill may not be voted on")  # status 403
+        return http.HttpResponseForbidden("Bill may not be voted on")  # status 403
 
     if vote_val == "vote-yes":
-        bill.vote(request.user, True)
+        bill.vote(request.user, support=True)
     elif vote_val == "vote-no":
-        bill.vote(request.user, False)
+        bill.vote(request.user, support=False)
 
-    return JsonResponse(
+    return http.JsonResponse(
         {
             "yes-votes": bill.yes_votes.count(),
             "no-votes": bill.no_votes.count(),

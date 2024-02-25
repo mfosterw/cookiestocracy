@@ -36,9 +36,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="bill",
             name="sha",
-            field=models.CharField(
-                help_text="Unique identifier of PR commit", max_length=40
-            ),
+            field=models.CharField(help_text="Unique identifier of PR commit", max_length=40),
         ),
         migrations.AlterField(
             model_name="bill",

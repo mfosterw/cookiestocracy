@@ -1,14 +1,9 @@
-# pylint: disable=too-few-public-methods,no-self-use
+"""Module for all Form Tests."""
+
 from django.utils.crypto import get_random_string
 from django.utils.translation import gettext_lazy as _
 
-from democrasite.users.forms import (
-    DisabledChangePasswordForm,
-    DisabledResetPasswordForm,
-    DisabledResetPasswordKeyForm,
-    DisabledSetPasswordForm,
-    UserCreationForm,
-)
+from democrasite.users import forms
 from democrasite.users.models import User
 
 
@@ -27,7 +22,7 @@ class TestUserCreationForm:
 
         # The user already exists,
         # hence cannot be created.
-        form = UserCreationForm(
+        form = forms.UserAdminCreationForm(
             {
                 "username": user.username,
                 "password1": user.password,
@@ -44,7 +39,7 @@ class TestUserCreationForm:
 class TestDisabledForms:
     def test_change_password_form(self, user: User):
         password = get_random_string(20)
-        form = DisabledChangePasswordForm(
+        form = forms.DisabledChangePasswordForm(
             data={
                 "oldpassword": user.password,
                 "password1": password,
@@ -58,7 +53,7 @@ class TestDisabledForms:
 
     def test_set_password_form(self, user: User):
         password = get_random_string(20)
-        form = DisabledSetPasswordForm(
+        form = forms.DisabledSetPasswordForm(
             data={"password1": password, "password2": password},
             user=user,
         )
@@ -67,14 +62,14 @@ class TestDisabledForms:
         assert form.errors["__all__"][0] == _("You cannot set a password.")
 
     def test_reset_password_form(self, user: User):
-        form = DisabledResetPasswordForm(data={"email": user.email})
+        form = forms.DisabledResetPasswordForm(data={"email": user.email})
 
         assert not form.is_valid()
         assert form.errors["__all__"][0] == _("You cannot reset your password.")
 
     def test_reset_key_password_form(self, user: User):
         password = get_random_string(20)
-        form = DisabledResetPasswordKeyForm(
+        form = forms.DisabledResetPasswordKeyForm(
             data={"password1": password, "password2": password},
             user=user,
         )

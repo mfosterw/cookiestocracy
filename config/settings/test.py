@@ -2,7 +2,9 @@
 With these settings, tests run faster.
 """
 
-from .base import *  # noqa pylint: disable=wildcard-import,unused-wildcard-import
+from .base import *  # noqa: F403
+from .base import INSTALLED_APPS
+from .base import TEMPLATES
 from .base import env
 
 # GENERAL
@@ -15,7 +17,7 @@ SECRET_KEY = env(
 # https://docs.djangoproject.com/en/dev/ref/settings/#test-runner
 TEST_RUNNER = "django.test.runner.DiscoverRunner"
 # Admin site is not available in production, but should still be tested
-INSTALLED_APPS += ["django.contrib.admin"]  # noqa F405
+INSTALLED_APPS += ["django.contrib.admin"]
 
 # PASSWORDS
 # ------------------------------------------------------------------------------
@@ -30,14 +32,4 @@ EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
 # DEBUGGING FOR TEMPLATES
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#templates
-TEMPLATES[0]["OPTIONS"]["debug"] = True  # type: ignore[index] # noqa F405
-
-# Your stuff...
-# ------------------------------------------------------------------------------
-# Machina needs the cache to be defined
-CACHES = {
-    "machina_attachments": {
-        "BACKEND": "django.core.cache.backends.filebased.FileBasedCache",
-        "LOCATION": "/tmp",
-    },
-}
+TEMPLATES[0]["OPTIONS"]["debug"] = True  # type: ignore[index]

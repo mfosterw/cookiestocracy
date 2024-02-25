@@ -4,22 +4,22 @@ from pathlib import Path
 
 import django_stubs_ext
 import environ
-from machina import MACHINA_MAIN_STATIC_DIR, MACHINA_MAIN_TEMPLATE_DIR
+from machina import MACHINA_MAIN_STATIC_DIR
+from machina import MACHINA_MAIN_TEMPLATE_DIR
 
 # Monkeypatching Django, so stubs will work for all generics,
 # see: https://github.com/typeddjango/django-stubs
 django_stubs_ext.monkeypatch()
 
-# TODO: Change to base_dir
-ROOT_DIR = Path(__file__).resolve(strict=True).parent.parent.parent
+BASE_DIR = Path(__file__).resolve(strict=True).parent.parent.parent
 # democrasite/
-APPS_DIR = ROOT_DIR / "democrasite"
+APPS_DIR = BASE_DIR / "democrasite"
 env = environ.Env()
 
 READ_DOT_ENV_FILE = env.bool("DJANGO_READ_DOT_ENV_FILE", default=False)
 if READ_DOT_ENV_FILE:
     # OS environment variables take precedence over variables from .env
-    env.read_env(str(ROOT_DIR / ".env"))
+    env.read_env(str(BASE_DIR / ".env"))
 
 # GENERAL
 # ------------------------------------------------------------------------------
@@ -39,7 +39,7 @@ USE_I18N = True
 # https://docs.djangoproject.com/en/dev/ref/settings/#use-tz
 USE_TZ = True
 # https://docs.djangoproject.com/en/dev/ref/settings/#locale-paths
-LOCALE_PATHS = [str(ROOT_DIR / "locale")]
+LOCALE_PATHS = [str(BASE_DIR / "locale")]
 
 # DATABASES
 # ------------------------------------------------------------------------------
@@ -50,6 +50,18 @@ DATABASES = {
 DATABASES["default"]["ATOMIC_REQUESTS"] = True
 # https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-DEFAULT_AUTO_FIELD
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# CACHES
+# ------------------------------------------------------------------------------
+# Machina needs this cache to be defined
+# TODO: I don't know if this will work in production
+CACHES = {
+    "machina_attachments": {
+        "BACKEND": "django.core.cache.backends.filebased.FileBasedCache",
+        "LOCATION": "/tmp",  # noqa: S108
+    },
+}
+
 
 # URLS
 # ------------------------------------------------------------------------------
@@ -140,7 +152,9 @@ PASSWORD_HASHERS = [
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#auth-password-validators
 AUTH_PASSWORD_VALIDATORS = [
-    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
+    {
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"  # noqa: E501
+    },
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
@@ -168,7 +182,7 @@ MIDDLEWARE = [
 # STATIC
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#static-root
-STATIC_ROOT = str(ROOT_DIR / "staticfiles")
+STATIC_ROOT = str(BASE_DIR / "staticfiles")
 # https://docs.djangoproject.com/en/dev/ref/settings/#static-url
 STATIC_URL = "/static/"
 # https://docs.djangoproject.com/en/dev/ref/contrib/staticfiles/#std:setting-STATICFILES_DIRS
@@ -210,7 +224,7 @@ TEMPLATES = [
                 "django.contrib.messages.context_processors.messages",
                 # Custom context processors
                 "democrasite.webiscite.context_processors.settings_context",
-                # Machina (forum)
+                # Machina
                 "machina.core.context_processors.metadata",
             ],
         },
@@ -272,7 +286,10 @@ LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
     "formatters": {
-        "verbose": {"format": "%(levelname)s %(asctime)s %(module)s " "%(process)d %(thread)d %(message)s"}
+        "verbose": {
+            "format": "%(levelname)s %(asctime)s %(module)s "
+            "%(process)d %(thread)d %(message)s"
+        }
     },
     "handlers": {
         "console": {
@@ -311,13 +328,6 @@ if USE_TZ:
     CELERY_TIMEZONE = TIME_ZONE
 # https://docs.celeryq.dev/en/stable/userguide/configuration.html#std:setting-broker_url
 CELERY_BROKER_URL = env("CELERY_BROKER_URL", default="")
-# https://docs.celeryproject.org/en/latest/userguide/configuration.html#std-setting-broker_transport_options
-CELERY_BROKER_TRANSPORT_OPTIONS = {
-    # Allow tasks to remain in queue long enough for bills to finish voting period
-    # See also:
-    # https://docs.celeryproject.org/en/latest/getting-started/backends-and-brokers/redis.html#visibility-timeout
-    "visibility_timeout": (60 * 60 * 24 * (7 + 1))  # voting period + 1 days in seconds
-}
 # https://docs.celeryq.dev/en/stable/userguide/configuration.html#std:setting-result_backend
 CELERY_RESULT_BACKEND = CELERY_BROKER_URL
 # https://docs.celeryq.dev/en/stable/userguide/configuration.html#result-extended
@@ -348,12 +358,17 @@ CELERY_TASK_SEND_SENT_EVENT = True
 # ------------------------------------------------------------------------------
 ACCOUNT_ALLOW_REGISTRATION = env.bool("DJANGO_ACCOUNT_ALLOW_REGISTRATION", True)
 # Local registration is currently disabled, accounts must be created through a provider
-ACCOUNT_ALLOW_LOCAL_REGISTRATION = env.bool("DJANGO_ACCOUNT_ALLOW_LOCAL_REGISTRATION", ACCOUNT_ALLOW_REGISTRATION)
-ACCOUNT_ALLOW_SOCIAL_REGISTRATION = env.bool("DJANGO_ACCOUNT_ALLOW_SOCIAL_REGISTRATION", ACCOUNT_ALLOW_REGISTRATION)
+ACCOUNT_ALLOW_LOCAL_REGISTRATION = env.bool(
+    "DJANGO_ACCOUNT_ALLOW_LOCAL_REGISTRATION", ACCOUNT_ALLOW_REGISTRATION
+)
+ACCOUNT_ALLOW_SOCIAL_REGISTRATION = env.bool(
+    "DJANGO_ACCOUNT_ALLOW_SOCIAL_REGISTRATION", ACCOUNT_ALLOW_REGISTRATION
+)
 # https://django-allauth.readthedocs.io/en/latest/configuration.html
 ACCOUNT_AUTHENTICATION_METHOD = "email"
 ACCOUNT_EMAIL_REQUIRED = True
-# If email verification is used I would like to apply it to each linked account individually
+# If email verification is used I would like to apply it to each linked account
+# individually so we don't have to rely on providers to do so
 ACCOUNT_EMAIL_VERIFICATION = "none"
 ACCOUNT_MAX_EMAIL_ADDRESSES = 1
 ACCOUNT_FORMS = {
@@ -404,7 +419,9 @@ REST_FRAMEWORK = {
         "rest_framework.authentication.SessionAuthentication",
         "rest_framework.authentication.TokenAuthentication",
     ),
-    "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticatedOrReadOnly",),
+    "DEFAULT_PERMISSION_CLASSES": (
+        "rest_framework.permissions.IsAuthenticatedOrReadOnly",
+    ),
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
@@ -420,7 +437,7 @@ SPECTACULAR_SETTINGS = {
     "SERVE_PERMISSIONS": ["rest_framework.permissions.IsAdminUser"],
 }
 
-# Machina (forum)
+# Machina
 # ------------------------------------------------------------------------------
 # https://django-machina.readthedocs.io/en/stable/settings.html#machina-forum-name
 MACHINA_FORUM_NAME = "Democrasite Forum"

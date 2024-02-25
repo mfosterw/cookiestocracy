@@ -55,9 +55,7 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "prop_date",
-                    models.DateTimeField(
-                        auto_now_add=True, verbose_name="date proposed"
-                    ),
+                    models.DateTimeField(auto_now_add=True, verbose_name="date proposed"),
                 ),
                 (
                     "author",
@@ -69,9 +67,7 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "no_votes",
-                    models.ManyToManyField(
-                        blank=True, related_name="no_votes", to=settings.AUTH_USER_MODEL
-                    ),
+                    models.ManyToManyField(blank=True, related_name="no_votes", to=settings.AUTH_USER_MODEL),
                 ),
                 (
                     "yes_votes",

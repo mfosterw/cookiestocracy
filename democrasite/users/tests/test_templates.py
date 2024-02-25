@@ -1,15 +1,18 @@
 """Render each branch on each template to ensure there are no rendering errors."""
+from http import HTTPStatus
 
-# pylint: disable=too-few-public-methods,no-self-use
 from django.contrib import messages
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.messages.middleware import MessageMiddleware
 from django.contrib.sessions.middleware import SessionMiddleware
 from django.http import HttpRequest
 from django.shortcuts import render
-from django.test import Client, RequestFactory
+from django.test import Client
+from django.test import RequestFactory
 from django.urls import reverse
-from django.views.defaults import page_not_found, permission_denied, server_error
+from django.views.defaults import page_not_found
+from django.views.defaults import permission_denied
+from django.views.defaults import server_error
 
 from democrasite.users.models import User
 from democrasite.users.tests.factories import UserFactory
@@ -29,24 +32,32 @@ class TestRootTemplates:
 
         response = render(request, "base.html")
 
-        assert response.status_code == 200
+        assert response.status_code == HTTPStatus.OK
         assert b"This is a test message" in response.content
-        assert b"login-dropdown" in response.content, "should be visible to logged out users"
-        assert b"logout-form" not in response.content, "should not be visible to logged out users"
+        assert (
+            b"login-dropdown" in response.content
+        ), "should be visible to logged out users"
+        assert (
+            b"logout-form" not in response.content
+        ), "should not be visible to logged out users"
 
         request.user = user
 
         response = render(request, "base.html")
 
-        assert b"login-dropdown" not in response.content, "should not be visible to logged in users"
-        assert b"logout-form" in response.content, "should be visible to logged out users"
+        assert (
+            b"login-dropdown" not in response.content
+        ), "should not be visible to logged in users"
+        assert (
+            b"logout-form" in response.content
+        ), "should be visible to logged out users"
 
     def test_403_with_message(self, rf: RequestFactory):
         request = rf.get("/fake-url/")
 
         response = permission_denied(request, exception=Exception("Test message"))
 
-        assert response.status_code == 403
+        assert response.status_code == HTTPStatus.FORBIDDEN
         assert b"Test message" in response.content
 
     def test_403_without_message(self, rf: RequestFactory):
@@ -54,7 +65,7 @@ class TestRootTemplates:
 
         response = permission_denied(request, exception=Exception(""))
 
-        assert response.status_code == 403
+        assert response.status_code == HTTPStatus.FORBIDDEN
         assert b"You're not allowed to access this page." in response.content
 
     def test_404_without_message(self, rf: RequestFactory):
@@ -62,7 +73,7 @@ class TestRootTemplates:
 
         response = page_not_found(request, exception=Exception(""))
 
-        assert response.status_code == 404
+        assert response.status_code == HTTPStatus.NOT_FOUND
         assert b"This is not the page you were looking for." in response.content
 
     def test_404_with_message(self, rf: RequestFactory):
@@ -70,7 +81,7 @@ class TestRootTemplates:
 
         response = page_not_found(request, exception=Exception("Test message"))
 
-        assert response.status_code == 404
+        assert response.status_code == HTTPStatus.NOT_FOUND
         assert b"Test message" in response.content
 
     def test_500(self, rf: RequestFactory):
@@ -78,7 +89,7 @@ class TestRootTemplates:
 
         response = server_error(request)
 
-        assert response.status_code == 500
+        assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
         assert b"Error" in response.content
 
     def test_page_disabled(self, rf: RequestFactory):
@@ -86,7 +97,7 @@ class TestRootTemplates:
 
         response = render(request, "page_disabled.html")
 
-        assert response.status_code == 200
+        assert response.status_code == HTTPStatus.OK
         assert b"Page Unavailable" in response.content
 
 
@@ -95,13 +106,13 @@ class TestPagesTemplates:
     def test_about(self, client: Client):
         response = client.get(reverse("about"))
 
-        assert response.status_code == 200
+        assert response.status_code == HTTPStatus.OK
         assert response.templates[0].name == "pages/about.html"
 
     def test_privacy(self, client: Client):
         response = client.get(reverse("privacy"))
 
-        assert response.status_code == 200
+        assert response.status_code == HTTPStatus.OK
         assert response.templates[0].name == "pages/privacy.html"
 
 
@@ -112,7 +123,7 @@ class TestUsersTemplates:
 
         response = client.get(reverse("users:detail", args=(user.username,)))
 
-        assert response.status_code == 200
+        assert response.status_code == HTTPStatus.OK
         assert response.templates[0].name == "users/user_detail.html"
         assert b"My Info" not in response.content
 
@@ -127,5 +138,5 @@ class TestUsersTemplates:
 
         response = client.get(reverse("users:update"))
 
-        assert response.status_code == 200
+        assert response.status_code == HTTPStatus.OK
         assert response.templates[0].name == "users/user_form.html"

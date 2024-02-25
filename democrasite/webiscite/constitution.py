@@ -7,10 +7,16 @@ resulting in constitutional amendments
 """
 
 import json
+from typing import TYPE_CHECKING
 from typing import cast
 
 from django.conf import settings
-from unidiff import Hunk, PatchedFile, PatchSet
+from unidiff import Hunk
+from unidiff import PatchedFile
+from unidiff import PatchSet
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 # Each filename corresponds to a list of pairs representing protected line
 # ranges within that file, or None to protect the entire file
@@ -18,14 +24,12 @@ from unidiff import Hunk, PatchedFile, PatchSet
 
 def _check_hunks(hunks: PatchedFile, locks: list[list[int]]) -> bool:
     """Check if any portions of an edit overlap with constitutional protections"""
+    HUNK_MIN_LENGTH = 7  # noqa: N806
     for hunk in hunks:
         hunk = cast(Hunk, hunk)
         # diff shows 3 lines above and below for context
         # If the diff starts beyond line 1, remove the top 3 lines
-        if hunk.source_start == 1:
-            start = 1
-        else:
-            start = hunk.source_start + 3
+        start = 1 if hunk.source_start == 1 else hunk.source_start + 3
 
         # Subtract 1 from start because it's not 0-indexed
         end = start + hunk.source_length - 1
@@ -37,7 +41,7 @@ def _check_hunks(hunks: PatchedFile, locks: list[list[int]]) -> bool:
             end -= 3
 
         # If diff is >= 7 lines, ignore end context (otherwise it reached EOF)
-        if hunk.source_length >= 7:
+        if hunk.source_length >= HUNK_MIN_LENGTH:
             end -= 3
 
         for lock in locks:
@@ -53,7 +57,8 @@ def _check_hunks(hunks: PatchedFile, locks: list[list[int]]) -> bool:
 
 def read_constitution() -> dict[str, list[list[int]] | None]:
     """Read the constitution and return it as a type-annotated dict"""
-    with open(settings.ROOT_DIR / "constitution.json", encoding="utf-8") as f:
+    path: Path = settings.BASE_DIR / "constitution.json"
+    with path.open() as f:
         return json.load(f)
 
 
@@ -64,8 +69,8 @@ def is_constitutional(diff_str: str) -> list[str]:
         diff_str: A string containing the output of a git diff
 
     Returns:
-        list[str]: A list containing the paths of files relative to the root of the repository
-        which include consitutionally protected edits
+        list[str]: A list containing the paths of files relative to the root of the
+        repository which include consitutionally protected edits
     """
     constitution = read_constitution()
     patch = PatchSet(diff_str)
@@ -73,22 +78,17 @@ def is_constitutional(diff_str: str) -> list[str]:
 
     for file in patch:
         file = cast(PatchedFile, file)
-        if file.is_rename:
-            # Get source file path for renamed files
-            filepath = file.source_file[2:]  # Remove "a/" from start of path
-        else:
-            filepath = file.path
-
+        # Remove "a/" from start of source file path
+        filepath = file.source_file[2:] if file.is_rename else file.path
         if filepath in constitution:
             locks = constitution[filepath]
-            # File removed or renamed
-            if file.is_removed_file or file.is_rename:
-                matched_files.append(filepath)
-            # Entire file included in constitution
-            elif locks is None:
-                matched_files.append(filepath)
-            # File overlaps with at least one protected hunk
-            elif _check_hunks(file, locks):
+
+            if (
+                file.is_removed_file
+                or file.is_rename
+                or locks is None  # If the file is fully protected
+                or _check_hunks(file, locks)  # If a protected hunk was edited
+            ):
                 matched_files.append(filepath)
 
     return matched_files
@@ -130,7 +130,5 @@ def update_constitution(diff_str: str) -> str:
                         lock[0] += delta
                         lock[1] += delta
 
-    if update:
-        return json.dumps(constitution, sort_keys=True)
     # If no changes were necessary, return empty string to prevent file update
-    return ""
+    return json.dumps(constitution, sort_keys=True) if update else ""

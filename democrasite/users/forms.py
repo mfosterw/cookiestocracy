@@ -1,7 +1,10 @@
 """Override forms from allauth."""
 
-from allauth.account.forms import ChangePasswordForm, ResetPasswordForm, ResetPasswordKeyForm, SetPasswordForm
-from django.contrib.auth import forms as auth_forms
+from allauth.account.forms import ChangePasswordForm
+from allauth.account.forms import ResetPasswordForm
+from allauth.account.forms import ResetPasswordKeyForm
+from allauth.account.forms import SetPasswordForm
+from django.contrib.auth import forms as admin_forms
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
@@ -9,20 +12,22 @@ from django.utils.translation import gettext_lazy as _
 User = get_user_model()
 
 
-class UserChangeForm(auth_forms.UserChangeForm):
+class UserAdminChangeForm(admin_forms.UserChangeForm):
     """Override UserChangeForm to use custom User model."""
 
-    class Meta(auth_forms.UserChangeForm.Meta):
+    class Meta(admin_forms.UserChangeForm.Meta):
         model = User
 
 
-class UserCreationForm(auth_forms.UserCreationForm):
+class UserAdminCreationForm(admin_forms.UserCreationForm):
     """Override UserCreationForm to use custom User model."""
 
-    class Meta(auth_forms.UserCreationForm.Meta):
+    class Meta(admin_forms.UserCreationForm.Meta):
         model = User
 
-        error_messages = {"username": {"unique": _("This username has already been taken.")}}
+        error_messages = {
+            "username": {"unique": _("This username has already been taken.")}
+        }
 
 
 class DisabledChangePasswordForm(ChangePasswordForm):

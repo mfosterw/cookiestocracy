@@ -5,7 +5,9 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
-from django.views.generic import DetailView, RedirectView, UpdateView
+from django.views.generic import DetailView
+from django.views.generic import RedirectView
+from django.views.generic import UpdateView
 
 User = get_user_model()
 
@@ -33,7 +35,7 @@ class UserUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
         assert self.request.user.is_authenticated
         return self.request.user.get_absolute_url()
 
-    def get_object(self):  # pylint: disable=arguments-differ
+    def get_object(self):
         return self.request.user
 
 
@@ -45,7 +47,7 @@ class UserRedirectView(LoginRequiredMixin, RedirectView):
 
     permanent = False
 
-    def get_redirect_url(self):  # pylint: disable=arguments-differ
+    def get_redirect_url(self):
         return reverse("users:detail", kwargs={"username": self.request.user.username})
 
 

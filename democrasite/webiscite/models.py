@@ -11,7 +11,8 @@ from django.contrib.auth.models import AbstractBaseUser
 from django.db import models
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
-from django_celery_beat.models import IntervalSchedule, PeriodicTask
+from django_celery_beat.models import IntervalSchedule
+from django_celery_beat.models import PeriodicTask
 
 from . import constitution
 
@@ -38,7 +39,8 @@ class PullRequest(models.Model):
     title = models.CharField(max_length=100)
     additions = models.IntegerField(help_text=_("Lines added"))
     deletions = models.IntegerField(help_text=_("Lines removed"))
-    # diff_url = models.URLField(help_text=_("URL to the diff of the pull request"))
+    # diff_url = models.URLField(  #
+    # help_text=_("URL to the diff of the pull request"))
     # Store Github username of author even if they are not a user on the site
     author_name = models.CharField(max_length=100)
     state = models.CharField(
@@ -47,7 +49,9 @@ class PullRequest(models.Model):
         help_text=_("State of the PR on Github"),
     )
     # Unique by defintion but added the constraint for clarity
-    sha = models.CharField(max_length=40, unique=True, help_text=_("Unique identifier of PR commit"))
+    sha = models.CharField(
+        max_length=40, unique=True, help_text=_("Unique identifier of PR commit")
+    )
     time_created = models.DateTimeField(auto_now_add=True)
     time_updated = models.DateTimeField(auto_now=True)
 
@@ -56,9 +60,10 @@ class PullRequest(models.Model):
 
     @classmethod
     def create_from_pr(cls, pr: dict[str, Any]) -> "PullRequest":
-        """Update or create a pull request from a parsed JSON object representing the pull request
+        """Update or create a pull request from a parsed JSON object representing the it
 
-        If the given pull request exists, update it based on the request, otherwise create a new pull request instance
+        If the given pull request exists, update it based on the request, otherwise
+        create a new pull request instance
 
         Args:
             pr: The parsed JSON object representing the pull request
@@ -72,13 +77,15 @@ class PullRequest(models.Model):
                 "title": pr["title"],
                 "additions": pr["additions"],
                 "deletions": pr["deletions"],
-                # "diff_url": pr["diff_url"],
+                # "diff_url": pr["diff_url"],  # noqa: ERA001
                 "author_name": pr["user"]["login"],
                 "state": pr["state"],
                 "sha": pr["head"]["sha"],
             },
         )
-        logger.info(f"PR %s: Pull request {'created' if created else 'updated'}", pr["number"])
+
+        act = "created" if created else "updated"
+        logger.info("PR %s: Pull request %s", pr["number"], act)
         return pull_request
 
     def close(self) -> "Bill | None":
@@ -121,6 +128,7 @@ class Bill(models.Model):
         # Translators: PR is short for "pull request"
         CLOSED = "c", _("PR Closed")  # PR closed on Github
 
+    #:
     state = models.CharField(
         max_length=1,
         choices=States.choices,
@@ -136,9 +144,12 @@ class Bill(models.Model):
     votes = models.ManyToManyField(User, through=Vote, related_name="votes", blank=True)
     time_created = models.DateTimeField(auto_now_add=True)
     time_updated = models.DateTimeField(auto_now=True)
-    submit_task = models.OneToOneField(PeriodicTask, on_delete=models.PROTECT, null=True, blank=True)
+    submit_task = models.OneToOneField(
+        PeriodicTask, on_delete=models.PROTECT, null=True, blank=True
+    )
 
-    # TODO: Add a custom manager with a queryset method to get open bills (get manager from queryset)
+    # TODO: Add a custom manager with a queryset method to get open bills
+    # (get manager from queryset)
 
     class Meta:
         constraints = [
@@ -147,7 +158,9 @@ class Bill(models.Model):
                 # Can't reference Bill.States because Bill isn't defined yet
                 condition=models.Q(state="o"),
                 name="unique_open_pull_request",
-                violation_error_message=_("A Bill for this pull request is already open"),
+                violation_error_message=_(
+                    "A Bill for this pull request is already open"
+                ),
             ),
         ]
 
@@ -160,13 +173,13 @@ class Bill(models.Model):
 
     @property
     def yes_votes(self) -> models.QuerySet[AbstractBaseUser]:
-        return self.votes.filter(vote__support=True).all()  # pylint: disable=no-member
+        return self.votes.filter(vote__support=True)
 
     @property
     def no_votes(self) -> models.QuerySet[AbstractBaseUser]:
-        return self.votes.filter(vote__support=False).all()  # pylint: disable=no-member
+        return self.votes.filter(vote__support=False)
 
-    def vote(self, user: AbstractBaseUser, support: bool):
+    def vote(self, user: AbstractBaseUser, *, support: bool):
         """Sets the given user's vote based on the support parameter
 
         If the user already voted the way the method would set, their vote is
@@ -176,7 +189,7 @@ class Bill(models.Model):
         assert self.state == self.States.OPEN, "Only open bills may be voted on"
 
         try:
-            vote = Vote.objects.get(bill=self, user=user)  # type: ignore
+            vote: Vote = self.vote_set.get(user=user)
             if vote.support == support:
                 vote.delete()
                 return
@@ -190,16 +203,19 @@ class Bill(models.Model):
 
     @classmethod
     def create_from_pr(cls, pr: dict[str, Any]) -> "tuple[PullRequest, Bill | None]":
-        """Create a :class:`~democrasite.webiscite.models.PullRequest` and, if the creator has an account,
-        :class:`~democrasite.webiscite.models.Bill` instance from a pull request
+        """Create a :class:`~democrasite.webiscite.models.PullRequest` and, if the
+        creator has an account, :class:`~democrasite.webiscite.models.Bill` instance
+        from a pull request
 
         Args:
             pr: The parsed JSON object representing the pull request
 
         Returns:
-            A tuple containing the new or update pull request and new bill instance, if applicable
+            A tuple containing the new or update pull request and new bill instance, if
+            applicable
         """
-        # It was very difficult to decide where to define this logic, but this seems like the best place
+        # It was very difficult to decide where to define this logic, but this seems
+        # like the best place
         pull_request = PullRequest.create_from_pr(pr)
 
         try:
@@ -216,13 +232,16 @@ class Bill(models.Model):
         bill.save()
         logger.info("PR %s: Bill %s created", pr["number"], bill.id)
 
-        bill._schedule_submit()
+        bill._schedule_submit()  # noqa: SLF001 # Apparently ruff can't tell this is the same type as self
 
         return pull_request, bill
 
     @staticmethod
-    def _extract_bill_args(pr: dict[str, Any], pull_request: PullRequest) -> dict[str, Any]:
-        """Extract relevant information from a pull request for creating a :class:`~democrasite.webiscite.models.Bill`
+    def _extract_bill_args(
+        pr: dict[str, Any], pull_request: PullRequest
+    ) -> dict[str, Any]:
+        """Extract relevant information from a pull request for creating a
+        :class:`~democrasite.webiscite.models.Bill`
 
         Args:
             pr: The parsed JSON object representing the pull request
@@ -230,7 +249,9 @@ class Bill(models.Model):
         Returns:
             A dictionary containing the relevant information
         """
-        author = User.objects.filter(socialaccount__provider="github").get(socialaccount__uid=pr["user"]["id"])
+        author = User.objects.filter(socialaccount__provider="github").get(
+            socialaccount__uid=pr["user"]["id"]
+        )
 
         diff = requests.get(pr["diff_url"], timeout=10).text
         constitutional = bool(constitution.is_constitutional(diff))
@@ -250,7 +271,7 @@ class Bill(models.Model):
         Returns:
             The task that was scheduled
         """
-        # This can be extracted to a signal if we want to support other ways of creating bills
+        # This can be extracted to a signal if we want to support other creaton methods
         voting_ends, _ = IntervalSchedule.objects.get_or_create(
             every=settings.WEBISCITE_VOTING_PERIOD, period=IntervalSchedule.DAYS
         )

@@ -2,16 +2,16 @@
 
 from django.urls import path
 
-from .views import bill_detail_view, bill_list_view, bill_proposals_view, bill_update_view, bill_votes_view, vote_view
+from . import views
 from .webhooks import github_webhook_view
 
 app_name = "webiscite"
 urlpatterns = [
-    path("", bill_list_view, name="index"),
-    path("proposals/", bill_proposals_view, name="my-bills"),
-    path("votes/", bill_votes_view, name="my-bill-votes"),
-    path("bills/<int:pk>/", bill_detail_view, name="bill-detail"),
-    path("bills/<int:pk>/update/", bill_update_view, name="bill-update"),
-    path("bills/<int:pk>/vote/", vote_view, name="bill-vote"),
+    path("", views.bill_list_view, name="index"),
+    path("proposals/", views.bill_proposals_view, name="my-bills"),
+    path("votes/", views.bill_votes_view, name="my-bill-votes"),
+    path("bills/<int:pk>/", views.bill_detail_view, name="bill-detail"),
+    path("bills/<int:pk>/update/", views.bill_update_view, name="bill-update"),
+    path("bills/<int:pk>/vote/", views.vote_view, name="bill-vote"),
     path("hooks/github/", github_webhook_view, name="github-webhook"),
 ]

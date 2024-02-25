@@ -5,14 +5,16 @@ Currently, the defined tasks are all related to processing pull requests
 from :func:`democrasite.webiscite.webhooks`.
 """
 
-from typing import Any, cast
+from typing import Any
+from typing import cast
 
 import requests
 from celery import shared_task
 from celery.utils.log import get_task_logger
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from github import Auth, Github
+from github import Auth
+from github import Github
 from github.PullRequest import PullRequest as GithubPullRequest
 
 from . import constitution
@@ -38,7 +40,9 @@ def submit_bill(bill_id: int) -> None:
         bill_id: The id of the bill to submit
     """
     bill = Bill.objects.get(pk=bill_id)
-    repo = Github(auth=Auth.Token(settings.WEBISCITE_GITHUB_TOKEN)).get_repo(settings.WEBISCITE_REPO)
+    repo = Github(auth=Auth.Token(settings.WEBISCITE_GITHUB_TOKEN)).get_repo(
+        settings.WEBISCITE_REPO
+    )
     pull = repo.get_pull(bill.pull_request.number)
 
     log: tuple[Any, ...]
@@ -53,7 +57,11 @@ def submit_bill(bill_id: int) -> None:
     total_votes = bill.votes.count()
     # Bill failed to meet quorum
     if total_votes < settings.WEBISCITE_MINIMUM_QUORUM:
-        log = ("PR %s: bill %s rejected with insufficient votes", bill.pull_request.number, bill.id)
+        log = (
+            "PR %s: bill %s rejected with insufficient votes",
+            bill.pull_request.number,
+            bill.id,
+        )
         _reject_bill(bill, Bill.States.FAILED, pull, *log)
         return
 
@@ -66,7 +74,12 @@ def submit_bill(bill_id: int) -> None:
 
     # Bill failed to meet approval threshold
     if not approved:
-        log = ("PR %s: bill %s rejected with %s%% of votes", bill.pull_request.number, bill.id, approval * 100)
+        log = (
+            "PR %s: bill %s rejected with %s%% of votes",
+            bill.pull_request.number,
+            bill.id,
+            approval * 100,
+        )
         _reject_bill(bill, Bill.States.REJECTED, pull, *log)
         return
 
@@ -96,7 +109,9 @@ def submit_bill(bill_id: int) -> None:
             logger.info("PR %s: constitution updated", bill.pull_request.number)
 
 
-def _reject_bill(bill: Bill, state: Bill.States, pull: GithubPullRequest, msg: str, *args):
+def _reject_bill(
+    bill: Bill, state: Bill.States, pull: GithubPullRequest, msg: str, *args
+):
     """Rejects a bill and closes the associated pull request
 
     Args:

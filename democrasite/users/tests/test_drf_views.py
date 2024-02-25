@@ -6,11 +6,13 @@ from democrasite.users.models import User
 
 
 class TestUserViewSet:
-    @pytest.fixture
+    @pytest.fixture()
     def view(self) -> UserViewSet:
         return UserViewSet()
 
-    def test_get_queryset(self, api_rf: APIRequestFactory, user: User, view: UserViewSet):
+    def test_get_queryset(
+        self, api_rf: APIRequestFactory, user: User, view: UserViewSet
+    ):
         request = api_rf.get("/fake-url/")
         request.user = user
 
@@ -24,7 +26,7 @@ class TestUserViewSet:
 
         view.request = request
 
-        response = view.me(request)  # type: ignore
+        response = view.me(request)  # type: ignore[call-arg,arg-type]
 
         assert response.data == {
             "username": user.username,

@@ -1,9 +1,10 @@
 import pytest
 
-from ..models import Bill
+from democrasite.webiscite.models import Bill
+
 from .factories import BillFactory
 
 
-@pytest.fixture
+@pytest.fixture()
 def bill() -> Bill:
     return BillFactory()

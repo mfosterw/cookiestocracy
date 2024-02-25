@@ -1,17 +1,21 @@
-# pylint: disable=too-few-public-methods,no-self-use
 import hmac
 import json
+from http import HTTPStatus
 from typing import cast
 from unittest.mock import patch
 
 import pytest
 from django.conf import settings
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse
+from django.http import JsonResponse
 from django.test import RequestFactory
 from django.utils.encoding import force_bytes
 
-from ..models import Bill, PullRequest
-from ..webhooks import GithubWebhookView, PullRequestHandler, github_webhook_view
+from democrasite.webiscite.models import Bill
+from democrasite.webiscite.models import PullRequest
+from democrasite.webiscite.webhooks import GithubWebhookView
+from democrasite.webiscite.webhooks import PullRequestHandler
+from democrasite.webiscite.webhooks import github_webhook_view
 
 
 class TestGithubHookView:
@@ -24,24 +28,46 @@ class TestGithubHookView:
     def test_no_signature(self, rf: RequestFactory):
         request = rf.post("/fake-url/")
 
-        self.check_response(request, 400, b"Request does not contain X-HUB-SIGNATURE-256 header")
+        self.check_response(
+            request, 400, b"Request does not contain X-HUB-SIGNATURE-256 header"
+        )
 
     def test_no_event(self, rf: RequestFactory):
         request = rf.post("/fake-url/", HTTP_X_HUB_SIGNATURE_256="test")
 
-        self.check_response(request, 400, b"Request does not contain X-GITHUB-EVENT header")
+        self.check_response(
+            request, 400, b"Request does not contain X-GITHUB-EVENT header"
+        )
 
     def test_invalid_signature_digest(self, rf: RequestFactory):
-        request = rf.post("/fake-url/", HTTP_X_HUB_SIGNATURE_256="test=test", HTTP_X_GITHUB_EVENT="test")
+        request = rf.post(
+            "/fake-url/",
+            HTTP_X_HUB_SIGNATURE_256="test=test",
+            HTTP_X_GITHUB_EVENT="test",
+        )
 
-        self.check_response(request, 400, b"Unsupported X-HUB-SIGNATURE-256 digest mode: test")
+        self.check_response(
+            request, 400, b"Unsupported X-HUB-SIGNATURE-256 digest mode: test"
+        )
 
     def test_invalid_signature(self, rf: RequestFactory):
-        request = rf.post("/fake-url/", HTTP_X_HUB_SIGNATURE_256="sha256=test", HTTP_X_GITHUB_EVENT="test")
+        request = rf.post(
+            "/fake-url/",
+            HTTP_X_HUB_SIGNATURE_256="sha256=test",
+            HTTP_X_GITHUB_EVENT="test",
+        )
 
         self.check_response(request, 403, b"Invalid X-HUB-SIGNATURE-256 signature")
 
-    @pytest.fixture
+    @patch("requests.get")
+    def test_validate_remote_addr(self, mock_get):
+        mock_get().json.return_value = {"hooks": ["127.0.0.1"]}
+
+        response = GithubWebhookView()._validate_remote_addr("127.0.0.1")  # noqa: SLF001
+
+        assert response == ""
+
+    @pytest.fixture()
     def signed_request(self, rf: RequestFactory):
         request = rf.post(
             "/fake-url/",
@@ -62,7 +88,9 @@ class TestGithubHookView:
         return request
 
     def test_unsupported_event(self, signed_request):
-        self.check_response(signed_request, 400, b"Unsupported X-GITHUB-EVENT header found: test")
+        self.check_response(
+            signed_request, 400, b"Unsupported X-GITHUB-EVENT header found: test"
+        )
 
     def test_valid_request(self, signed_request):
         signed_request.META["HTTP_X_GITHUB_EVENT"] = "ping"
@@ -71,12 +99,12 @@ class TestGithubHookView:
     def test_push(self):
         response = GithubWebhookView().push({})
 
-        assert response.status_code == 200
+        assert response.status_code == HTTPStatus.OK
         assert response.content == b"push received"
 
 
 class TestPullRequestHandler:
-    @pytest.fixture
+    @pytest.fixture()
     def pr_handler(self):
         return GithubWebhookView().pull_request
 
@@ -92,7 +120,7 @@ class TestPullRequestHandler:
     def test_pr_handler_dispatch_invalid(self, pr_handler: PullRequestHandler):
         response = pr_handler({"action": "test", "pull_request": {"number": 1}})
 
-        assert response.status_code == 400
+        assert response.status_code == HTTPStatus.BAD_REQUEST
         assert response.content == b"Unsupported action: test"
 
     def test_pr_handler_get_response(self, pr_handler: PullRequestHandler, bill: Bill):

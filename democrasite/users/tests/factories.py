@@ -1,7 +1,8 @@
-from django.contrib.auth import get_user_model
-from django.contrib.auth.models import AbstractBaseUser
-from factory import Faker, post_generation
+from factory import Faker
+from factory import post_generation
 from factory.django import DjangoModelFactory
+
+from democrasite.users.models import User
 
 
 class UserFactory(DjangoModelFactory):
@@ -10,7 +11,7 @@ class UserFactory(DjangoModelFactory):
     name = Faker("name")
 
     @post_generation
-    def password(obj: AbstractBaseUser, create: bool, extracted: str, **kwargs):  # pylint: disable=unused-argument
+    def password(obj: User, create: bool, extracted: str, **kwargs):  # noqa: N805, FBT001
         password = extracted or Faker(
             "password",
             length=42,
@@ -23,6 +24,6 @@ class UserFactory(DjangoModelFactory):
         obj.save()
 
     class Meta:
-        model = get_user_model()
+        model = User
         django_get_or_create = ["username"]
         skip_postgeneration_save = True
