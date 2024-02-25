@@ -8,10 +8,7 @@ from allauth.account.adapter import DefaultAccountAdapter
 from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
 from allauth.socialaccount.models import SocialLogin
 from django.conf import settings
-from django.contrib.auth import get_user_model
 from django.http import HttpRequest
-
-User = get_user_model()
 
 
 class AccountAdapter(DefaultAccountAdapter):

@@ -1,12 +1,9 @@
-from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
-from democrasite.users.models import User as UserType
-
-User = get_user_model()
+from democrasite.users.models import User
 
 
-class UserSerializer(serializers.ModelSerializer[UserType]):
+class UserSerializer(serializers.ModelSerializer[User]):
     class Meta:
         model = User
         fields = ["username", "name", "url"]

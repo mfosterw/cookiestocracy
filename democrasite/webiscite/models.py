@@ -6,17 +6,16 @@ from typing import Any
 
 import requests
 from django.conf import settings
-from django.contrib.auth import get_user_model
-from django.contrib.auth.models import AbstractBaseUser
 from django.db import models
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 from django_celery_beat.models import IntervalSchedule
 from django_celery_beat.models import PeriodicTask
 
+from democrasite.users.models import User
+
 from . import constitution
 
-User = get_user_model()
 logger = getLogger(__name__)
 
 
@@ -172,14 +171,14 @@ class Bill(models.Model):
         return reverse("webiscite:bill-detail", kwargs={"pk": self.id})
 
     @property
-    def yes_votes(self) -> models.QuerySet[AbstractBaseUser]:
+    def yes_votes(self) -> models.QuerySet[User]:
         return self.votes.filter(vote__support=True)
 
     @property
-    def no_votes(self) -> models.QuerySet[AbstractBaseUser]:
+    def no_votes(self) -> models.QuerySet[User]:
         return self.votes.filter(vote__support=False)
 
-    def vote(self, user: AbstractBaseUser, *, support: bool):
+    def vote(self, user: User, *, support: bool):
         """Sets the given user's vote based on the support parameter
 
         If the user already voted the way the method would set, their vote is

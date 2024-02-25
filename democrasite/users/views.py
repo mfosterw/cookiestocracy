@@ -1,6 +1,5 @@
 """Views for the users app."""
 
-from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.urls import reverse
@@ -9,7 +8,7 @@ from django.views.generic import DetailView
 from django.views.generic import RedirectView
 from django.views.generic import UpdateView
 
-User = get_user_model()
+from .models import User
 
 
 class UserDetailView(LoginRequiredMixin, DetailView):

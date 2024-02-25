@@ -12,7 +12,6 @@ import requests
 from celery import shared_task
 from celery.utils.log import get_task_logger
 from django.conf import settings
-from django.contrib.auth import get_user_model
 from github import Auth
 from github import Github
 from github.PullRequest import PullRequest as GithubPullRequest
@@ -20,7 +19,6 @@ from github.PullRequest import PullRequest as GithubPullRequest
 from . import constitution
 from .models import Bill
 
-User = get_user_model()
 # TODO (#58): Improve logging
 logger = get_task_logger(__name__)
 

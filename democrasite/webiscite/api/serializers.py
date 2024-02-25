@@ -1,15 +1,11 @@
-from typing import TYPE_CHECKING
-
 from rest_framework.serializers import CharField
 from rest_framework.serializers import ModelSerializer
 from rest_framework.serializers import SlugRelatedField
 
 from democrasite.users.api.serializers import UserSerializer
+from democrasite.users.models import User
 from democrasite.webiscite.models import Bill
 from democrasite.webiscite.models import PullRequest
-
-if TYPE_CHECKING:
-    from django.contrib.auth.models import AbstractBaseUser
 
 
 class PullRequestSerializer(ModelSerializer):
@@ -24,10 +20,10 @@ class BillSerializer(ModelSerializer):
     pull_request = PullRequestSerializer(read_only=True)
     state = CharField(source="get_state_display")
 
-    yes_votes: "SlugRelatedField[AbstractBaseUser]" = SlugRelatedField(
+    yes_votes: SlugRelatedField[User] = SlugRelatedField(
         many=True, read_only=True, slug_field="username"
     )
-    no_votes: "SlugRelatedField[AbstractBaseUser]" = SlugRelatedField(
+    no_votes: SlugRelatedField[User] = SlugRelatedField(
         many=True, read_only=True, slug_field="username"
     )
 

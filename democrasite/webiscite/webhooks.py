@@ -10,7 +10,6 @@ from typing import Any
 
 import requests
 from django.conf import settings
-from django.contrib.auth import get_user_model
 from django.http import HttpRequest
 from django.http import HttpResponse
 from django.http import HttpResponseBadRequest
@@ -27,7 +26,6 @@ from .models import PullRequest
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-User = get_user_model()
 logger = getLogger(__name__)
 
 

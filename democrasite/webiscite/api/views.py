@@ -1,7 +1,6 @@
 import contextlib
 from typing import Any
 
-from django.contrib.auth import get_user_model
 from django.db.models import Prefetch
 from rest_framework.mixins import ListModelMixin
 from rest_framework.mixins import RetrieveModelMixin
@@ -13,8 +12,6 @@ from rest_framework.viewsets import GenericViewSet
 from democrasite.webiscite.models import Bill
 
 from .serializers import BillSerializer
-
-User = get_user_model()
 
 
 class BillViewSet(RetrieveModelMixin, ListModelMixin, UpdateModelMixin, GenericViewSet):
