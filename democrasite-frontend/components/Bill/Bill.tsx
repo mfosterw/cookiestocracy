@@ -27,8 +27,7 @@ export default function Bill({ bill }: any) {
       </Container>
       <Divider />
       <Text lineClamp={3}>{bill.description}</Text>
-      <Anchor href="#" ta="right" right="0">
-        {/* href will be bill.diff_url once it is added to the database */}
+      <Anchor href={bill.pull_request.diff_url} ta="right" right="0">
         <Text span c="green">
           +{bill.pull_request.additions}
         </Text>
