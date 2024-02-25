@@ -8,6 +8,7 @@ import requests
 from django.conf import settings
 from django.db import models
 from django.urls import reverse
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django_celery_beat.models import IntervalSchedule
 from django_celery_beat.models import PeriodicTask
@@ -280,6 +281,9 @@ class Bill(models.Model):
             task="democrasite.webiscite.tasks.submit_bill",
             args=json.dumps([self.id]),
             one_off=True,
+            # If last_run_at is not set, the task will run relative to when the
+            # scheduler started, not when it was created
+            last_run_at=timezone.now(),
         )
         self.submit_task = submit_bill
         self.save()
