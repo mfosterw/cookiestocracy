@@ -19,10 +19,8 @@ class TestBillViewSet:
             >= {  # Subset of the response data
                 "name": bill.name,
                 "description": bill.description,
-                "state": "Open",
-                "time_created": bill.time_created.astimezone(
-                    get_current_timezone()
-                ).isoformat(),
+                "status": "Open",
+                "created": bill.created.astimezone(get_current_timezone()).isoformat(),
             }.items()
         )
 

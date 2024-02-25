@@ -33,27 +33,27 @@ class TestBillDetailTemplate:
 
         assert "vote.js" in content
         assert "svg" in content
-        assert bill.get_state_display() not in content
+        assert bill.get_status_display() not in content
 
     @pytest.mark.parametrize(
-        ("state", "constitutional"),
-        [(Bill.States.FAILED, True), (Bill.States.APPROVED, False)],
+        ("status", "constitutional"),
+        [(Bill.Status.FAILED, True), (Bill.Status.APPROVED, False)],
     )
     def test_bill_closed(
         self,
         client: Client,
         user,
-        state: Bill.States,
+        status: Bill.Status,
         constitutional: bool,  # noqa: FBT001
     ):
-        bill = BillFactory(state=state, author=user, constitutional=constitutional)
+        bill = BillFactory(status=status, author=user, constitutional=constitutional)
 
         content = self._test_get_response(client, bill.id)
 
         assert "Log in to vote" not in content
         assert "vote.js" not in content
         assert "svg" not in content
-        assert bill.get_state_display() in content
+        assert bill.get_status_display() in content
         assert ("Constitution" in content) == constitutional
 
 
@@ -99,19 +99,19 @@ class TestBillListTemplate:
         assert ("Constitution" in content) == constitutional
 
     @pytest.mark.parametrize(
-        ("view", "state"),
+        ("view", "status"),
         [
-            ("index", Bill.States.OPEN),
-            ("my-bills", Bill.States.APPROVED),
-            ("my-bills", Bill.States.REJECTED),
-            ("my-bill-votes", Bill.States.OPEN),
-            ("my-bill-votes", Bill.States.FAILED),
+            ("index", Bill.Status.OPEN),
+            ("my-bills", Bill.Status.APPROVED),
+            ("my-bills", Bill.Status.REJECTED),
+            ("my-bill-votes", Bill.Status.OPEN),
+            ("my-bill-votes", Bill.Status.FAILED),
         ],
     )
-    def test_my_bills(self, state: Bill.States, view: str, bill: Bill, client: Client):
+    def test_my_bills(self, status: Bill.Status, view: str, bill: Bill, client: Client):
         if view == "my-bill-votes":
             bill.vote(bill.author, support=True)
-        bill.state = state
+        bill.status = status
         bill.save()
 
         client.force_login(bill.author)
@@ -122,4 +122,6 @@ class TestBillListTemplate:
         assert bill.name in content
         assert "Log in to vote" not in content
         assert "vote.js" in content
-        assert (bill.get_state_display() in content) == (bill.state != Bill.States.OPEN)
+        assert (bill.get_status_display() in content) == (
+            bill.status != Bill.Status.OPEN
+        )

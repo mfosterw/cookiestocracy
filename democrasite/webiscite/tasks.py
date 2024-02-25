@@ -42,7 +42,7 @@ def submit_bill(bill_id: int) -> None:
     )
     pull = repo.get_pull(bill.pull_request.number)
 
-    if bill.state != Bill.States.APPROVED:
+    if bill.status != Bill.Status.APPROVED:
         pull.edit(state="closed")  # Close failed pull request
         return
 

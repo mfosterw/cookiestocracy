@@ -1,4 +1,5 @@
 """Views for the webiscite app."""
+from http import HTTPStatus
 
 from django import http
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -19,7 +20,7 @@ class BillListView(ListView):
     """View listing all open bills. Used for webiscite:index."""
 
     model = Bill
-    queryset = Bill.objects.filter(state=Bill.States.OPEN)
+    queryset = Bill.open.all()  # type: ignore [attr-defined] # comes from django_model_utils
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -116,7 +117,7 @@ def vote_view(request: http.HttpRequest, pk: int) -> http.HttpResponse:
         request was valid, otherwise a client error response
     """
     if not request.user.is_authenticated:
-        return http.HttpResponse("Login required", status=401)  # 401 means unauthorized
+        return http.HttpResponse("Login required", status=HTTPStatus.UNAUTHORIZED)
 
     vote_val = request.POST.get("vote")
     if not vote_val:
@@ -127,8 +128,8 @@ def vote_view(request: http.HttpRequest, pk: int) -> http.HttpResponse:
         )
 
     bill = Bill.objects.get(pk=pk)
-    if bill.state != Bill.States.OPEN:
-        return http.HttpResponseForbidden("Bill may not be voted on")  # status 403
+    if bill.status != Bill.Status.OPEN:
+        return http.HttpResponseForbidden("Bill may not be voted on")
 
     if vote_val == "vote-yes":
         bill.vote(request.user, support=True)

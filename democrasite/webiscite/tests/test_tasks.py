@@ -16,7 +16,7 @@ class TestSubmitBill:
     @patch("github.Github.get_repo")
     @patch("github.Auth.Token", spec=True)
     def test_bill_failed(self, mock_token, mock_repo):
-        bill = BillFactory(state=Bill.States.CLOSED)
+        bill = BillFactory(status=Bill.Status.CLOSED)
 
         submit_bill(bill.id)
 

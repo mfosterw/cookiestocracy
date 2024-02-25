@@ -19,9 +19,9 @@ export default function Bill({ bill }: any) {
           </Title>
         </Anchor>
         {bill.constitutional && <Text c="cyan">Constitutional Amendment</Text>}
-        {bill.state != "Open" && (
-          <Text c={bill.state == "Approved" ? "green" : "red"}>
-            {bill.state}
+        {bill.status != "Open" && (
+          <Text c={bill.status == "Approved" ? "green" : "red"}>
+            {bill.status}
           </Text>
         )}
       </Container>

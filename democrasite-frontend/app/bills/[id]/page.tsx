@@ -10,7 +10,6 @@ export async function generateMetadata({
   params: { id: number };
   searchParams: URLSearchParams;
 }) {
-  console.log(params);
   return { title: `${(await fetchBill(params.id)).name}` };
 }
 

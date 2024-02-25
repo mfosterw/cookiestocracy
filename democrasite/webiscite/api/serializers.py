@@ -21,7 +21,7 @@ class PullRequestSerializer(ModelSerializer):
             "additions",
             "deletions",
             "diff_url",
-            "time_created",
+            "created",
         ]
         read_only_fields = fields  # pull requests are read-only
 
@@ -29,7 +29,7 @@ class PullRequestSerializer(ModelSerializer):
 class BillSerializer(ModelSerializer):
     author = UserSerializer()
     pull_request = PullRequestSerializer(read_only=True)
-    state = CharField(source="get_state_display")
+    status = CharField(source="get_status_display")
 
     yes_votes: "SlugRelatedField[User]" = SlugRelatedField(
         many=True, read_only=True, slug_field="username"
@@ -40,13 +40,13 @@ class BillSerializer(ModelSerializer):
 
     class Meta:
         model = Bill
-        exclude = ["votes", "time_updated", "submit_task"]
+        exclude = ["votes", "modified", "submit_task"]
         read_only_fields = [
             "author",
             "pull_request",
-            "state",
+            "status",
             "constitutional",
-            "time_created",
+            "created",
             "yes_votes",
             "no_votes",
         ]

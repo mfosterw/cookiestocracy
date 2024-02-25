@@ -53,17 +53,17 @@ class TestPullRequest:
         pull_request.close()
 
         pull_request.refresh_from_db()
-        assert pull_request.state == "closed"
-        assert not pull_request.bill_set.filter(state=Bill.States.OPEN).exists()
+        assert pull_request.status == "closed"
+        assert not pull_request.bill_set.filter(status=Bill.Status.OPEN).exists()
 
     def test_close_no_bill(self):
         pull_request = PullRequestFactory()
-        assert pull_request.state == "open"
+        assert pull_request.status == "open"
 
         pull_request.close()
 
         pull_request.refresh_from_db()
-        assert pull_request.state == "closed"
+        assert pull_request.status == "closed"
         assert not pull_request.bill_set.exists()
 
 
@@ -136,7 +136,7 @@ class TestBillOpened:
         )
         pr = GithubPullRequestFactory(bill=bill, user__id=github_account.uid)
         pr["user"]["id"] = github_account.uid
-        bill.state = Bill.States.CLOSED
+        bill.status = Bill.Status.CLOSED
         bill.save()
 
         _, new_bill = Bill.create_from_pr(pr)
@@ -160,22 +160,22 @@ class TestBillClosed:
         bill.close()
 
         bill.refresh_from_db()
-        assert bill.state == Bill.States.CLOSED
+        assert bill.status == Bill.Status.CLOSED
         assert PeriodicTask.objects.get(name=task.name).enabled is False
 
 
 class TestBillSubmit:
     def test_bill_not_open(self):
-        bill: Bill = BillFactory(state=Bill.States.CLOSED)
+        bill: Bill = BillFactory(status=Bill.Status.CLOSED)
 
         bill.submit()
 
-        assert bill.state == Bill.States.CLOSED
+        assert bill.status == Bill.Status.CLOSED
 
     def test_insufficient_votes(self, bill: Bill):
         bill.submit()
 
-        assert bill.state == Bill.States.FAILED
+        assert bill.status == Bill.Status.FAILED
 
     def test_bill_rejected(self, bill: Bill):
         voters = UserFactory.create_batch(settings.WEBISCITE_MINIMUM_QUORUM)
@@ -185,7 +185,7 @@ class TestBillSubmit:
 
         bill.submit()
 
-        assert bill.state == Bill.States.REJECTED
+        assert bill.status == Bill.Status.REJECTED
 
     def test_constitutional_bill_rejected(self):
         bill = BillFactory(constitutional=True)
@@ -196,7 +196,7 @@ class TestBillSubmit:
 
         bill.submit()
 
-        assert bill.state == Bill.States.REJECTED
+        assert bill.status == Bill.Status.REJECTED
 
     def test_bill_passed(self, bill: Bill):
         voters = UserFactory.create_batch(settings.WEBISCITE_MINIMUM_QUORUM)
@@ -206,4 +206,4 @@ class TestBillSubmit:
 
         bill.submit()
 
-        assert bill.state == Bill.States.APPROVED
+        assert bill.status == Bill.Status.APPROVED

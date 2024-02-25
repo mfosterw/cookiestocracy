@@ -12,6 +12,9 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django_celery_beat.models import IntervalSchedule
 from django_celery_beat.models import PeriodicTask
+from model_utils.models import StatusField
+from model_utils.models import StatusModel
+from model_utils.models import TimeStampedModel
 
 from democrasite.users.models import User
 
@@ -26,13 +29,14 @@ class Vote(models.Model):
     bill = models.ForeignKey("Bill", on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     support = models.BooleanField()
-    time_created = models.DateTimeField(auto_now_add=True)
+    created = models.DateTimeField(auto_now_add=True)
+    # Doesn't need modified time because it's always deleted and re-added
 
     def __str__(self) -> str:
         return f"{self.user} {'for' if self.support else 'against'} {self.bill}"
 
 
-class PullRequest(models.Model):
+class PullRequest(StatusModel, TimeStampedModel):
     """Local representation of a pull request on Github"""
 
     number = models.IntegerField(_("Pull request number"), primary_key=True)
@@ -43,17 +47,11 @@ class PullRequest(models.Model):
     # Store Github username of author even if they are not a user on the site
     author_name = models.CharField(max_length=100)
     #:
-    state = models.CharField(
-        max_length=6,
-        choices=(("closed", _("Closed")), ("open", _("Open"))),
-        help_text=_("State of the PR on Github"),
-    )
+    STATUS = (("open", _("Open")), ("closed", _("Closed")))
     # Unique by defintion but added the constraint for clarity
     sha = models.CharField(
         max_length=40, unique=True, help_text=_("Unique identifier of PR commit")
     )
-    time_created = models.DateTimeField(auto_now_add=True)
-    time_updated = models.DateTimeField(auto_now=True)
 
     def __str__(self) -> str:
         return f"PR #{self.number}"
@@ -79,7 +77,7 @@ class PullRequest(models.Model):
                 "deletions": pr["deletions"],
                 "diff_url": pr["diff_url"],
                 "author_name": pr["user"]["login"],
-                "state": pr["state"],
+                "status": pr["state"],
                 "sha": pr["head"]["sha"],
             },
         )
@@ -97,11 +95,11 @@ class PullRequest(models.Model):
         Returns:
             The bill associated with the pull request, if it was open
         """
-        self.state = "closed"
+        self.status = "closed"
         self.save()
 
         try:
-            bill: Bill = self.bill_set.get(state=Bill.States.OPEN)
+            bill: Bill = self.bill_set.get(status=Bill.Status.OPEN)
         except Bill.DoesNotExist:
             logger.info("PR %s: No open bill found", self.number)
             return None
@@ -110,7 +108,7 @@ class PullRequest(models.Model):
             return bill
 
 
-class Bill(models.Model):
+class Bill(StatusModel, TimeStampedModel):
     """Model for a proposal to merge a particular pull request into the main branch"""
 
     # Display info
@@ -120,19 +118,19 @@ class Bill(models.Model):
     author = models.ForeignKey(User, on_delete=models.PROTECT)
     pull_request = models.ForeignKey(PullRequest, on_delete=models.PROTECT)
 
-    class States(models.TextChoices):
-        OPEN = "o", _("Open")
-        APPROVED = "a", _("Approved")
-        REJECTED = "r", _("Rejected")
-        FAILED = "f", _("Not Enough Votes")  # Failed to reach quorum
+    class Status(models.TextChoices):
+        OPEN = "open", _("Open")
+        APPROVED = "approved", _("Approved")
+        REJECTED = "rejected", _("Rejected")
+        FAILED = "failed", _("Not Enough Votes")  # Failed to reach quorum
         # Translators: PR is short for "pull request"
-        CLOSED = "c", _("PR Closed")  # PR closed on Github
+        CLOSED = "closed", _("PR Closed")  # PR closed on Github
 
     #:
-    state = models.CharField(
-        max_length=1,
-        choices=States.choices,
-        default=States.OPEN,
+    STATUS = Status.choices
+    status = StatusField(
+        max_length=10,
+        default=Status.OPEN,
         help_text=_("The current status of the bill"),
     )
     constitutional = models.BooleanField(
@@ -142,8 +140,6 @@ class Bill(models.Model):
 
     # Automatic fields
     votes = models.ManyToManyField(User, through=Vote, related_name="votes", blank=True)
-    time_created = models.DateTimeField(auto_now_add=True)
-    time_updated = models.DateTimeField(auto_now=True)
     submit_task = models.OneToOneField(
         PeriodicTask, on_delete=models.PROTECT, null=True, blank=True
     )
@@ -155,8 +151,8 @@ class Bill(models.Model):
         constraints = [
             models.UniqueConstraint(
                 fields=("pull_request",),
-                # Can't reference Bill.States because Bill isn't defined yet
-                condition=models.Q(state="o"),
+                # Can't reference Bill.Status because Bill isn't defined yet
+                condition=models.Q(status="open"),
                 name="unique_open_pull_request",
                 violation_error_message=_(
                     "A Bill for this pull request is already open"
@@ -186,7 +182,7 @@ class Bill(models.Model):
         removed from the bill (i.e. if ``user`` is in ``bill.yes_votes`` and support is
         ``True``, ``user`` is removed from ``bill.yes_votes``)
         """
-        assert self.state == self.States.OPEN, "Only open bills may be voted on"
+        assert self.status == self.Status.OPEN, "Only open bills may be voted on"
 
         try:
             vote: Vote = self.vote_set.get(user=user)
@@ -261,7 +257,7 @@ class Bill(models.Model):
             "description": pr["body"] or "",
             "author": author,
             "pull_request": pull_request,
-            "state": Bill.States.OPEN,
+            "status": Bill.Status.OPEN,
             "constitutional": constitutional,
         }
 
@@ -293,7 +289,7 @@ class Bill(models.Model):
 
     def close(self) -> None:
         """Close the bill and disable its submit task"""
-        self.state = self.States.CLOSED
+        self.status = self.Status.CLOSED
         self.save()
         logger.info("Bill %s set to closed", self.id)
 
@@ -303,9 +299,9 @@ class Bill(models.Model):
         logger.info("Submit task for bill %s disabled", self.id)
 
     def submit(self) -> None:
-        """Check if the bill has enough votes to pass and update the state"""
+        """Check if the bill has enough votes to pass and update the status"""
         # Bill was closed before voting period ended
-        if self.state != Bill.States.OPEN:
+        if self.status != Bill.Status.OPEN:
             logger.info(
                 "PR %s: bill %s was not open when submitted",
                 self.pull_request.number,
@@ -313,10 +309,10 @@ class Bill(models.Model):
             )
             return
 
-        self.state = self._check_approval()
+        self.status = self._check_approval()
         self.save()
 
-    def _check_approval(self) -> "Bill.States":
+    def _check_approval(self) -> "Bill.Status":
         total_votes = self.votes.count()
         if total_votes < settings.WEBISCITE_MINIMUM_QUORUM:
             logger.info(
@@ -324,7 +320,7 @@ class Bill(models.Model):
                 self.pull_request.number,
                 self.id,
             )
-            return self.States.FAILED
+            return self.Status.FAILED
 
         approval = self.yes_votes.count() / total_votes
         if self.constitutional:
@@ -339,7 +335,7 @@ class Bill(models.Model):
                 self.id,
                 approval * 100,
             )
-            return self.States.REJECTED
+            return self.Status.REJECTED
 
         logger.info(
             "PR %s: bill %s approved with %s%% approval",
@@ -347,4 +343,4 @@ class Bill(models.Model):
             self.id,
             approval,
         )
-        return self.States.APPROVED
+        return self.Status.APPROVED

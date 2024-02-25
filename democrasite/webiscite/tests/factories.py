@@ -11,7 +11,7 @@ class PullRequestFactory(factory.django.DjangoModelFactory):
     )  # Use negative numbers to represent fake PRs
     title = factory.Faker("text", max_nb_chars=50)
     author_name = factory.Faker("user_name")
-    state = "open"
+    status = "open"
     additions = factory.Faker("random_int")
     deletions = factory.Faker("random_int")
     sha = factory.Faker("pystr", min_chars=40, max_chars=40)
@@ -26,7 +26,7 @@ class BillFactory(factory.django.DjangoModelFactory):
     author = factory.SubFactory(UserFactory)
     pull_request = factory.SubFactory(PullRequestFactory)
     # Fields with defaults
-    state = Bill.States.OPEN
+    status = Bill.Status.OPEN
     constitutional = False
     # Currently yes_votes and no_votes are initialized as empty. If values are needed
     # for them, a post-generation hook can be written to generate and insert the users
