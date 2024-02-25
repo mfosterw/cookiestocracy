@@ -42,6 +42,7 @@ class PullRequest(models.Model):
     diff_url = models.URLField(help_text=_("URL to the diff of the pull request"))
     # Store Github username of author even if they are not a user on the site
     author_name = models.CharField(max_length=100)
+    #:
     state = models.CharField(
         max_length=6,
         choices=(("closed", _("Closed")), ("open", _("Open"))),

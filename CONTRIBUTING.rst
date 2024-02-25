@@ -131,6 +131,22 @@ more from the `Celery Workers Guide`_.
 You can also use Django admin to queue up tasks, thanks to the
 `django-celerybeat`_ package.
 
+To run [periodic tasks](https://docs.celeryq.dev/en/stable/userguide/periodic-tasks.html),
+you'll need to start the celery beat scheduler service. You can start it as a
+standalone process:
+
+```bash
+cd democrasite
+celery -A config.celery_app beat
+```
+
+or you can embed the beat service inside a worker with the `-B` option:
+
+```bash
+cd democrasite
+celery -A config.celery_app worker -B -l info
+```
+
 .. _Getting started with Redis guide: https://redis.io/docs/getting-started/
 .. _Celery Workers Guide: https://docs.celeryq.dev/en/stable/userguide/workers.html
 .. _django-celerybeat: https://django-celery-beat.readthedocs.io/en/latest/

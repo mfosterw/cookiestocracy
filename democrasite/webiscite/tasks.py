@@ -21,7 +21,6 @@ from .models import Bill
 logger = get_task_logger(__name__)
 
 
-# TODO: Refactor
 @shared_task
 def submit_bill(bill_id: int) -> None:
     """Handles the final processing and closing of a bill
