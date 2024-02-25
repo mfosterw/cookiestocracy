@@ -7,7 +7,7 @@ from democrasite.users import forms
 from democrasite.users.models import User
 
 
-class TestUserCreationForm:
+class TestUserAdminCreationForm:
     """
     Test class for all tests related to the UserCreationForm
     """
