@@ -300,3 +300,50 @@ class Bill(models.Model):
         submit_bill.enabled = False
         submit_bill.save()
         logger.info("Submit task for bill %s disabled", self.id)
+
+    def submit(self) -> None:
+        """Check if the bill has enough votes to pass and update the state"""
+        # Bill was closed before voting period ended
+        if self.state != Bill.States.OPEN:
+            logger.info(
+                "PR %s: bill %s was not open when submitted",
+                self.pull_request.number,
+                self.id,
+            )
+            return
+
+        self.state = self._check_approval()
+        self.save()
+
+    def _check_approval(self) -> "Bill.States":
+        total_votes = self.votes.count()
+        if total_votes < settings.WEBISCITE_MINIMUM_QUORUM:
+            logger.info(
+                "PR %s: bill %s rejected due to insufficient votes",
+                self.pull_request.number,
+                self.id,
+            )
+            return self.States.FAILED
+
+        approval = self.yes_votes.count() / total_votes
+        if self.constitutional:
+            approved = approval > settings.WEBISCITE_SUPERMAJORITY
+        else:
+            approved = approval > settings.WEBISCITE_NORMAL_MAJORITY
+
+        if not approved:
+            logger.info(
+                "PR %s: bill %s rejected with %s%% approval",
+                self.pull_request.number,
+                self.id,
+                approval * 100,
+            )
+            return self.States.REJECTED
+
+        logger.info(
+            "PR %s: bill %s approved with %s%% approval",
+            self.pull_request.number,
+            self.id,
+            approval,
+        )
+        return self.States.APPROVED

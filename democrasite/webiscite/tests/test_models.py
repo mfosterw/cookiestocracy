@@ -3,10 +3,12 @@ from unittest.mock import patch
 
 import pytest
 from allauth.socialaccount.models import SocialAccount
+from django.conf import settings
 from django.forms import ValidationError
 from django_celery_beat.models import PeriodicTask
 from factory import Faker
 
+from democrasite.users.tests.factories import UserFactory
 from democrasite.webiscite.models import Bill
 from democrasite.webiscite.models import PullRequest
 from democrasite.webiscite.models import Vote
@@ -75,6 +77,8 @@ class TestBill:
     def test_bill_get_absolute_url(self, bill: Bill):
         assert bill.get_absolute_url() == f"/bills/{bill.id}/"
 
+
+class TestBillVote:
     def test_bill_vote_yes_toggle(self, bill: Bill, user: Any):
         bill.vote(user, support=True)
         assert bill.yes_votes.filter(pk=user.id).exists()
@@ -99,6 +103,8 @@ class TestBill:
         assert not bill.no_votes.filter(pk=user.id).exists()
         assert bill.yes_votes.filter(pk=user.id).exists()
 
+
+class TestBillOpened:
     def test_pr_opened_no_user(self):
         # If the creation step was reached, a ValidationError would be raised
         # The factory doesn't create a real user, so we can use it here
@@ -146,6 +152,8 @@ class TestBill:
             PeriodicTask.objects.get(name=f"bill_submit:{new_bill.id}").enabled is True
         )
 
+
+class TestBillClosed:
     def test_close(self, bill: Bill):
         task = bill._schedule_submit()  # noqa: SLF001 # Create the submit task to be disabled
 
@@ -154,3 +162,48 @@ class TestBill:
         bill.refresh_from_db()
         assert bill.state == Bill.States.CLOSED
         assert PeriodicTask.objects.get(name=task.name).enabled is False
+
+
+class TestBillSubmit:
+    def test_bill_not_open(self):
+        bill: Bill = BillFactory(state=Bill.States.CLOSED)
+
+        bill.submit()
+
+        assert bill.state == Bill.States.CLOSED
+
+    def test_insufficient_votes(self, bill: Bill):
+        bill.submit()
+
+        assert bill.state == Bill.States.FAILED
+
+    def test_bill_rejected(self, bill: Bill):
+        voters = UserFactory.create_batch(settings.WEBISCITE_MINIMUM_QUORUM)
+        Vote.objects.bulk_create(
+            [Vote(bill=bill, user=voter, support=False) for voter in voters]
+        )
+
+        bill.submit()
+
+        assert bill.state == Bill.States.REJECTED
+
+    def test_constitutional_bill_rejected(self):
+        bill = BillFactory(constitutional=True)
+        voters = UserFactory.create_batch(settings.WEBISCITE_MINIMUM_QUORUM)
+        Vote.objects.bulk_create(
+            [Vote(bill=bill, user=voter, support=False) for voter in voters]
+        )
+
+        bill.submit()
+
+        assert bill.state == Bill.States.REJECTED
+
+    def test_bill_passed(self, bill: Bill):
+        voters = UserFactory.create_batch(settings.WEBISCITE_MINIMUM_QUORUM)
+        Vote.objects.bulk_create(
+            [Vote(bill=bill, user=voter, support=True) for voter in voters]
+        )
+
+        bill.submit()
+
+        assert bill.state == Bill.States.APPROVED
