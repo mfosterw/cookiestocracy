@@ -38,8 +38,7 @@ class PullRequest(models.Model):
     title = models.CharField(max_length=100)
     additions = models.IntegerField(help_text=_("Lines added"))
     deletions = models.IntegerField(help_text=_("Lines removed"))
-    # diff_url = models.URLField(  #
-    # help_text=_("URL to the diff of the pull request"))
+    diff_url = models.URLField(help_text=_("URL to the diff of the pull request"))
     # Store Github username of author even if they are not a user on the site
     author_name = models.CharField(max_length=100)
     state = models.CharField(
@@ -76,7 +75,7 @@ class PullRequest(models.Model):
                 "title": pr["title"],
                 "additions": pr["additions"],
                 "deletions": pr["deletions"],
-                # "diff_url": pr["diff_url"],  # noqa: ERA001
+                "diff_url": pr["diff_url"],
                 "author_name": pr["user"]["login"],
                 "state": pr["state"],
                 "sha": pr["head"]["sha"],

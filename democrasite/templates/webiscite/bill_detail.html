@@ -37,7 +37,7 @@
           {% endif %}
           <br />
           <a class="git-pull-link"
-             href="https://github.com/{{ github_repo }}/pull/{{ bill.pull_request.pr_num }}/files"
+             href="{{ bill.pull_request.diff_url }}"
              target="_blank">
             Diff:
             <span class="text-success">+{{ bill.pull_request.additions }}</span>
