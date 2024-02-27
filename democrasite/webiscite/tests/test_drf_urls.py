@@ -1,6 +1,7 @@
-from django.urls import resolve, reverse
+from django.urls import resolve
+from django.urls import reverse
 
-from ..models import Bill
+from democrasite.webiscite.models import Bill
 
 
 def test_bill_list():

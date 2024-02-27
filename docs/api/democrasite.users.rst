@@ -5,6 +5,14 @@ democrasite.users package
    :members:
    :show-inheritance:
 
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   democrasite.users.api
+
 Submodules
 ----------
 

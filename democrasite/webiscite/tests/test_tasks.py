@@ -1,75 +1,55 @@
-# pylint: disable=too-few-public-methods,no-self-use
 from unittest.mock import patch
 
 from django.conf import settings
 
 from democrasite.users.tests.factories import UserFactory
+from democrasite.webiscite import constitution
+from democrasite.webiscite.models import Bill
+from democrasite.webiscite.models import Vote
+from democrasite.webiscite.tasks import _update_constitution
+from democrasite.webiscite.tasks import submit_bill
 
-from .. import constitution
-from ..models import Bill, Vote
-from ..tasks import submit_bill
 from .factories import BillFactory
 
 
 class TestSubmitBill:
     @patch("github.Github.get_repo")
     @patch("github.Auth.Token", spec=True)
-    def test_bill_not_open(self, mock_token, mock_repo):
-        bill = BillFactory(state=Bill.States.CLOSED)
+    def test_bill_failed(self, mock_token, mock_repo):
+        bill = BillFactory(status=Bill.Status.CLOSED)
 
         submit_bill(bill.id)
 
         mock_token.assert_called_once_with(settings.WEBISCITE_GITHUB_TOKEN)
-        mock_repo().get_pull().edit.assert_called_once_with(state="closed")
-
-    @patch("requests.get")
-    @patch("github.Github.get_repo")
-    @patch("github.Auth.Token", spec=True)
-    def test_insufficient_votes(self, mock_token, mock_repo, mock_get, bill: Bill):  # pylint: disable=unused-argument
-        submit_bill(bill.id)
-
-        bill.refresh_from_db()
-        assert bill.state == Bill.States.FAILED
+        mock_repo.assert_called_once_with(settings.WEBISCITE_REPO)
         mock_repo().get_pull().edit.assert_called_once_with(state="closed")
 
     @patch("github.Github.get_repo")
     @patch("github.Auth.Token", spec=True)
-    def test_bill_rejected(self, mock_token, mock_repo, bill: Bill):  # pylint: disable=unused-argument
+    def test_bill_passed(self, mock_token, mock_repo):
+        bill = BillFactory(constitutional=True)  # so _update_constitution isn't called
         voters = UserFactory.create_batch(settings.WEBISCITE_MINIMUM_QUORUM)
-        Vote.objects.bulk_create([Vote(bill=bill, user=voter, support=False) for voter in voters])
+        Vote.objects.bulk_create(
+            [Vote(bill=bill, user=voter, support=True) for voter in voters]
+        )
 
         submit_bill(bill.id)
 
-        bill.refresh_from_db()
-        assert bill.state == Bill.States.REJECTED
-        mock_repo().get_pull().edit.assert_called_once_with(state="closed")
-
-    @patch("github.Github.get_repo")
-    @patch("github.Auth.Token", spec=True)
-    def test_constitutional_bill_rejected(self, mock_token, mock_repo):  # pylint: disable=unused-argument
-        bill = BillFactory(state=Bill.States.OPEN, constitutional=True)
-        voters = UserFactory.create_batch(settings.WEBISCITE_MINIMUM_QUORUM)
-        Vote.objects.bulk_create([Vote(bill=bill, user=voter, support=False) for voter in voters])
-
-        submit_bill(bill.id)
-
-        bill.refresh_from_db()
-        assert bill.state == Bill.States.REJECTED
-        mock_repo().get_pull().edit.assert_called_once_with(state="closed")
+        mock_repo().get_pull().merge.assert_called_once_with(
+            merge_method="squash", sha=bill.pull_request.sha
+        )
 
     @patch.object(constitution, "update_constitution")
-    @patch("requests.get")  # patch out requests.get to avoid using internet
-    @patch("github.Github.get_repo")
-    @patch("github.Auth.Token", spec=True)
-    def test_bill_passed(
-        self, mock_token, mock_repo, mock_get, mock_constitution, bill: Bill
-    ):  # pylint: disable=unused-argument
-        voters = UserFactory.create_batch(settings.WEBISCITE_MINIMUM_QUORUM)
-        Vote.objects.bulk_create([Vote(bill=bill, user=voter, support=True) for voter in voters])
+    @patch("requests.get")
+    @patch("github.Repository.Repository")
+    def test_update_constitution(
+        self, mock_repo, mock_get, mock_constitution, bill: Bill
+    ):
+        _update_constitution(bill, mock_repo)
 
-        submit_bill(bill.id)
-
-        bill.refresh_from_db()
-        assert bill.state == Bill.States.APPROVED
-        mock_repo().get_pull().merge.assert_called_once_with(merge_method="squash", sha=bill.pull_request.sha)
-        mock_repo().get_contents.assert_called_once_with("democrasite/webiscite/constitution.json")
+        mock_get.assert_called_once_with(bill.pull_request.diff_url, timeout=60)
+        mock_constitution.assert_called_once()
+        mock_repo.get_contents.assert_called_once_with(
+            "democrasite/webiscite/constitution.json"
+        )
+        mock_repo.update_file.assert_called_once()

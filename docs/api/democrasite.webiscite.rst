@@ -5,6 +5,14 @@ democrasite.webiscite package
    :members:
    :show-inheritance:
 
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   democrasite.webiscite.api
+
 Submodules
 ----------
 
@@ -14,6 +22,7 @@ Submodules
    democrasite.webiscite.admin
    democrasite.webiscite.apps
    democrasite.webiscite.constitution
+   democrasite.webiscite.context_processors
    democrasite.webiscite.models
    democrasite.webiscite.tasks
    democrasite.webiscite.urls

@@ -12,25 +12,25 @@
         <div class="card text-center mb-4
                     {% if bill.constitutional %}bg-light{% endif %}">
           <div class="card-body
-                      {% if bill.state != bill.States.OPEN %}inactive{% endif %}">
+                      {% if bill.status != bill.Status.OPEN %}inactive{% endif %}">
             <a class="card-link" href="{{ bill.get_absolute_url }}">
               <h5 class="card-title">{{ bill }}</h5>
               {% if bill.constitutional %}
                 <p class="text-info">{% trans 'Amendment to the Constitution' %}</p>
               {% endif %}
             </a>
-            {% if bill.state != bill.States.OPEN %}
-              <p class="{% if bill.state == bill.States.APPROVED %}
+            {% if bill.status != bill.Status.OPEN %}
+              <p class="{% if bill.status == bill.Status.APPROVED %}
                           text-success
                         {% else %}
                           text-danger
-                        {% endif %}">{{ bill.get_state_display }}</p>
+                        {% endif %}">{{ bill.get_status_display }}</p>
             {% endif %}
             <hr />
             <div data-nosnippet class="card-text">{{ bill.description|truncatechars:80 }}</div>
             <div class="card-text text-right">
               <a class="card-link git-pull-link"
-                 href="https://github.com/{{ github_repo }}/pull/{{ bill.pull_request.pr_num }}/files"
+                 href="{{ bill.pull_request.diff_url }}"
                  target="_blank">
                 <span class="text-success">+{{ bill.pull_request.additions }}</span>
                 <span class="text-danger">-{{ bill.pull_request.deletions }}</span>
@@ -44,7 +44,7 @@
             <a href="javascript:;"
                class="float-left text-success mt-2 vote
                       {% if user in bill.yes_votes.all %}font-weight-bold{% endif %}"
-               {% if bill.state == bill.States.OPEN %}
+               {% if bill.status == bill.Status.OPEN %}
                  {% if user.is_authenticated %}
                    id="vote-yes-{{ bill.id }}" action="{% url 'webiscite:bill-vote' bill.id %}" value="vote-yes"
                  {% else %}
@@ -56,7 +56,7 @@
             <a href="javascript:;"
                class="float-right text-danger mt-2 vote
                       {% if user in bill.no_votes.all %}font-weight-bold{% endif %}"
-               {% if bill.state == bill.States.OPEN %}
+               {% if bill.status == bill.Status.OPEN %}
                  {% if user.is_authenticated %}
                    id="vote-no-{{ bill.id }}" action="{% url 'webiscite:bill-vote' bill.id %}" value="vote-no"
                  {% else %}

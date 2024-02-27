@@ -6,16 +6,20 @@ from typing import Any
 
 import requests
 from django.conf import settings
-from django.contrib.auth import get_user_model
-from django.contrib.auth.models import AbstractBaseUser
 from django.db import models
 from django.urls import reverse
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
-from django_celery_beat.models import IntervalSchedule, PeriodicTask
+from django_celery_beat.models import IntervalSchedule
+from django_celery_beat.models import PeriodicTask
+from model_utils.models import StatusField
+from model_utils.models import StatusModel
+from model_utils.models import TimeStampedModel
+
+from democrasite.users.models import User
 
 from . import constitution
 
-User = get_user_model()
 logger = getLogger(__name__)
 
 
@@ -25,40 +29,39 @@ class Vote(models.Model):
     bill = models.ForeignKey("Bill", on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     support = models.BooleanField()
-    time_created = models.DateTimeField(auto_now_add=True)
+    created = models.DateTimeField(auto_now_add=True)
+    # Doesn't need modified time because it's always deleted and re-added
 
     def __str__(self) -> str:
         return f"{self.user} {'for' if self.support else 'against'} {self.bill}"
 
 
-class PullRequest(models.Model):
+class PullRequest(StatusModel, TimeStampedModel):
     """Local representation of a pull request on Github"""
 
     number = models.IntegerField(_("Pull request number"), primary_key=True)
     title = models.CharField(max_length=100)
     additions = models.IntegerField(help_text=_("Lines added"))
     deletions = models.IntegerField(help_text=_("Lines removed"))
-    # diff_url = models.URLField(help_text=_("URL to the diff of the pull request"))
+    diff_url = models.URLField(help_text=_("URL to the diff of the pull request"))
     # Store Github username of author even if they are not a user on the site
     author_name = models.CharField(max_length=100)
-    state = models.CharField(
-        max_length=6,
-        choices=(("closed", _("Closed")), ("open", _("Open"))),
-        help_text=_("State of the PR on Github"),
-    )
+    #:
+    STATUS = (("open", _("Open")), ("closed", _("Closed")))
     # Unique by defintion but added the constraint for clarity
-    sha = models.CharField(max_length=40, unique=True, help_text=_("Unique identifier of PR commit"))
-    time_created = models.DateTimeField(auto_now_add=True)
-    time_updated = models.DateTimeField(auto_now=True)
+    sha = models.CharField(
+        max_length=40, unique=True, help_text=_("Unique identifier of PR commit")
+    )
 
     def __str__(self) -> str:
         return f"PR #{self.number}"
 
     @classmethod
     def create_from_pr(cls, pr: dict[str, Any]) -> "PullRequest":
-        """Update or create a pull request from a parsed JSON object representing the pull request
+        """Update or create a pull request from a parsed JSON object representing the it
 
-        If the given pull request exists, update it based on the request, otherwise create a new pull request instance
+        If the given pull request exists, update it based on the request, otherwise
+        create a new pull request instance
 
         Args:
             pr: The parsed JSON object representing the pull request
@@ -72,13 +75,15 @@ class PullRequest(models.Model):
                 "title": pr["title"],
                 "additions": pr["additions"],
                 "deletions": pr["deletions"],
-                # "diff_url": pr["diff_url"],
+                "diff_url": pr["diff_url"],
                 "author_name": pr["user"]["login"],
-                "state": pr["state"],
+                "status": pr["state"],
                 "sha": pr["head"]["sha"],
             },
         )
-        logger.info(f"PR %s: Pull request {'created' if created else 'updated'}", pr["number"])
+
+        act = "created" if created else "updated"
+        logger.info("PR %s: Pull request %s", pr["number"], act)
         return pull_request
 
     def close(self) -> "Bill | None":
@@ -90,11 +95,11 @@ class PullRequest(models.Model):
         Returns:
             The bill associated with the pull request, if it was open
         """
-        self.state = "closed"
+        self.status = "closed"
         self.save()
 
         try:
-            bill: Bill = self.bill_set.get(state=Bill.States.OPEN)
+            bill: Bill = self.bill_set.get(status=Bill.Status.OPEN)
         except Bill.DoesNotExist:
             logger.info("PR %s: No open bill found", self.number)
             return None
@@ -103,7 +108,7 @@ class PullRequest(models.Model):
             return bill
 
 
-class Bill(models.Model):
+class Bill(StatusModel, TimeStampedModel):
     """Model for a proposal to merge a particular pull request into the main branch"""
 
     # Display info
@@ -113,18 +118,23 @@ class Bill(models.Model):
     author = models.ForeignKey(User, on_delete=models.PROTECT)
     pull_request = models.ForeignKey(PullRequest, on_delete=models.PROTECT)
 
-    class States(models.TextChoices):
-        OPEN = "o", _("Open")
-        APPROVED = "a", _("Approved")
-        REJECTED = "r", _("Rejected")
-        FAILED = "f", _("Not Enough Votes")  # Failed to reach quorum
-        # Translators: PR is short for "pull request"
-        CLOSED = "c", _("PR Closed")  # PR closed on Github
+    class Status(models.TextChoices):
+        """The possible statuses for a bill
 
-    state = models.CharField(
-        max_length=1,
-        choices=States.choices,
-        default=States.OPEN,
+        :meta private:"""
+
+        OPEN = "open", _("Open")
+        APPROVED = "approved", _("Approved")
+        REJECTED = "rejected", _("Rejected")
+        FAILED = "failed", _("Not Enough Votes")  # Failed to reach quorum
+        # Translators: PR is short for "pull request"
+        CLOSED = "closed", _("PR Closed")  # PR closed on Github
+
+    #:-: The possible statuses for a bill. Use ``Bill.Status.VALUE`` to access.
+    STATUS = Status.choices
+    status = StatusField(
+        max_length=10,
+        default=Status.OPEN,
         help_text=_("The current status of the bill"),
     )
     constitutional = models.BooleanField(
@@ -134,20 +144,23 @@ class Bill(models.Model):
 
     # Automatic fields
     votes = models.ManyToManyField(User, through=Vote, related_name="votes", blank=True)
-    time_created = models.DateTimeField(auto_now_add=True)
-    time_updated = models.DateTimeField(auto_now=True)
-    submit_task = models.OneToOneField(PeriodicTask, on_delete=models.PROTECT, null=True, blank=True)
+    submit_task = models.OneToOneField(
+        PeriodicTask, on_delete=models.PROTECT, null=True, blank=True
+    )
 
-    # TODO: Add a custom manager with a queryset method to get open bills (get manager from queryset)
+    # TODO: Add a custom manager with a queryset method to get open bills
+    # (get manager from queryset)
 
     class Meta:
         constraints = [
             models.UniqueConstraint(
                 fields=("pull_request",),
-                # Can't reference Bill.States because Bill isn't defined yet
-                condition=models.Q(state="o"),
+                # Can't reference Bill.Status because Bill isn't defined yet
+                condition=models.Q(status="open"),
                 name="unique_open_pull_request",
-                violation_error_message=_("A Bill for this pull request is already open"),
+                violation_error_message=_(
+                    "A Bill for this pull request is already open"
+                ),
             ),
         ]
 
@@ -159,24 +172,24 @@ class Bill(models.Model):
         return reverse("webiscite:bill-detail", kwargs={"pk": self.id})
 
     @property
-    def yes_votes(self) -> models.QuerySet[AbstractBaseUser]:
-        return self.votes.filter(vote__support=True).all()  # pylint: disable=no-member
+    def yes_votes(self) -> models.QuerySet[User]:
+        return self.votes.filter(vote__support=True)
 
     @property
-    def no_votes(self) -> models.QuerySet[AbstractBaseUser]:
-        return self.votes.filter(vote__support=False).all()  # pylint: disable=no-member
+    def no_votes(self) -> models.QuerySet[User]:
+        return self.votes.filter(vote__support=False)
 
-    def vote(self, user: AbstractBaseUser, support: bool):
+    def vote(self, user: User, *, support: bool):
         """Sets the given user's vote based on the support parameter
 
         If the user already voted the way the method would set, their vote is
         removed from the bill (i.e. if ``user`` is in ``bill.yes_votes`` and support is
         ``True``, ``user`` is removed from ``bill.yes_votes``)
         """
-        assert self.state == self.States.OPEN, "Only open bills may be voted on"
+        assert self.status == self.Status.OPEN, "Only open bills may be voted on"
 
         try:
-            vote = Vote.objects.get(bill=self, user=user)  # type: ignore
+            vote: Vote = self.vote_set.get(user=user)
             if vote.support == support:
                 vote.delete()
                 return
@@ -190,16 +203,19 @@ class Bill(models.Model):
 
     @classmethod
     def create_from_pr(cls, pr: dict[str, Any]) -> "tuple[PullRequest, Bill | None]":
-        """Create a :class:`~democrasite.webiscite.models.PullRequest` and, if the creator has an account,
-        :class:`~democrasite.webiscite.models.Bill` instance from a pull request
+        """Create a :class:`~democrasite.webiscite.models.PullRequest` and, if the
+        creator has an account, :class:`~democrasite.webiscite.models.Bill` instance
+        from a pull request
 
         Args:
             pr: The parsed JSON object representing the pull request
 
         Returns:
-            A tuple containing the new or update pull request and new bill instance, if applicable
+            A tuple containing the new or update pull request and new bill instance, if
+            applicable
         """
-        # It was very difficult to decide where to define this logic, but this seems like the best place
+        # It was very difficult to decide where to define this logic, but this seems
+        # like the best place
         pull_request = PullRequest.create_from_pr(pr)
 
         try:
@@ -216,13 +232,16 @@ class Bill(models.Model):
         bill.save()
         logger.info("PR %s: Bill %s created", pr["number"], bill.id)
 
-        bill._schedule_submit()
+        bill._schedule_submit()  # noqa: SLF001 # Apparently ruff can't tell this is the same type as self
 
         return pull_request, bill
 
     @staticmethod
-    def _extract_bill_args(pr: dict[str, Any], pull_request: PullRequest) -> dict[str, Any]:
-        """Extract relevant information from a pull request for creating a :class:`~democrasite.webiscite.models.Bill`
+    def _extract_bill_args(
+        pr: dict[str, Any], pull_request: PullRequest
+    ) -> dict[str, Any]:
+        """Extract relevant information from a pull request for creating a
+        :class:`~democrasite.webiscite.models.Bill`
 
         Args:
             pr: The parsed JSON object representing the pull request
@@ -230,7 +249,9 @@ class Bill(models.Model):
         Returns:
             A dictionary containing the relevant information
         """
-        author = User.objects.filter(socialaccount__provider="github").get(socialaccount__uid=pr["user"]["id"])
+        author = User.objects.filter(socialaccount__provider="github").get(
+            socialaccount__uid=pr["user"]["id"]
+        )
 
         diff = requests.get(pr["diff_url"], timeout=10).text
         constitutional = bool(constitution.is_constitutional(diff))
@@ -240,7 +261,7 @@ class Bill(models.Model):
             "description": pr["body"] or "",
             "author": author,
             "pull_request": pull_request,
-            "state": Bill.States.OPEN,
+            "status": Bill.Status.OPEN,
             "constitutional": constitutional,
         }
 
@@ -250,7 +271,7 @@ class Bill(models.Model):
         Returns:
             The task that was scheduled
         """
-        # This can be extracted to a signal if we want to support other ways of creating bills
+        # This can be extracted to a signal if we want to support other creaton methods
         voting_ends, _ = IntervalSchedule.objects.get_or_create(
             every=settings.WEBISCITE_VOTING_PERIOD, period=IntervalSchedule.DAYS
         )
@@ -261,6 +282,9 @@ class Bill(models.Model):
             task="democrasite.webiscite.tasks.submit_bill",
             args=json.dumps([self.id]),
             one_off=True,
+            # If last_run_at is not set, the task will run relative to when the
+            # scheduler started, not when it was created
+            last_run_at=timezone.now(),
         )
         self.submit_task = submit_bill
         self.save()
@@ -269,7 +293,7 @@ class Bill(models.Model):
 
     def close(self) -> None:
         """Close the bill and disable its submit task"""
-        self.state = self.States.CLOSED
+        self.status = self.Status.CLOSED
         self.save()
         logger.info("Bill %s set to closed", self.id)
 
@@ -277,3 +301,50 @@ class Bill(models.Model):
         submit_bill.enabled = False
         submit_bill.save()
         logger.info("Submit task for bill %s disabled", self.id)
+
+    def submit(self) -> None:
+        """Check if the bill has enough votes to pass and update the status"""
+        # Bill was closed before voting period ended
+        if self.status != Bill.Status.OPEN:
+            logger.info(
+                "PR %s: bill %s was not open when submitted",
+                self.pull_request.number,
+                self.id,
+            )
+            return
+
+        self.status = self._check_approval()
+        self.save()
+
+    def _check_approval(self) -> "Bill.Status":
+        total_votes = self.votes.count()
+        if total_votes < settings.WEBISCITE_MINIMUM_QUORUM:
+            logger.info(
+                "PR %s: bill %s rejected due to insufficient votes",
+                self.pull_request.number,
+                self.id,
+            )
+            return self.Status.FAILED
+
+        approval = self.yes_votes.count() / total_votes
+        if self.constitutional:
+            approved = approval > settings.WEBISCITE_SUPERMAJORITY
+        else:
+            approved = approval > settings.WEBISCITE_NORMAL_MAJORITY
+
+        if not approved:
+            logger.info(
+                "PR %s: bill %s rejected with %s%% approval",
+                self.pull_request.number,
+                self.id,
+                approval * 100,
+            )
+            return self.Status.REJECTED
+
+        logger.info(
+            "PR %s: bill %s approved with %s%% approval",
+            self.pull_request.number,
+            self.id,
+            approval,
+        )
+        return self.Status.APPROVED

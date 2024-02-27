@@ -1,10 +1,12 @@
 import pytest
 from django.conf import settings
 from django.contrib.sites.models import Site
-from django.urls import resolve, reverse
-from github import Auth, Github
+from django.urls import resolve
+from django.urls import reverse
+from github import Auth
+from github import Github
 
-from ..models import Bill
+from democrasite.webiscite.models import Bill
 
 
 def test_index():
@@ -23,23 +25,36 @@ def test_votes():
 
 
 def test_detail(bill: Bill):
-    assert reverse("webiscite:bill-detail", kwargs={"pk": bill.id}) == f"/bills/{bill.id}/"
+    assert (
+        reverse("webiscite:bill-detail", kwargs={"pk": bill.id}) == f"/bills/{bill.id}/"
+    )
     assert resolve(f"/bills/{bill.id}/").view_name == "webiscite:bill-detail"
 
 
 def test_update(bill: Bill):
-    assert reverse("webiscite:bill-update", kwargs={"pk": bill.id}) == f"/bills/{bill.id}/update/"
+    assert (
+        reverse("webiscite:bill-update", kwargs={"pk": bill.id})
+        == f"/bills/{bill.id}/update/"
+    )
     assert resolve(f"/bills/{bill.id}/update/").view_name == "webiscite:bill-update"
 
 
 def test_vote(bill: Bill):
-    assert reverse("webiscite:bill-vote", kwargs={"pk": bill.id}) == f"/bills/{bill.id}/vote/"
+    assert (
+        reverse("webiscite:bill-vote", kwargs={"pk": bill.id})
+        == f"/bills/{bill.id}/vote/"
+    )
     assert resolve(f"/bills/{bill.id}/vote/").view_name == "webiscite:bill-vote"
 
 
 # Disable if Github token is None or empty
 @pytest.mark.skipif(not settings.WEBISCITE_GITHUB_TOKEN, reason="requires Github token")
 def test_github_hook():
-    repo = Github(auth=Auth.Token(settings.WEBISCITE_GITHUB_TOKEN)).get_repo(settings.WEBISCITE_REPO)
+    repo = Github(auth=Auth.Token(settings.WEBISCITE_GITHUB_TOKEN)).get_repo(
+        settings.WEBISCITE_REPO
+    )
     hook_urls = [hook.config["url"] for hook in repo.get_hooks()]
-    assert any(f"{Site.objects.get(id=settings.SITE_ID).domain}/hooks/github/" in url for url in hook_urls)
+    assert any(
+        f"{Site.objects.get(id=settings.SITE_ID).domain}/hooks/github/" in url
+        for url in hook_urls
+    )
