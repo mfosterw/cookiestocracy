@@ -67,6 +67,14 @@ class TestGithubHookView:
 
         assert response == ""
 
+    @patch("requests.get")
+    def test_validate_remote_addr_invalid(self, mock_get):
+        mock_get().json.return_value = {"hooks": ["127.0.0.1"]}
+
+        response = GithubWebhookView()._validate_remote_addr("127.0.0.2")  # noqa: SLF001
+
+        assert response == "Invalid remote address for GitHub webhook request"
+
     @pytest.fixture()
     def signed_request(self, rf: RequestFactory):
         request = rf.post(

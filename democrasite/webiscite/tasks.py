@@ -52,8 +52,7 @@ def submit_bill(bill_id: int) -> None:
     )
 
     # Automatically update constitution line numbers if necessary
-    if not bill.constitutional:
-        _update_constitution(bill, repo)
+    _update_constitution(bill, repo)
 
 
 def _update_constitution(bill: Bill, repo: Repository) -> None:
@@ -63,6 +62,9 @@ def _update_constitution(bill: Bill, repo: Repository) -> None:
         bill: The bill to update the constitution for
         repo: The repository to update the constitution in
     """
+    if bill.constitutional:
+        return  # Can't automatically update the constitution if it was changed manually
+
     diff = requests.get(bill.pull_request.diff_url, timeout=60).text
     con_update = constitution.update_constitution(diff)
 

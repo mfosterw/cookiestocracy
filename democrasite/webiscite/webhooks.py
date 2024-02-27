@@ -24,7 +24,7 @@ from .models import Bill
 from .models import PullRequest
 
 if TYPE_CHECKING:
-    from collections.abc import Callable
+    from collections.abc import Callable  # pragma: no cover
 
 logger = getLogger(__name__)
 

@@ -16,7 +16,7 @@ from unidiff import PatchedFile
 from unidiff import PatchSet
 
 if TYPE_CHECKING:
-    from pathlib import Path
+    from pathlib import Path  # pragma: no cover
 
 # Each filename corresponds to a list of pairs representing protected line
 # ranges within that file, or None to protect the entire file

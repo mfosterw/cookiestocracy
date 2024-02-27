@@ -9,7 +9,7 @@ from democrasite.webiscite.models import Bill
 from democrasite.webiscite.models import PullRequest
 
 if TYPE_CHECKING:
-    from democrasite.users.models import User
+    from democrasite.users.models import User  # pragma: no cover
 
 
 class PullRequestSerializer(ModelSerializer):
