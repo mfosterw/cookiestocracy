@@ -3,6 +3,8 @@
 import json
 from logging import getLogger
 from typing import Any
+from typing import Self
+from typing import cast
 
 import requests
 from django.conf import settings
@@ -57,7 +59,7 @@ class PullRequest(StatusModel, TimeStampedModel):
         return f"PR #{self.number}"
 
     @classmethod
-    def create_from_pr(cls, pr: dict[str, Any]) -> "PullRequest":
+    def create_from_pr(cls, pr: dict[str, Any]) -> Self:
         """Update or create a pull request from a parsed JSON object representing the it
 
         If the given pull request exists, update it based on the request, otherwise
@@ -84,7 +86,8 @@ class PullRequest(StatusModel, TimeStampedModel):
 
         act = "created" if created else "updated"
         logger.info("PR %s: Pull request %s", pr["number"], act)
-        return pull_request
+
+        return cast(Self, pull_request)  # mypy infers wrong type (Pylance doesn't 👀)
 
     def close(self) -> "Bill | None":
         """Close a pull request and update the local representation
@@ -148,9 +151,6 @@ class Bill(StatusModel, TimeStampedModel):
         PeriodicTask, on_delete=models.PROTECT, null=True, blank=True
     )
 
-    # TODO: Add a custom manager with a queryset method to get open bills
-    # (get manager from queryset)
-
     class Meta:
         constraints = [
             models.UniqueConstraint(
@@ -179,7 +179,7 @@ class Bill(StatusModel, TimeStampedModel):
     def no_votes(self) -> models.QuerySet[User]:
         return self.votes.filter(vote__support=False)
 
-    def vote(self, user: User, *, support: bool):
+    def vote(self, user: User, *, support: bool) -> None:
         """Sets the given user's vote based on the support parameter
 
         If the user already voted the way the method would set, their vote is
@@ -199,10 +199,10 @@ class Bill(StatusModel, TimeStampedModel):
         except Vote.DoesNotExist:
             # Stubs issue fixed (by me!) in https://github.com/typeddjango/django-stubs/pull/1943
             # Just waiting for new version to be released
-            self.votes.add(user, through_defaults={"support": support})  # type: ignore[arg-type,call-arg]
+            self.votes.add(user, through_defaults={"support": support})  # type: ignore[call-arg]
 
     @classmethod
-    def create_from_pr(cls, pr: dict[str, Any]) -> "tuple[PullRequest, Bill | None]":
+    def create_from_pr(cls, pr: dict[str, Any]) -> tuple[PullRequest, Self | None]:
         """Create a :class:`~democrasite.webiscite.models.PullRequest` and, if the
         creator has an account, :class:`~democrasite.webiscite.models.Bill` instance
         from a pull request
@@ -227,7 +227,7 @@ class Bill(StatusModel, TimeStampedModel):
             return pull_request, None
 
         # TODO: everything below here could be in BillManager
-        bill = Bill(**bill_kwargs)
+        bill = cls(**bill_kwargs)
         bill.full_clean()
         bill.save()
         logger.info("PR %s: Bill %s created", pr["number"], bill.id)
