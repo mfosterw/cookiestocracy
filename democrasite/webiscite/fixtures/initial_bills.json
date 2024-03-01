@@ -1,0 +1,166 @@
+[
+  {
+    "model": "webiscite.vote",
+    "pk": 1,
+    "fields": {
+      "bill": 1,
+      "user": 1,
+      "support": true,
+      "created": "2024-02-14T01:17:31.346Z"
+    }
+  },
+  {
+    "model": "webiscite.vote",
+    "pk": 2,
+    "fields": {
+      "bill": 2,
+      "user": 1,
+      "support": false,
+      "created": "2024-02-14T01:26:18.533Z"
+    }
+  },
+  {
+    "model": "webiscite.pullrequest",
+    "pk": -1,
+    "fields": {
+      "created": "2024-02-25T17:26:54.006Z",
+      "modified": "2024-02-25T17:26:54.012Z",
+      "status": "open",
+      "status_changed": "2024-02-25T17:26:54.022Z",
+      "title": "The Initial Act",
+      "additions": 0,
+      "deletions": 0,
+      "diff_url": "https://github.com/mfosterw/cookiestocracy/pull/64/files",
+      "author_name": "matthew",
+      "sha": "123"
+    }
+  },
+  {
+    "model": "webiscite.pullrequest",
+    "pk": -2,
+    "fields": {
+      "created": "2024-02-25T17:26:54.006Z",
+      "modified": "2024-02-25T17:26:54.012Z",
+      "status": "open",
+      "status_changed": "2024-02-25T17:26:54.022Z",
+      "title": "The Test Act",
+      "additions": 1000,
+      "deletions": 1000,
+      "diff_url": "https://github.com/mfosterw/cookiestocracy/pull/64/files",
+      "author_name": "octocat",
+      "sha": "1234"
+    }
+  },
+  {
+    "model": "webiscite.pullrequest",
+    "pk": -3,
+    "fields": {
+      "created": "2024-02-25T17:26:54.006Z",
+      "modified": "2024-02-25T17:26:54.012Z",
+      "status": "open",
+      "status_changed": "2024-02-25T17:26:54.022Z",
+      "title": "The Finished Act",
+      "additions": 69,
+      "deletions": 420,
+      "diff_url": "https://github.com/mfosterw/cookiestocracy/pull/64/files",
+      "author_name": "dependabot",
+      "sha": "12345"
+    }
+  },
+  {
+    "model": "webiscite.bill",
+    "pk": 1,
+    "fields": {
+      "created": "2024-02-25T17:26:53.913Z",
+      "modified": "2024-02-25T17:26:53.950Z",
+      "status_changed": "2024-02-25T17:26:54.002Z",
+      "name": "The Old Act",
+      "description": "You should not see this on the front page, because it is closed.",
+      "author": 1,
+      "pull_request": -1,
+      "status": "closed",
+      "constitutional": false,
+      "submit_task": null
+    }
+  },
+  {
+    "model": "webiscite.bill",
+    "pk": 2,
+    "fields": {
+      "created": "2024-02-25T17:26:53.913Z",
+      "modified": "2024-02-25T17:26:53.950Z",
+      "status_changed": "2024-02-25T17:26:54.002Z",
+      "name": "The Failed Act",
+      "description": "This bill failed because not enough people voted on it.",
+      "author": 1,
+      "pull_request": -1,
+      "status": "failed",
+      "constitutional": false,
+      "submit_task": null
+    }
+  },
+  {
+    "model": "webiscite.bill",
+    "pk": 3,
+    "fields": {
+      "created": "2024-02-25T17:26:53.913Z",
+      "modified": "2024-02-25T17:26:53.950Z",
+      "status_changed": "2024-02-25T17:26:54.002Z",
+      "name": "The Test Act",
+      "description": "This is a test. It is the 3rd bill, but the first two are marked as not open, so this should be the oldest bill displayed on the front page.",
+      "author": 1,
+      "pull_request": -1,
+      "status": "open",
+      "constitutional": false,
+      "submit_task": null
+    }
+  },
+  {
+    "model": "webiscite.bill",
+    "pk": 4,
+    "fields": {
+      "created": "2024-02-25T17:26:53.913Z",
+      "modified": "2024-02-25T17:26:53.950Z",
+      "status_changed": "2024-02-25T17:26:54.002Z",
+      "name": "The Rejected Act",
+      "description": "This bill was rejected by the community. Since it was a constitutional amendment, it required a supermajority to pass.",
+      "author": 1,
+      "pull_request": -2,
+      "status": "rejected",
+      "constitutional": true,
+      "submit_task": null
+    }
+  },
+  {
+    "model": "webiscite.bill",
+    "pk": 5,
+    "fields": {
+      "created": "2024-02-25T17:26:53.913Z",
+      "modified": "2024-02-25T17:26:53.950Z",
+      "status_changed": "2024-02-25T17:26:54.002Z",
+      "name": "The Constitutional Act",
+      "description": "This is a constitutional amendment. That should be noted in a subheader beneath the title.",
+      "author": 1,
+      "pull_request": -2,
+      "status": "open",
+      "constitutional": true,
+      "submit_task": null
+    }
+  },
+  {
+    "model": "webiscite.bill",
+    "pk": 6,
+    "fields": {
+      "created": "2024-02-25T17:26:53.913Z",
+      "modified": "2024-02-25T17:26:53.950Z",
+      "status_changed": "2024-02-25T17:26:54.002Z",
+      "name": "The Finished Act",
+      "description": "This bill was approved and is now part of the live website.",
+      "author": 1,
+      "pull_request": -3,
+      "status": "approved",
+      "constitutional": true,
+      "submit_task": null
+    }
+  }
+]
