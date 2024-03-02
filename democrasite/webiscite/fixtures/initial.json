@@ -1,11 +1,28 @@
 [
   {
+    "model": "users.user",
+    "pk": 1,
+    "fields": {
+      "password": "!QOegZX0EFLTPMUheUJaZHT2iBlDjTUVteO1ERFoL",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "test",
+      "email": "",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2024-03-01T20:54:23.655Z",
+      "name": "",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
     "model": "webiscite.vote",
     "pk": 1,
     "fields": {
       "bill": 1,
       "user": 1,
-      "support": true,
+      "support": false,
       "created": "2024-02-14T01:17:31.346Z"
     }
   },
@@ -13,9 +30,9 @@
     "model": "webiscite.vote",
     "pk": 2,
     "fields": {
-      "bill": 2,
+      "bill": 3,
       "user": 1,
-      "support": false,
+      "support": true,
       "created": "2024-02-14T01:26:18.533Z"
     }
   },
