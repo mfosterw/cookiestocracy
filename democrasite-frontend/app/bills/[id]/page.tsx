@@ -1,7 +1,7 @@
 import { Container, Center } from "@mantine/core";
 
-import Bill from "@/components/Bill/Bill";
-import { BillsApi } from "@/api/auto";
+import { Bill } from "@/components";
+import { BillsApi } from "@/lib/auto";
 
 const api = new BillsApi();
 

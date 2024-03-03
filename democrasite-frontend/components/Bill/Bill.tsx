@@ -1,4 +1,4 @@
-import { Bill } from "@/api/auto";
+import { Bill } from "@/lib/auto";
 import {
   Title,
   Text,
@@ -9,7 +9,7 @@ import {
   Container,
 } from "@mantine/core";
 
-export default function Bill({ bill }: { bill: Bill }) {
+export function Bill({ bill }: { bill: Bill }) {
   return (
     <Stack>
       <Container ta="center">
