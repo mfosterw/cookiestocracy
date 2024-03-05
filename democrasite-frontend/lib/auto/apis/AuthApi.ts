@@ -80,9 +80,10 @@ export interface AuthUserUpdateRequest {
 export class AuthApi extends runtime.BaseAPI {
 
     /**
-     * class used for social authentications example usage for facebook with access_token ------------- from allauth.socialaccount.providers.facebook.views import FacebookOAuth2Adapter  class FacebookLogin(SocialLoginView):     adapter_class = FacebookOAuth2Adapter -------------  example usage for facebook with code  ------------- from allauth.socialaccount.providers.facebook.views import FacebookOAuth2Adapter from allauth.socialaccount.providers.oauth2.client import OAuth2Client  class FacebookLogin(SocialLoginView):     adapter_class = FacebookOAuth2Adapter     client_class = OAuth2Client     callback_url = \'localhost:8000\' -------------
+     * Login with GitHub using OAuth2
+     * Login with GitHub
      */
-    async authGithubCreateRaw(requestParameters: AuthGithubCreateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SocialLogin>> {
+    async authGithubCreateRaw(requestParameters: AuthGithubCreateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Token>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -101,13 +102,14 @@ export class AuthApi extends runtime.BaseAPI {
             body: SocialLoginToJSON(requestParameters.socialLogin),
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => SocialLoginFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => TokenFromJSON(jsonValue));
     }
 
     /**
-     * class used for social authentications example usage for facebook with access_token ------------- from allauth.socialaccount.providers.facebook.views import FacebookOAuth2Adapter  class FacebookLogin(SocialLoginView):     adapter_class = FacebookOAuth2Adapter -------------  example usage for facebook with code  ------------- from allauth.socialaccount.providers.facebook.views import FacebookOAuth2Adapter from allauth.socialaccount.providers.oauth2.client import OAuth2Client  class FacebookLogin(SocialLoginView):     adapter_class = FacebookOAuth2Adapter     client_class = OAuth2Client     callback_url = \'localhost:8000\' -------------
+     * Login with GitHub using OAuth2
+     * Login with GitHub
      */
-    async authGithubCreate(requestParameters: AuthGithubCreateRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SocialLogin> {
+    async authGithubCreate(requestParameters: AuthGithubCreateRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Token> {
         const response = await this.authGithubCreateRaw(requestParameters, initOverrides);
         return await response.value();
     }

@@ -1,8 +1,5 @@
+.openapi-generator-ignore
 apis/AuthApi.ts
-apis/AuthloginApi.ts
-apis/AuthlogoutApi.ts
-apis/AuthpasswordApi.ts
-apis/AuthuserApi.ts
 apis/BillsApi.ts
 apis/SchemaApi.ts
 apis/UsersApi.ts

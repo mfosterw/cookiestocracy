@@ -9,7 +9,8 @@
         "/api/auth/github/": {
             "post": {
                 "operationId": "auth_github_create",
-                "description": "class used for social authentications\nexample usage for facebook with access_token\n-------------\nfrom allauth.socialaccount.providers.facebook.views import FacebookOAuth2Adapter\n\nclass FacebookLogin(SocialLoginView):\n    adapter_class = FacebookOAuth2Adapter\n-------------\n\nexample usage for facebook with code\n\n-------------\nfrom allauth.socialaccount.providers.facebook.views import FacebookOAuth2Adapter\nfrom allauth.socialaccount.providers.oauth2.client import OAuth2Client\n\nclass FacebookLogin(SocialLoginView):\n    adapter_class = FacebookOAuth2Adapter\n    client_class = OAuth2Client\n    callback_url = 'localhost:8000'\n-------------",
+                "description": "Login with GitHub using OAuth2",
+                "summary": "Login with GitHub",
                 "tags": [
                     "auth"
                 ],
@@ -46,7 +47,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/SocialLogin"
+                                    "$ref": "#/components/schemas/Token"
                                 }
                             }
                         },
