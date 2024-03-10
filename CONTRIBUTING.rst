@@ -22,6 +22,12 @@ and additions you could make to the site itself, such as to this document,
 which tells people nothing about how to contribute at the moment. Regardless of
 how you choose contribute, as long as it is in good faith, I appreciate it.
 
+Some ideas for contributions include:
+- Adding a new app to the site
+- Adding a new feature to an existing app
+- Adding a new feature to the site
+- Adding a new feature to the constitution
+
 
 .. Adapted from https://cookiecutter-django.readthedocs.io/en/latest/developing-locally.html
 
@@ -40,17 +46,25 @@ Make sure to have the following on your host:
 
 First things first.
 
+#. Clone the repository::
+
+    $ git clone https://github.com/mfosterw/cookiestocracy.git
+    $ cd cookiestocracy
+
 #. Create a virtualenv::
 
     $ python3.12 -m venv <virtual env path>
+    or
+    $ conda create -n <virtual env name> python=3.12
 
 #. Activate the virtualenv you have just created::
 
     $ source <virtual env path>/bin/activate
+    or
+    $ conda activate <virtual env name>
 
 #. Install development requirements::
 
-    $ cd <what you have entered as the project_slug at setup stage>
     $ pip install -r requirements/local.txt
     $ git init # A git repo is required for pre-commit to install
     $ pre-commit install
@@ -76,7 +90,13 @@ First things first.
 
 #. Set the environment variables for your database(s)::
 
-    $ export DATABASE_URL=postgres://postgres:<password>@127.0.0.1:5432/<DB name given to createdb>
+    MACOS:
+    $ export DATABASE_URL=postgres://postgres:<password>@127.0.0.1:5432/<slug_name>
+    # Optional: set broker URL if using Celery
+    $ export CELERY_BROKER_URL=redis://localhost:6379/0
+
+    WINDOWS:
+    $ set DATABASE_URL=postgres://postgres:<password>@127.0.0.1:5432/<slug_name>
     # Optional: set broker URL if using Celery
     $ export CELERY_BROKER_URL=redis://localhost:6379/0
 
