@@ -201,6 +201,24 @@ class Bill(StatusModel, TimeStampedModel):
             # Just waiting for new version to be released
             self.votes.add(user, through_defaults={"support": support})  # type: ignore[call-arg]
 
+    def user_supports(self, user: User) -> bool | None:
+        """
+        Returns whether the given user supports, opposes, or has not voted on this bill
+
+        Args:
+            user: The user to check
+
+        Returns:
+            True if the user supports the bill, False if they oppose it, and None if
+            they have not voted
+        """
+        try:
+            vote: Vote = self.vote_set.get(user=user)
+        except Vote.DoesNotExist:
+            return None
+        else:
+            return vote.support
+
     @classmethod
     def create_from_pr(cls, pr: dict[str, Any]) -> tuple[PullRequest, Self | None]:
         """Create a :class:`~democrasite.webiscite.models.PullRequest` and, if the
