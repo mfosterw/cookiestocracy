@@ -2,6 +2,7 @@ from typing import TYPE_CHECKING
 
 from rest_framework.serializers import CharField
 from rest_framework.serializers import ModelSerializer
+from rest_framework.serializers import SerializerMethodField
 from rest_framework.serializers import SlugRelatedField
 
 from democrasite.users.api.serializers import UserSerializer
@@ -37,6 +38,7 @@ class BillSerializer(ModelSerializer):
     no_votes: "SlugRelatedField[User]" = SlugRelatedField(
         many=True, read_only=True, slug_field="username"
     )
+    user_supports = SerializerMethodField(required=False)
 
     class Meta:
         model = Bill
@@ -49,4 +51,17 @@ class BillSerializer(ModelSerializer):
             "created",
             "yes_votes",
             "no_votes",
+            "user_supports",
         ]
+
+    def get_user_supports(self, bill: Bill) -> bool | None:
+        """Return whether the user supports the bill. If the user is not authenticated
+        or has not voted on this bill, return None.
+
+        Args:
+            bill: The bill to check
+
+        Returns:
+            Whether the user supports the bill, or None if not applicable"""
+        user: User = self.context["user"]
+        return bill.user_supports(user) if user.is_authenticated else None

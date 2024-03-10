@@ -69,6 +69,19 @@ export interface PatchedBill {
      */
     readonly noVotes?: Array<string>;
     /**
+     * Return whether the user supports the bill. If the user is not authenticated
+     * or has not voted on this bill, return None.
+     *
+     * Args:
+     *     bill: The bill to check
+     *
+     * Returns:
+     *     Whether the user supports the bill, or None if not applicable
+     * @type {boolean}
+     * @memberof PatchedBill
+     */
+    readonly userSupports?: boolean | null;
+    /**
      *
      * @type {Date}
      * @memberof PatchedBill
@@ -125,6 +138,7 @@ export function PatchedBillFromJSONTyped(json: any, ignoreDiscriminator: boolean
         'status': !exists(json, 'status') ? undefined : json['status'],
         'yesVotes': !exists(json, 'yes_votes') ? undefined : json['yes_votes'],
         'noVotes': !exists(json, 'no_votes') ? undefined : json['no_votes'],
+        'userSupports': !exists(json, 'user_supports') ? undefined : json['user_supports'],
         'created': !exists(json, 'created') ? undefined : (new Date(json['created'])),
         'statusChanged': !exists(json, 'status_changed') ? undefined : (new Date(json['status_changed'])),
         'name': !exists(json, 'name') ? undefined : json['name'],

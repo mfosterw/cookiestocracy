@@ -1,3 +1,4 @@
+import { Bill } from "@/lib/auto";
 import {
   Title,
   Text,
@@ -8,13 +9,14 @@ import {
   Container,
 } from "@mantine/core";
 
-export default function Bill({ bill }: any) {
+export function Bill({ bill }: { bill: Bill }) {
   return (
     <Stack>
       <Container ta="center">
         <Anchor href={`/bills/${bill.id}`}>
+          {bill.userSupports !== null && "⭐️"}
           <Title order={3}>
-            Bill {bill.id}: {bill.name} (PR&nbsp;#{bill.pull_request.number})
+            Bill {bill.id}: {bill.name} (PR&nbsp;#{bill.pullRequest.number})
           </Title>
         </Anchor>
         {bill.constitutional && <Text c="cyan">Constitutional Amendment</Text>}
@@ -26,20 +28,20 @@ export default function Bill({ bill }: any) {
       </Container>
       <Divider />
       <Text lineClamp={3}>{bill.description}</Text>
-      <Anchor href={bill.pull_request.diff_url} ta="right" right="0">
+      <Anchor href={bill.pullRequest.diffUrl} ta="right" right="0">
         <Text span c="green">
-          +{bill.pull_request.additions}
+          +{bill.pullRequest.additions}
         </Text>
         <Text span c="red" ml="sm">
-          -{bill.pull_request.deletions}
+          -{bill.pullRequest.deletions}
         </Text>
       </Anchor>
       <Group justify="space-between">
         <Group>
-          <Text c="green">Yes: {bill.yes_votes.length}</Text>
+          <Text c="green">Yes: {bill.yesVotes.length}</Text>
         </Group>
         <Group>
-          <Text c="red">No: {bill.no_votes.length}</Text>
+          <Text c="red">No: {bill.noVotes.length}</Text>
         </Group>
       </Group>
     </Stack>

@@ -69,6 +69,19 @@ export interface Bill {
      */
     readonly noVotes: Array<string>;
     /**
+     * Return whether the user supports the bill. If the user is not authenticated
+     * or has not voted on this bill, return None.
+     *
+     * Args:
+     *     bill: The bill to check
+     *
+     * Returns:
+     *     Whether the user supports the bill, or None if not applicable
+     * @type {boolean}
+     * @memberof Bill
+     */
+    readonly userSupports: boolean | null;
+    /**
      *
      * @type {Date}
      * @memberof Bill
@@ -111,6 +124,7 @@ export function instanceOfBill(value: object): boolean {
     isInstance = isInstance && "status" in value;
     isInstance = isInstance && "yesVotes" in value;
     isInstance = isInstance && "noVotes" in value;
+    isInstance = isInstance && "userSupports" in value;
     isInstance = isInstance && "created" in value;
     isInstance = isInstance && "name" in value;
     isInstance = isInstance && "constitutional" in value;
@@ -134,6 +148,7 @@ export function BillFromJSONTyped(json: any, ignoreDiscriminator: boolean): Bill
         'status': json['status'],
         'yesVotes': json['yes_votes'],
         'noVotes': json['no_votes'],
+        'userSupports': json['user_supports'],
         'created': (new Date(json['created'])),
         'statusChanged': !exists(json, 'status_changed') ? undefined : (new Date(json['status_changed'])),
         'name': json['name'],

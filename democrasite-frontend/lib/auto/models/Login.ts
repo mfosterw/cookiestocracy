@@ -16,58 +16,56 @@ import { exists, mapValues } from '../runtime';
 /**
  *
  * @export
- * @interface AuthToken
+ * @interface Login
  */
-export interface AuthToken {
+export interface Login {
     /**
      *
      * @type {string}
-     * @memberof AuthToken
+     * @memberof Login
      */
-    username: string;
+    username?: string;
     /**
      *
      * @type {string}
-     * @memberof AuthToken
+     * @memberof Login
+     */
+    email?: string;
+    /**
+     *
+     * @type {string}
+     * @memberof Login
      */
     password: string;
-    /**
-     *
-     * @type {string}
-     * @memberof AuthToken
-     */
-    readonly token: string;
 }
 
 /**
- * Check if a given object implements the AuthToken interface.
+ * Check if a given object implements the Login interface.
  */
-export function instanceOfAuthToken(value: object): boolean {
+export function instanceOfLogin(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "username" in value;
     isInstance = isInstance && "password" in value;
-    isInstance = isInstance && "token" in value;
 
     return isInstance;
 }
 
-export function AuthTokenFromJSON(json: any): AuthToken {
-    return AuthTokenFromJSONTyped(json, false);
+export function LoginFromJSON(json: any): Login {
+    return LoginFromJSONTyped(json, false);
 }
 
-export function AuthTokenFromJSONTyped(json: any, ignoreDiscriminator: boolean): AuthToken {
+export function LoginFromJSONTyped(json: any, ignoreDiscriminator: boolean): Login {
     if ((json === undefined) || (json === null)) {
         return json;
     }
     return {
 
-        'username': json['username'],
+        'username': !exists(json, 'username') ? undefined : json['username'],
+        'email': !exists(json, 'email') ? undefined : json['email'],
         'password': json['password'],
-        'token': json['token'],
     };
 }
 
-export function AuthTokenToJSON(value?: AuthToken | null): any {
+export function LoginToJSON(value?: Login | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -77,6 +75,7 @@ export function AuthTokenToJSON(value?: AuthToken | null): any {
     return {
 
         'username': value.username,
+        'email': value.email,
         'password': value.password,
     };
 }
