@@ -3,13 +3,7 @@ import { Container, Center } from "@mantine/core";
 import { Bill } from "@/components";
 import api from "@/lib/api";
 
-export async function generateMetadata({
-  params,
-  searchParams,
-}: {
-  params: { id: number };
-  searchParams: URLSearchParams;
-}) {
+export async function generateMetadata({ params }: { params: { id: number } }) {
   return {
     title: `${(await api.billsApi.billsRetrieve({ id: params.id })).name}`,
   };

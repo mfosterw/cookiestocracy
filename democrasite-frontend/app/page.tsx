@@ -1,7 +1,6 @@
 import api from "@/lib/api";
 import { BillList } from "@/components";
 import { SignInButton } from "@/components";
-import { cookies } from "next/headers";
 
 export default async function Home() {
   // console.log(cookies().getAll());
