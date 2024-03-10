@@ -96,6 +96,7 @@ THIRD_PARTY_APPS = [
     "corsheaders",
     "drf_spectacular",
     "dj_rest_auth",
+    "dj_rest_auth.registration",
     # Machina (forum) dependencies:
     "mptt",
     "haystack",

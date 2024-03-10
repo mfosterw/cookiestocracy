@@ -1012,6 +1012,12 @@
                         },
                         "readOnly": true
                     },
+                    "user_supports": {
+                        "type": "boolean",
+                        "nullable": true,
+                        "description": "Return whether the user supports the bill. If the user is not authenticated\nor has not voted on this bill, return None.\n\nArgs:\n    bill: The bill to check\n\nReturns:\n    Whether the user supports the bill, or None if not applicable",
+                        "readOnly": true
+                    },
                     "created": {
                         "type": "string",
                         "format": "date-time",
@@ -1043,6 +1049,7 @@
                     "no_votes",
                     "pull_request",
                     "status",
+                    "user_supports",
                     "yes_votes"
                 ]
             },
@@ -1153,6 +1160,12 @@
                         "items": {
                             "type": "string"
                         },
+                        "readOnly": true
+                    },
+                    "user_supports": {
+                        "type": "boolean",
+                        "nullable": true,
+                        "description": "Return whether the user supports the bill. If the user is not authenticated\nor has not voted on this bill, return None.\n\nArgs:\n    bill: The bill to check\n\nReturns:\n    Whether the user supports the bill, or None if not applicable",
                         "readOnly": true
                     },
                     "created": {
