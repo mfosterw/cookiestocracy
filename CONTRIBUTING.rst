@@ -46,14 +46,6 @@ Make sure to have the following on your host:
 
 First things first.
 
-#. Set a project slug!?::
-
-    $ export project_slug=cookiestocracy
-
-   .. note::
-
-       ``project_slug`` is the name of the project you want to create. It should be a valid Python package name?
-
 #. Clone the repository::
 
     $ git clone https://github.com/mfosterw/cookiestocracy.git
