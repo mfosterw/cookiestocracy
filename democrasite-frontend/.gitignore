@@ -26,7 +26,7 @@ yarn-debug.log*
 yarn-error.log*
 
 # local env files
-# .env*.local # uncomment if sensitive environment variables added
+.env*.local
 
 # vercel
 .vercel

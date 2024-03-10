@@ -14,6 +14,7 @@ export function Bill({ bill }: { bill: Bill }) {
     <Stack>
       <Container ta="center">
         <Anchor href={`/bills/${bill.id}`}>
+          {bill.userSupports && "⭐️"}
           <Title order={3}>
             Bill {bill.id}: {bill.name} (PR&nbsp;#{bill.pullRequest.number})
           </Title>

@@ -1,9 +1,7 @@
 import { Container, Center } from "@mantine/core";
 
 import { Bill } from "@/components";
-import { BillsApi } from "@/lib/auto";
-
-const api = new BillsApi();
+import api from "@/lib/api";
 
 export async function generateMetadata({
   params,
@@ -13,7 +11,7 @@ export async function generateMetadata({
   searchParams: URLSearchParams;
 }) {
   return {
-    title: `${(await api.billsRetrieve({ id: params.id })).name}`,
+    title: `${(await api.billsApi.billsRetrieve({ id: params.id })).name}`,
   };
 }
 
@@ -26,7 +24,7 @@ export default async function BillDetail({
     <main className="flex min-h-screen flex-col items-center justify-between p-32">
       <Center h="100%">
         <Container size="xs">
-          <Bill bill={await api.billsRetrieve({ id: params.id })} />
+          <Bill bill={await api.billsApi.billsRetrieve({ id: params.id })} />
         </Container>
       </Center>
     </main>
@@ -34,7 +32,7 @@ export default async function BillDetail({
 }
 
 export async function generateStaticParams() {
-  const bills = await api.billsList();
+  const bills = await api.billsApi.billsList();
 
   return bills.map((bill: any) => ({
     id: bill.id.toString(),
