@@ -44,5 +44,5 @@ class UserViewSet(RetrieveModelMixin, ListModelMixin, UpdateModelMixin, GenericV
 )
 class GitHubLogin(SocialLoginView):
     adapter_class = GitHubOAuth2Adapter
-    callback_url = "http://localhost:3000/api/auth/github"
+    callback_url = "http://localhost:3000/api/auth/callback/github"
     client_class = OAuth2Client

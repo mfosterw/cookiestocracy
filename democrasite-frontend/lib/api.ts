@@ -1,62 +1,26 @@
-import {
-  AuthApi,
-  BillsApi,
-  Configuration,
-  ConfigurationParameters,
-  ResponseContext,
-  UsersApi,
-} from "./auto";
+import { getServerSession } from "next-auth";
+import { Configuration, AuthApi, BillsApi, UsersApi } from "./auto";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
-class Api {
-  protected params: ConfigurationParameters;
-  config: Configuration;
-  authApi: AuthApi = new AuthApi();
-  billsApi: BillsApi = new BillsApi();
-  usersApi: UsersApi = new UsersApi();
+const config = new Configuration({
+  basePath: process.env.BASE_API_URL,
+  // The access key is not technically an API key but it is labeled that way by the schema generator
+  apiKey: async () => {
+    try {
+      const session = await getServerSession(authOptions);
 
-  constructor() {
-    this.params = {
-      basePath: process.env.BASE_API_URL,
-      // TODO: credentials: "include" is not working
-      // (see also django-cors settings, which did not immediately fix the issue but are probably necessary)
-      credentials: "include",
-      middleware: [{ post: this.propogateSessionMiddleWare.bind(this) }],
-    };
-    this.config = new Configuration(this.params);
-
-    this.authApi = new AuthApi(this.config);
-    this.billsApi = new BillsApi(this.config);
-    this.usersApi = new UsersApi(this.config);
-  }
-
-  setCookie(cookie: string) {
-    this.params.headers = {
-      ...this.params.headers,
-      Cookie: cookie,
-    };
-    this.config.config = new Configuration(this.params);
-  }
-
-  async propogateSessionMiddleWare({
-    url,
-    response,
-  }: ResponseContext): Promise<Response> {
-    if (
-      response.headers.get("set-cookie") === null ||
-      !/\/api\/auth\/.*/.test(url)
-    ) {
-      return response;
+      if (session) {
+        // see https://www.django-rest-framework.org/api-guide/authentication/#tokenauthentication
+        return `Token ${session?.user?.access_key}`;
+      }
+    } catch (error) {
+      // e.g. when running getStaticProps
     }
 
-    response.headers.getSetCookie().forEach((cookie) => {
-      if (cookie.startsWith("sessionid")) {
-        this.setCookie(cookie);
-      }
-    });
+    return "";
+  },
+});
 
-    return response;
-  }
-}
-
-const api = new Api();
-export default api;
+export const authApi = new AuthApi(config);
+export const billsApi = new BillsApi(config);
+export const usersApi = new UsersApi(config);
