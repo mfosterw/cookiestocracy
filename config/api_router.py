@@ -6,6 +6,7 @@ from rest_framework.routers import SimpleRouter
 from democrasite.users.api.views import GitHubLogin
 from democrasite.users.api.views import UserViewSet
 from democrasite.webiscite.api.views import BillViewSet
+from democrasite.webiscite.api.views import VoteCreateView
 
 router = DefaultRouter() if settings.DEBUG else SimpleRouter()
 
@@ -17,5 +18,6 @@ router.register("bills", BillViewSet)
 # app_name = "api"  # noqa: ERA001
 urlpatterns = [
     *router.urls,
+    path("vote/", VoteCreateView.as_view(), name="vote_create"),
     path("auth/github/", GitHubLogin.as_view(), name="github_login"),
 ]

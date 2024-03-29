@@ -8,6 +8,7 @@ from rest_framework.serializers import SlugRelatedField
 from democrasite.users.api.serializers import UserSerializer
 from democrasite.webiscite.models import Bill
 from democrasite.webiscite.models import PullRequest
+from democrasite.webiscite.models import Vote
 
 if TYPE_CHECKING:
     from democrasite.users.models import User  # pragma: no cover
@@ -65,3 +66,9 @@ class BillSerializer(ModelSerializer):
             Whether the user supports the bill, or None if not applicable"""
         user: User = self.context["user"]
         return bill.user_supports(user) if user.is_authenticated else None
+
+
+class VoteSerializer(ModelSerializer):
+    class Meta:
+        model = Vote
+        fields = ["bill", "support"]
