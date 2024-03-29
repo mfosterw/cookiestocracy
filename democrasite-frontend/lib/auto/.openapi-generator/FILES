@@ -2,6 +2,7 @@ apis/AuthApi.ts
 apis/BillsApi.ts
 apis/SchemaApi.ts
 apis/UsersApi.ts
+apis/VoteApi.ts
 apis/index.ts
 index.ts
 models/Bill.ts
@@ -11,5 +12,6 @@ models/PullRequest.ts
 models/SocialLogin.ts
 models/Token.ts
 models/User.ts
+models/Vote.ts
 models/index.ts
 runtime.ts

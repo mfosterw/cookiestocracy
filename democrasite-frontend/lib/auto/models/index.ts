@@ -7,3 +7,4 @@ export * from './PullRequest';
 export * from './SocialLogin';
 export * from './Token';
 export * from './User';
+export * from './Vote';

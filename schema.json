@@ -622,6 +622,54 @@
                     }
                 }
             }
+        },
+        "/api/vote/": {
+            "post": {
+                "operationId": "vote_create",
+                "tags": [
+                    "vote"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Vote"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Vote"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Vote"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    },
+                    {
+                        "tokenAuth": []
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Vote"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
         }
     },
     "components": {
@@ -880,6 +928,21 @@
                 "required": [
                     "url",
                     "username"
+                ]
+            },
+            "Vote": {
+                "type": "object",
+                "properties": {
+                    "bill": {
+                        "type": "integer"
+                    },
+                    "support": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "bill",
+                    "support"
                 ]
             }
         },
