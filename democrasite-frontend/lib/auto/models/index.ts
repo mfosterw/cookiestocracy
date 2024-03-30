@@ -8,3 +8,4 @@ export * from './SocialLogin';
 export * from './Token';
 export * from './User';
 export * from './Vote';
+export * from './VoteCounts';

@@ -1,5 +1,5 @@
 import { getServerSession } from "next-auth";
-import { Configuration, AuthApi, BillsApi, UsersApi, VoteApi } from "./auto";
+import { Configuration, AuthApi, BillsApi, UsersApi } from "./auto";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 const config = new Configuration({
@@ -24,4 +24,3 @@ const config = new Configuration({
 export const authApi = new AuthApi(config);
 export const billsApi = new BillsApi(config);
 export const usersApi = new UsersApi(config);
-export const voteApi = new VoteApi(config);

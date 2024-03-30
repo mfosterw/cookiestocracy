@@ -241,6 +241,65 @@
                 }
             }
         },
+        "/api/bills/{id}/vote/": {
+            "post": {
+                "operationId": "bills_vote_create",
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "A unique integer value identifying this bill.",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "bills"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Vote"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Vote"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Vote"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "security": [
+                    {
+                        "cookieAuth": []
+                    },
+                    {
+                        "tokenAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/VoteCounts"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
         "/api/schema/": {
             "get": {
                 "operationId": "schema_retrieve",
@@ -622,54 +681,6 @@
                     }
                 }
             }
-        },
-        "/api/vote/": {
-            "post": {
-                "operationId": "vote_create",
-                "tags": [
-                    "vote"
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/Vote"
-                            }
-                        },
-                        "application/x-www-form-urlencoded": {
-                            "schema": {
-                                "$ref": "#/components/schemas/Vote"
-                            }
-                        },
-                        "multipart/form-data": {
-                            "schema": {
-                                "$ref": "#/components/schemas/Vote"
-                            }
-                        }
-                    },
-                    "required": true
-                },
-                "security": [
-                    {
-                        "cookieAuth": []
-                    },
-                    {
-                        "tokenAuth": []
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/Vote"
-                                }
-                            }
-                        },
-                        "description": ""
-                    }
-                }
-            }
         }
     },
     "components": {
@@ -933,16 +944,27 @@
             "Vote": {
                 "type": "object",
                 "properties": {
-                    "bill": {
-                        "type": "integer"
-                    },
                     "support": {
                         "type": "boolean"
                     }
                 },
                 "required": [
-                    "bill",
                     "support"
+                ]
+            },
+            "VoteCounts": {
+                "type": "object",
+                "properties": {
+                    "yes_votes": {
+                        "type": "integer"
+                    },
+                    "no_votes": {
+                        "type": "integer"
+                    }
+                },
+                "required": [
+                    "no_votes",
+                    "yes_votes"
                 ]
             }
         },

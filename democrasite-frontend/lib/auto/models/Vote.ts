@@ -21,12 +21,6 @@ import { exists, mapValues } from '../runtime';
 export interface Vote {
     /**
      *
-     * @type {number}
-     * @memberof Vote
-     */
-    bill: number;
-    /**
-     *
      * @type {boolean}
      * @memberof Vote
      */
@@ -38,7 +32,6 @@ export interface Vote {
  */
 export function instanceOfVote(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "bill" in value;
     isInstance = isInstance && "support" in value;
 
     return isInstance;
@@ -54,7 +47,6 @@ export function VoteFromJSONTyped(json: any, ignoreDiscriminator: boolean): Vote
     }
     return {
 
-        'bill': json['bill'],
         'support': json['support'],
     };
 }
@@ -68,7 +60,6 @@ export function VoteToJSON(value?: Vote | null): any {
     }
     return {
 
-        'bill': value.bill,
         'support': value.support,
     };
 }
