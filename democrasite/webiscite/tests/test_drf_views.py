@@ -4,7 +4,6 @@ from django.utils.timezone import get_current_timezone
 from rest_framework.test import APIRequestFactory
 
 from democrasite.webiscite.api.views import BillViewSet
-from democrasite.webiscite.api.views import VoteCreateView
 from democrasite.webiscite.models import Bill
 from democrasite.webiscite.tests.factories import BillFactory
 
@@ -65,16 +64,14 @@ class TestBillViewSet:
         assert response.data[0].get("user_supports") is False
         assert response.data[1].get("user_supports") is None
 
-
-class TestVoteCreateView:
-    def test_create_vote(self, bill: Bill, api_rf: APIRequestFactory):
-        view = VoteCreateView.as_view()
-        request = api_rf.post("/fake-url/", {"bill": bill.pk, "support": True})
+    def test_vote(self, bill: Bill, api_rf: APIRequestFactory):
+        view = BillViewSet.as_view(actions={"post": "vote"})
+        request = api_rf.post("/fake-url/", {"support": True})
         request.user = bill.author
 
-        response = view(request)
+        response = view(request, pk=bill.pk)
 
-        assert response.status_code == HTTPStatus.CREATED
-        assert response.data["bill"] == bill.pk
-        assert response.data["support"] is True
-        assert bill.vote_set.filter(user=bill.author).exists()
+        assert response.status_code == HTTPStatus.OK
+        assert response.data["yes_votes"] == 1
+        assert response.data["no_votes"] == 0
+        assert bill.yes_votes.filter(pk=bill.author.pk).exists()
