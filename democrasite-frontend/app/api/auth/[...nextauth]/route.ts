@@ -21,7 +21,6 @@ export const authOptions: NextAuthOptions = {
         // I named this access_key to distinguish from an OAuth access_token
         // It is not technically an API key even though the API client calls it one
         user.access_key = token.key;
-        console.log(token.key);
 
         return true;
       }
