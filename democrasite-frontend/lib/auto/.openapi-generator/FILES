@@ -1,3 +1,4 @@
+.openapi-generator-ignore
 apis/AuthApi.ts
 apis/BillsApi.ts
 apis/SchemaApi.ts
@@ -8,6 +9,7 @@ models/Bill.ts
 models/PatchedBill.ts
 models/PatchedUser.ts
 models/PullRequest.ts
+models/RestAuthDetail.ts
 models/SocialLogin.ts
 models/Token.ts
 models/User.ts
