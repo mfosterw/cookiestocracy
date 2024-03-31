@@ -10,6 +10,7 @@ export const authOptions: NextAuthOptions = {
       clientSecret: process.env.GITHUB_SECRET!,
     }),
   ],
+
   callbacks: {
     async signIn({ user, account }) {
       if (account?.provider === "github") {
@@ -20,12 +21,14 @@ export const authOptions: NextAuthOptions = {
         // I named this access_key to distinguish from an OAuth access_token
         // It is not technically an API key even though the API client calls it one
         user.access_key = token.key;
+        console.log(token.key);
 
         return true;
       }
 
       return false; // Unreachable
     },
+
     async jwt({ token, user }) {
       if (user) {
         token.access_key = user.access_key;
@@ -38,6 +41,12 @@ export const authOptions: NextAuthOptions = {
       session.user.access_key = token.access_key;
 
       return session;
+    },
+  },
+
+  events: {
+    async signOut() {
+      await authApi.authLogoutCreate();
     },
   },
 };
