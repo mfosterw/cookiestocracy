@@ -1,3 +1,3 @@
-export * from "./Bill/Bill";
-export * from "./BillList/BillList";
-export * from "./SignInButton/SignInButton";
+export * from "./Bill";
+export * from "./BillList";
+export * from "./SignInButton";
