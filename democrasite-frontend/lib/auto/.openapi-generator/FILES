@@ -11,5 +11,7 @@ models/PullRequest.ts
 models/SocialLogin.ts
 models/Token.ts
 models/User.ts
+models/Vote.ts
+models/VoteCounts.ts
 models/index.ts
 runtime.ts

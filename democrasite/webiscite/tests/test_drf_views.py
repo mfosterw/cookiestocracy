@@ -1,3 +1,5 @@
+from http import HTTPStatus
+
 from django.utils.timezone import get_current_timezone
 from rest_framework.test import APIRequestFactory
 
@@ -35,7 +37,7 @@ class TestBillViewSet:
 
         assert response.data.get("user_supports") is None
 
-    def test_retrieve_user_supports_true(self, bill: Bill, api_rf: APIRequestFactory):
+    def test_retrieve_user_supports(self, bill: Bill, api_rf: APIRequestFactory):
         bill.vote(bill.author, support=True)
 
         view = BillViewSet.as_view(actions={"get": "retrieve"})
@@ -61,3 +63,15 @@ class TestBillViewSet:
         assert response.data[0]["name"] == bills[0].name
         assert response.data[0].get("user_supports") is False
         assert response.data[1].get("user_supports") is None
+
+    def test_vote(self, bill: Bill, api_rf: APIRequestFactory):
+        view = BillViewSet.as_view(actions={"post": "vote"})
+        request = api_rf.post("/fake-url/", {"support": True})
+        request.user = bill.author
+
+        response = view(request, pk=bill.pk)
+
+        assert response.status_code == HTTPStatus.OK
+        assert response.data["yes_votes"] == 1
+        assert response.data["no_votes"] == 0
+        assert bill.yes_votes.filter(pk=bill.author.pk).exists()

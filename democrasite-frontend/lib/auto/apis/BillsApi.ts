@@ -17,12 +17,18 @@ import * as runtime from '../runtime';
 import type {
   Bill,
   PatchedBill,
+  Vote,
+  VoteCounts,
 } from '../models/index';
 import {
     BillFromJSON,
     BillToJSON,
     PatchedBillFromJSON,
     PatchedBillToJSON,
+    VoteFromJSON,
+    VoteToJSON,
+    VoteCountsFromJSON,
+    VoteCountsToJSON,
 } from '../models/index';
 
 export interface BillsPartialUpdateRequest {
@@ -37,6 +43,11 @@ export interface BillsRetrieveRequest {
 export interface BillsUpdateRequest {
     id: number;
     bill: Bill;
+}
+
+export interface BillsVoteCreateRequest {
+    id: number;
+    vote: Vote;
 }
 
 /**
@@ -175,6 +186,45 @@ export class BillsApi extends runtime.BaseAPI {
      */
     async billsUpdate(requestParameters: BillsUpdateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Bill> {
         const response = await this.billsUpdateRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     */
+    async billsVoteCreateRaw(requestParameters: BillsVoteCreateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<VoteCounts>> {
+        if (requestParameters.id === null || requestParameters.id === undefined) {
+            throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling billsVoteCreate.');
+        }
+
+        if (requestParameters.vote === null || requestParameters.vote === undefined) {
+            throw new runtime.RequiredError('vote','Required parameter requestParameters.vote was null or undefined when calling billsVoteCreate.');
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = await this.configuration.apiKey("Authorization"); // tokenAuth authentication
+        }
+
+        const response = await this.request({
+            path: `/api/bills/{id}/vote/`.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters.id))),
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: VoteToJSON(requestParameters.vote),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => VoteCountsFromJSON(jsonValue));
+    }
+
+    /**
+     */
+    async billsVoteCreate(requestParameters: BillsVoteCreateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<VoteCounts> {
+        const response = await this.billsVoteCreateRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
