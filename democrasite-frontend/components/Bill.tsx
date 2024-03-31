@@ -1,4 +1,4 @@
-import { Bill } from "@/lib/auto";
+import { Bill } from "@/lib";
 import {
   Title,
   Text,
