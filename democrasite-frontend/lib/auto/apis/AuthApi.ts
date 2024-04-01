@@ -15,10 +15,13 @@
 
 import * as runtime from '../runtime';
 import type {
+  RestAuthDetail,
   SocialLogin,
   Token,
 } from '../models/index';
 import {
+    RestAuthDetailFromJSON,
+    RestAuthDetailToJSON,
     SocialLoginFromJSON,
     SocialLoginToJSON,
     TokenFromJSON,
@@ -66,6 +69,36 @@ export class AuthApi extends runtime.BaseAPI {
      */
     async authGithubCreate(requestParameters: AuthGithubCreateRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Token> {
         const response = await this.authGithubCreateRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Calls Django logout method and delete the Token object assigned to the current User object.  Accepts/Returns nothing.
+     */
+    async authLogoutCreateRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<RestAuthDetail>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = await this.configuration.apiKey("Authorization"); // tokenAuth authentication
+        }
+
+        const response = await this.request({
+            path: `/api/auth/logout/`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => RestAuthDetailFromJSON(jsonValue));
+    }
+
+    /**
+     * Calls Django logout method and delete the Token object assigned to the current User object.  Accepts/Returns nothing.
+     */
+    async authLogoutCreate(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<RestAuthDetail> {
+        const response = await this.authLogoutCreateRaw(initOverrides);
         return await response.value();
     }
 

@@ -1,3 +1,4 @@
+from dj_rest_auth.views import LogoutView
 from django.conf import settings
 from django.urls import path
 from rest_framework.routers import DefaultRouter
@@ -18,4 +19,5 @@ router.register("bills", BillViewSet)
 urlpatterns = [
     *router.urls,
     path("auth/github/", GitHubLogin.as_view(), name="github_login"),
+    path("auth/logout/", LogoutView.as_view(), name="rest_logout"),
 ]

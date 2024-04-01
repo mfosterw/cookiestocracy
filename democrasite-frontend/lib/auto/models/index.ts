@@ -4,6 +4,7 @@ export * from './Bill';
 export * from './PatchedBill';
 export * from './PatchedUser';
 export * from './PullRequest';
+export * from './RestAuthDetail';
 export * from './SocialLogin';
 export * from './Token';
 export * from './User';

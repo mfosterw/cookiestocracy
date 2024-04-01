@@ -56,6 +56,36 @@
                 }
             }
         },
+        "/api/auth/logout/": {
+            "post": {
+                "operationId": "auth_logout_create",
+                "description": "Calls Django logout method and delete the Token object\nassigned to the current User object.\n\nAccepts/Returns nothing.",
+                "tags": [
+                    "auth"
+                ],
+                "security": [
+                    {
+                        "cookieAuth": []
+                    },
+                    {
+                        "tokenAuth": []
+                    },
+                    {}
+                ],
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RestAuthDetail"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
         "/api/bills/": {
             "get": {
                 "operationId": "bills_list",
@@ -887,6 +917,18 @@
                     "diff_url",
                     "number",
                     "title"
+                ]
+            },
+            "RestAuthDetail": {
+                "type": "object",
+                "properties": {
+                    "detail": {
+                        "type": "string",
+                        "readOnly": true
+                    }
+                },
+                "required": [
+                    "detail"
                 ]
             },
             "SocialLogin": {
