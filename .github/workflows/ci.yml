@@ -37,43 +37,18 @@ jobs:
   pytest:
     runs-on: ubuntu-latest
 
-    services:
-      redis:
-        image: redis:6
-        ports:
-          - 6379:6379
-      postgres:
-        image: postgres:15
-        ports:
-          - 5432:5432
-        env:
-          POSTGRES_PASSWORD: postgres
-
-    env:
-      CELERY_BROKER_URL: "redis://localhost:6379/0"
-      # postgres://user:password@host:port/database
-      DATABASE_URL: "postgres://postgres:postgres@localhost:5432/postgres"
-
     steps:
       - name: Checkout Code Repository
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-          cache: pip
-          cache-dependency-path: |
-            requirements/base.txt
-            requirements/local.txt
+      - name: Build the Stack
+        run: docker compose -f docker-compose.local.yml build django
 
-      - name: Install Dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements/local.txt
+      - name: Run DB Migrations
+        run: docker compose -f docker-compose.local.yml run --rm django python manage.py migrate
 
-      - name: Test with pytest and coverage
-        run: coverage run -m pytest
+      - name: Run Django Tests
+        run: docker compose -f docker-compose.local.yml run django pytest
 
-      - name: Send coverage report to codecov
-        uses: codecov/codecov-action@v3
+      - name: Tear down the Stack
+        run: docker compose -f docker-compose.local.yml down

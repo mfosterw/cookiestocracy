@@ -1,0 +1,84 @@
+version: '3'
+
+volumes:
+  democrasite_local_postgres_data: {}
+  democrasite_local_postgres_data_backups: {}
+
+services:
+  django: &django
+    build:
+      context: .
+      dockerfile: ./compose/local/django/Dockerfile
+    image: democrasite-local-django
+    container_name: democrasite-local-django
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - .:/app:z
+    env_file:
+      - ./.envs/.local/.django
+      - ./.envs/.local/.postgres
+    ports:
+      - '8000:8000'
+    command: /start
+
+  postgres:
+    build:
+      context: .
+      dockerfile: ./compose/production/postgres/Dockerfile
+    image: democrasite-production-postgres
+    container_name: democrasite-local-postgres
+    volumes:
+      - democrasite_local_postgres_data:/var/lib/postgresql/data
+      - democrasite_local_postgres_data_backups:/backups
+    env_file:
+      - ./.envs/.local/.postgres
+
+  redis:
+    image: docker.io/redis:6
+    container_name: democrasite-local-redis
+
+  celeryworker:
+    <<: *django
+    image: democrasite-local-celeryworker
+    container_name: democrasite-local-celeryworker
+    depends_on:
+      - redis
+      - postgres
+    ports: []
+    command: /start-celeryworker
+
+  celerybeat:
+    <<: *django
+    image: democrasite-local-celerybeat
+    container_name: democrasite-local-celerybeat
+    depends_on:
+      - redis
+      - postgres
+    ports: []
+    command: /start-celerybeat
+
+  flower:
+    <<: *django
+    image: democrasite-local-flower
+    container_name: democrasite-local-flower
+    ports:
+      - '5555:5555'
+    command: /start-flower
+
+  node:
+    build: ./democrasite-frontend
+    image: democrasite-local-node
+    container_name: democrasite-local-node
+    depends_on:
+      - django
+    volumes:
+      - ./democrasite-frontend:/app:z
+      # http://jdlm.info/articles/2016/03/06/lessons-building-node-app-docker.html
+      - /app/democrasite-frontend/node_modules
+    env_file:
+      - ./.envs/.local/.node
+    ports:
+      - '3000:3000'
+    command: npm run dev

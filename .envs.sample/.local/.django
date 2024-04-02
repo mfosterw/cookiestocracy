@@ -1,0 +1,31 @@
+# Copy the .envs.sample directory to .envs to provide configuration for docker-compose.local.yml.
+# Don't forget to change the usernames and passwords, and set the API keys if you want to use authentication
+# in this and the other env files in this directory.
+
+# General
+# ------------------------------------------------------------------------------
+USE_DOCKER=yes
+IPYTHONDIR=/app/.ipython
+
+# Redis
+# ------------------------------------------------------------------------------
+REDIS_URL=redis://redis:6379/0
+
+# Celery
+# ------------------------------------------------------------------------------
+
+# Flower
+CELERY_FLOWER_USER=user
+CELERY_FLOWER_PASSWORD=password
+
+# Social Auth
+# ------------------------------------------------------------------------------
+GOOGLE_CLIENT_ID=
+GOOGLE_SECRET=
+GITHUB_CLIENT_ID=
+GITHUB_SECRET=
+
+# Webiscite
+# ------------------------------------------------------------------------------
+GITHUB_WEBHOOK_SECRET=
+GITHUB_TOKEN=

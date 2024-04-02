@@ -1,0 +1,11 @@
+# democrasite-frontend/
+
+# lib/api
+# ------------------------------------------------------------------------------
+BASE_API_URL=http://democrasite-local-django:8000
+
+# NextAuth
+# ------------------------------------------------------------------------------
+GITHUB_CLIENT_ID=client
+GITHUB_SECRET=github
+NEXTAUTH_SECRET=secret
