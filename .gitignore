@@ -271,3 +271,6 @@ democrasite/media/
 .env
 .envs/*
 .ipython/
+
+# Local History for devcontainer
+.devcontainer/bash_history

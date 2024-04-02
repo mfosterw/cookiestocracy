@@ -1,5 +1,0 @@
-npm dev
-npm
-npx
-python manage.py runserver_plus -v
-python manage.py runserver_plus -v 3
