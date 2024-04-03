@@ -91,7 +91,7 @@ Running type checks with mypy::
   $ mypy democrasite
 
 
-Running tests with py.test
+Running tests with pytest
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ::
@@ -111,13 +111,11 @@ To run the tests, check your test coverage, and generate an HTML coverage report
 Celery
 ^^^^^^
 
-This app comes with Celery.
-
-To run a celery worker:
+This app comes with Celery. To run a celery worker:
 
 .. code-block:: bash
 
-    celery -A config.celery_app worker -l info
+    $ docker compose -f docker-compose.local.yml up -d celeryworker
 
 Please note: For Celery's import magic to work, it is important *where* the
 celery commands are run. If you are in the same folder with *manage.py*, you

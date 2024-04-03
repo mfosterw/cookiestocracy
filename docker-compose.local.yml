@@ -13,7 +13,6 @@ services:
     container_name: democrasite-local-django
     depends_on:
       - postgres
-      - redis
     volumes:
       - .:/app:z
     env_file:
