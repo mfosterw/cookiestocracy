@@ -6,4 +6,6 @@ set -o nounset
 
 
 python manage.py migrate
-exec python manage.py runserver_plus 0.0.0.0:8000
+# Disable threading to prevent an issue with django-debug-toolbar's profiler
+# See https://github.com/jazzband/django-debug-toolbar/issues/1875
+exec python manage.py runserver_plus --nothreading 0.0.0.0:8000
