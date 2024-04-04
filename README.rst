@@ -42,7 +42,7 @@ full version doesn't exist yet.
 Contributing
 ------------
 
-Please read the `contribution guide <CONTRIBUTING.rst>`_ to get set up on a local
+Please read the :ref:`contribution guide <CONTRIBUTING.rst>` to get set up on a local
 development environment with docker. See basic commands below, which can be run from
 within a dev container or by following the relevant instructions in the aforementioned
 guide.

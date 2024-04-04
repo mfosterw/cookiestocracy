@@ -1,3 +1,5 @@
+.. _CONTRIBUTING.rst:
+
 ***************************
 Contributing to Democrasite
 ***************************
