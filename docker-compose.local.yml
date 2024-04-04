@@ -16,12 +16,8 @@ services:
     volumes:
       - .:/app:z
     env_file:
-      - ./.envs.sample/.local/.django
-      - ./.envs.sample/.local/.postgres
-      - path: ./.envs/.local/.django
-        required: false
-      - path: ./.envs/.local/.postgres
-        required: false
+      - ./.envs/.local/.django
+      - ./.envs/.local/.postgres
     ports:
       - '8000:8000'
     command: /start
@@ -36,9 +32,7 @@ services:
       - democrasite_local_postgres_data:/var/lib/postgresql/data
       - democrasite_local_postgres_data_backups:/backups
     env_file:
-      - ./.envs.sample/.local/.postgres
-      - path: ./.envs/.local/.postgres
-        required: false
+      - ./.envs/.local/.postgres
 
   redis:
     image: docker.io/redis:6
@@ -83,9 +77,7 @@ services:
       # http://jdlm.info/articles/2016/03/06/lessons-building-node-app-docker.html
       - /app/democrasite-frontend/node_modules
     env_file:
-      - ./.envs.sample/.local/.node
-      - path: ./.envs/.local/.node
-        required: false
+      - ./.envs/.local/.node
     ports:
       - '3000:3000'
     command: npm run dev
