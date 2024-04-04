@@ -56,9 +56,14 @@ Management Commands
 Getting Started
 ^^^^^^^^^^^^^^^
 
-To start the server, run this command in the root of the repository::
+If running in a dev container, the server should be running automatically.
 
-  $ python manage.py runserver_plus
+Loading initial data
+^^^^^^^^^^^^^^^^^^^^
+
+To load some initial sample data into the database, run::
+
+    $ python manage.py loaddata initial.json
 
 Setting Up Your Users
 ^^^^^^^^^^^^^^^^^^^^^
