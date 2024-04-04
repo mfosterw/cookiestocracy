@@ -20,13 +20,21 @@ said, there are plenty of contributions and additions you could make to the site
 itself, including this document. Regardless of how you choose contribute, as long as it
 is in good faith, I appreciate it.
 
+
 Some ideas for contributions include:
+
 - Adding a new django app
+
 - Adding a new feature to an existing app
+
 - Adding a new page to the front end
+
 - Improving Documentation
+
 - User Interface Enhancements
+
 - Adding tests for existing code
+
 - Providing translations
 
 
