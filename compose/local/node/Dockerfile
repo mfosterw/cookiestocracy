@@ -1,8 +1,8 @@
 FROM docker.io/node:20-bookworm-slim
 
-WORKDIR /app
+WORKDIR /app/democrasite-frontend
 
-COPY ./package.json ./
+COPY ./democrasite-frontend/package.json .
 
 RUN npm install && npm cache clean --force
 

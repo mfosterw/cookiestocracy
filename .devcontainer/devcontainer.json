@@ -28,6 +28,9 @@
   // "remoteEnv": {"PATH": "/home/dev-user/.local/bin:${containerEnv:PATH}"},
   "remoteUser": "dev-user",
   "workspaceFolder": "/app",
+  "forwardPorts": [
+    "democrasite-local-frontend:3000"
+  ],
   "portsAttributes": {
     "3000": {
       "label": "Frontend",

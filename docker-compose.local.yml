@@ -67,13 +67,15 @@ services:
     command: /start-flower
 
   node:
-    build: ./democrasite-frontend
+    build:
+      context: .
+      dockerfile: ./compose/local/node/Dockerfile
     image: democrasite-local-node
     container_name: democrasite-local-node
     depends_on:
       - django
     volumes:
-      - ./democrasite-frontend:/app:z
+      - .:/app:z
       # http://jdlm.info/articles/2016/03/06/lessons-building-node-app-docker.html
       - /app/democrasite-frontend/node_modules
     env_file:
