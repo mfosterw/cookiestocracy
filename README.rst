@@ -72,14 +72,14 @@ Setting Up Your Users
 
     $ python manage.py createsuperuser
 
-* To test logging in with a third party provider, you will need oauth keys from
-  the provider you're using. See the information on `django-allauth`_ for
-  `GitHub`_ and `Google`_ keys respectively, and once you have the keys create
-  environment variables named `<provider>-CLIENT-ID` and `<provider>-SECRET`.
-  Once you have these set up, log in normally with your provider. For
-  convenience, you can keep your normal user logged in on Chrome and your
-  superuser logged in on Firefox (or similar), so that you can see how the site
-  behaves for both kinds of users.
+* To test logging in with a third party provider, you will need oauth keys from the
+  provider you're using. See the information on `django-allauth`_ for `GitHub`_ and
+  `Google`_ keys respectively, and once you have the keys set the environment variables
+  ``<provider>-CLIENT-ID`` and ``<provider>-SECRET`` in ``.envs/.local/.django`` and
+  ``.envs/.local/.node``. Once you have these set up, log in through your provider with
+  the button on the homepage. For convenience, you can keep your normal user logged in
+  on Chrome and your superuser logged in on Firefox (or your browsers of choice), so
+  that you can see  how the site behaves for both kinds of users.
 
     .. note::
         Accounts created through the admin page do not have a normal way to

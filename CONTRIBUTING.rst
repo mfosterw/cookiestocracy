@@ -43,12 +43,19 @@ Some ideas for contributions include:
 Setting up your local environment
 =================================
 
-For larger changes, or changes to the dev or Docker containers, you will need to set up
-`Docker`_ on your local machine. It is recommended that after cloning the repository on
-your local machine, you copy the ``.envs.sample`` directory to ``.envs`` to customize
-your local environment variables without saving them to source control. You must set
-the corresponding OAuth application settings for a social account provider to
-authenticate through that provider.
+For larger changes, or changes to the dev or Docker containers, you should set up
+`Docker`_ on your local machine. If you develop in a dev container, the ``.envs``
+directory, which is required by Docker to create the container images, will be copied
+from ``.envs.sample`` automatically. If you do not create a dev container, then before
+you run the Docker containers you MUST copy the ``.envs.sample`` directory to
+``.envs`` yourself. You can create the copy without overwriting any existing changes
+you have made using this command::
+
+    $ cp -rn .envs.sample/ .envs/
+
+Once ``.envs`` exists, you can personalize any environment variables you need, such as
+saving OAuth application credentials in ``.django`` and ``.node``. Remember to never
+put sensitive information anywhere it might be added to source control!
 
 .. _`Docker`: https://docs.docker.com/get-docker/
 
@@ -67,14 +74,6 @@ Prerequisites
 .. _`installation instructions`: https://docs.docker.com/install/#supported-platforms
 .. _`installation guide`: https://docs.docker.com/compose/install/
 .. _`pre-commit`: https://pre-commit.com/#install
-
-
-Configure the environment
----------------------------
-
-Basic configuration is provided in ``.envs.sample/``. To customize your setup, copy
-this directory to ``.envs/`` and set any variables you need (e.g. OAuth application
-credentials for social authentication)
 
 
 Build the stack

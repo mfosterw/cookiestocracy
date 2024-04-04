@@ -66,5 +66,6 @@
   // "runServices": [],
   // Uncomment the next line if you want to keep your containers running after VS Code shuts down.
   // "shutdownAction": "none",
+  "initializeCommand": "cp -rn .envs.sample/ .envs/ || echo '.envs/ already exists'",
   "postCreateCommand": "cat .devcontainer/bashrc.override.sh >> ~/.bashrc && git config --global --add safe.directory /app"
 }
