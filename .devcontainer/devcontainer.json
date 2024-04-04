@@ -21,9 +21,26 @@
   // /bin/sh -c "while sleep 1000; do :; done" when starting the container instead of the container’s default command
   "overrideCommand": false,
   "service": "django",
+  // Only run direct dependencies of the selected service
+  "runServices": [
+    "node"
+  ],
   // "remoteEnv": {"PATH": "/home/dev-user/.local/bin:${containerEnv:PATH}"},
   "remoteUser": "dev-user",
   "workspaceFolder": "/app",
+  "portsAttributes": {
+    "3000": {
+      "label": "Frontend",
+      "onAutoForward": "openBrowser"
+    },
+    "8000": {
+      "label": "Backend",
+      "onAutoForward": "notify"
+    }
+  },
+  "features": {
+    "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
+  },
   // Set *default* container specific settings.json values on container create.
   "customizations": {
     "vscode": {
@@ -62,8 +79,6 @@
       ]
     }
   },
-  // Uncomment the next line if you want start specific services in your Docker Compose config.
-  // "runServices": [],
   // Uncomment the next line if you want to keep your containers running after VS Code shuts down.
   // "shutdownAction": "none",
   "initializeCommand": "cp -rn .envs.sample/ .envs/ || echo '.envs/ already exists'",
