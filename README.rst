@@ -38,17 +38,17 @@ full version doesn't exist yet.
 .. _`kakistocracy`: https://en.wikipedia.org/wiki/Kakistocracy
 .. _`here`: https://github.com/mfosterw/democrasite-testing
 
+
 Contributing
 ------------
 
-Please read the `contribution guide <CONTRIBUTING.rst>`_ and then see the
-basic commands below. It is also recommended that you rename ".env.sample" in
-the root of the repository to ".env" and set the environment variable
-``DJANGO_READ_DOT_ENV_FILE=True`` so you can more easily keep track of your
-environment variables.
+Please read the `contribution guide <CONTRIBUTING.rst>`_ to get set up on a local
+development environment with docker. See basic commands below, which can be run from
+within a dev container or by following the relevant instructions in the aforementioned
+guide.
 
 
-Basic Commands
+Management Commands
 --------------
 
 Getting Started

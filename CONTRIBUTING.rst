@@ -32,8 +32,17 @@ Some ideas for contributions include:
 
 .. Adapted from https://cookiecutter-django.readthedocs.io/en/latest/developing-locally-docker.html
 
-Getting Up and Running Locally With Docker
-==========================================
+Setting up your local environment
+=================================
+
+For larger changes, or changes to the dev or Docker containers, you will need to set up
+`Docker`_ on your local machine. It is recommended that after cloning the repository on
+your local machine, you copy the ``.envs.sample`` directory to ``.envs`` to customize
+your local environment variables without saving them to source control. You must set
+the corresponding OAuth application settings for a social account provider to
+authenticate through that provider.
+
+.. _`Docker`: https://docs.docker.com/get-docker/
 
 Prerequisites
 -------------
@@ -52,16 +61,15 @@ Prerequisites
 .. _`pre-commit`: https://pre-commit.com/#install
 
 
-Configuring the Environment
+Configure the environment
 ---------------------------
 
-Environment files are expected by Docker, but are not kept in source control. There is
-a sample directory with the required structure and variables for local development
-located in ``.envs.sample/``. Copy this directory to ``.envs/`` and set any variables
-you need (e.g. OAuth application credentials for social authentication)
+Basic configuration is provided in ``.envs.sample/``. To customize your setup, copy
+this directory to ``.envs/`` and set any variables you need (e.g. OAuth application
+credentials for social authentication)
 
 
-Build the Stack
+Build the stack
 ---------------
 
 This can take a while, especially the first time you run this particular command on your development system::
@@ -82,6 +90,8 @@ Open a terminal at the project root and run the following for to activate all se
 
     $ docker compose -f docker-compose.local.yml up
 
+The site should start and be accessible at http://localhost:3000, with the api visible at http://localhost:8000/api.
+
 You can also set the environment variable ``COMPOSE_FILE`` pointing to ``docker-compose.local.yml`` like this::
 
     $ export COMPOSE_FILE=docker-compose.local.yml
@@ -94,7 +104,7 @@ To run a specific service and its dependencies, run::
 
     $ docker compose up <service_name>
 
-To start a full stack with nothing extra, start ``node``::
+To run a full stack without Celery, start ``node``::
 
     $ docker compose up node
 
@@ -105,12 +115,6 @@ To run in a detached (background) mode, just::
 These commands don't run the docs service. In order to run docs service you can run::
 
     $ docker compose -f docker-compose.docs.yml up
-
-To run the docs with local services just use::
-
-    $ docker compose -f docker-compose.local.yml -f docker-compose.docs.yml up
-
-The site should start and be accessible at http://localhost:3000, with the api visible at http://localhost:8000/api.
 
 
 Execute Management Commands
