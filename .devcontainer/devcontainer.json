@@ -54,8 +54,11 @@
         "ms-python.python",
         "ms-python.vscode-pylance",
         "charliermarsh.ruff",
+        "matangover.mypy",
         // django
-        "batisteo.vscode-django"
+        "batisteo.vscode-django",
+        "tamasfe.even-better-toml",
+        "trond-snekvik.simple-rst"
       ]
     }
   },
