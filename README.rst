@@ -18,7 +18,7 @@ Democrasite
 .. |Documentation status| image:: https://readthedocs.org/projects/cookiestocracy/badge/?version=latest
      :target: https://cookiestocracy.readthedocs.io/en/latest/?badge=latest
 
-.. |Open in GitHub Codespaces| image:: 'https://github.com/codespaces/badge.svg'
+.. |Open in GitHub Codespaces| image:: https://github.com/codespaces/badge.svg
     :target: https://codespaces.new/mfosterw/cookiestocracy/tree/docker?quickstart=1
 
 :License: MIT
@@ -46,20 +46,38 @@ full version doesn't exist yet.
 Contributing
 ------------
 
+Getting Started
+^^^^^^^^^^^^^^^
+
+The easiest way to explore the repository is to open it in `GitHub Codespaces`_. In the
+codespace, navigate to the ports tab right above the terminal and forward port 3000.
+Then, click on the browser icon that appears when you hover over the port number, and,
+once it compiles, you should see the homepage.
+
 Please read the `contribution guide`_ to set up a local development environment with
-docker. See basic commands below, which can be run from within a dev container or by
+Docker. See basic commands below, which can be run from within a dev container or by
 following the instructions in the guide.
 
+.. _`GitHub Codespaces`: https://codespaces.new/mfosterw/cookiestocracy/tree/docker?quickstart=1
 .. _`contribution guide`: https://github.com/mfosterw/cookiestocracy/blob/docker/CONTRIBUTING.rst
 
 
 Management Commands
 -------------------
 
-Getting Started
-^^^^^^^^^^^^^^^
+Viewing server logs
+^^^^^^^^^^^^^^^^^^^
 
-If running in a dev container, the server should be running automatically.
+To view the logs from the backend server, run::
+
+    $ docker compose -f docker-compose.local.yml logs -f django
+
+For the frontend server, run::
+
+    $ docker compose -f docker-compose.local.yml logs -f node
+
+Note that the dev container runs from the backend server, so Django management commands
+can be run normally.
 
 Loading initial data
 ^^^^^^^^^^^^^^^^^^^^
@@ -68,17 +86,17 @@ To load some initial sample data into the database, run::
 
     $ python manage.py loaddata initial.json
 
-Setting Up Your Users
+Setting up your users
 ^^^^^^^^^^^^^^^^^^^^^
 
 * To create an **superuser account**, use this command::
 
     $ python manage.py createsuperuser
 
-* To test logging in with a third party provider, you will need oauth keys from the
+* To test logging in with a third party provider, you will need OAuth keys from the
   provider you're using. See the information on `django-allauth`_ for `GitHub`_ and
   `Google`_ keys respectively, and once you have the keys set the environment variables
-  ``<provider>-CLIENT-ID`` and ``<provider>-SECRET`` in ``.envs/.local/.django`` and
+  ``<provider>-CLIENT-ID`` and ``<provider>-SECRET`` in both ``.envs/.local/.django`` and
   ``.envs/.local/.node``. Once you have these set up, log in through your provider with
   the button on the homepage. For convenience, you can keep your normal user logged in
   on Chrome and your superuser logged in on Firefox (or your browsers of choice), so
@@ -116,17 +134,3 @@ To run the tests, check your test coverage, and generate an HTML coverage report
     $ coverage run -m pytest
     $ coverage html
     $ open htmlcov/index.html
-
-
-Celery
-^^^^^^
-
-This app comes with Celery. To run a celery worker:
-
-.. code-block:: bash
-
-    $ docker compose -f docker-compose.local.yml up -d celeryworker
-
-Please note: For Celery's import magic to work, it is important *where* the
-celery commands are run. If you are in the same folder with *manage.py*, you
-should be right.
