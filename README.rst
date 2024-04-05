@@ -1,7 +1,7 @@
 Democrasite
 ===========
 
-|Built with Cookiecutter Django| |Black code style| |Continuous integration| |Coverage report| |Documentation status| |Open in GitHub Codespaces|
+|Built with Cookiecutter Django| |Black code style| |Continuous integration| |Coverage report| |Documentation status|
 
 .. |Built with Cookiecutter Django| image:: https://img.shields.io/badge/built%20with-Cookiecutter%20Django-ff69b4.svg?logo=cookiecutter
      :target: https://github.com/pydanny/cookiecutter-django/
@@ -18,8 +18,6 @@ Democrasite
 .. |Documentation status| image:: https://readthedocs.org/projects/cookiestocracy/badge/?version=latest
      :target: https://cookiestocracy.readthedocs.io/en/latest/?badge=latest
 
-.. |Open in GitHub Codespaces| image:: https://github.com/codespaces/badge.svg
-    :target: https://codespaces.new/mfosterw/cookiestocracy/tree/docker?quickstart=1
 
 :License: MIT
 
@@ -49,16 +47,20 @@ Contributing
 Getting Started
 ^^^^^^^^^^^^^^^
 
-The easiest way to explore the repository is to open it in `GitHub Codespaces`_. In the
-codespace, navigate to the ports tab right above the terminal and forward port 3000.
-Then, click on the browser icon that appears when you hover over the port number, and,
-once it compiles, you should see the homepage.
+|Open in GitHub Codespaces|
+
+.. |Open in GitHub Codespaces| image:: https://github.com/codespaces/badge.svg
+    :target: https://codespaces.new/mfosterw/cookiestocracy/tree/docker?quickstart=1
+
+The easiest way to explore the repository is to open it in GitHub Codespaces. Once
+you're in the codespace, navigate to the ports tab right above the terminal and forward
+port 3000. Then, click on the browser icon that appears when you hover over the port
+number, and (once it compiles) you should see the homepage.
 
 Please read the `contribution guide`_ to set up a local development environment with
 Docker. See basic commands below, which can be run from within a dev container or by
 following the instructions in the guide.
 
-.. _`GitHub Codespaces`: https://codespaces.new/mfosterw/cookiestocracy/tree/docker?quickstart=1
 .. _`contribution guide`: https://github.com/mfosterw/cookiestocracy/blob/docker/CONTRIBUTING.rst
 
 
