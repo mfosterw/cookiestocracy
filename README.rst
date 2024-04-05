@@ -1,21 +1,25 @@
 Democrasite
 ===========
 
-.. image:: https://img.shields.io/badge/built%20with-Cookiecutter%20Django-ff69b4.svg?logo=cookiecutter
+|Built with Cookiecutter Django| |Black code style| |Continuous integration| |Coverage report| |Documentation status| |Open in GitHub Codespaces|
+
+.. |Built with Cookiecutter Django| image:: https://img.shields.io/badge/built%20with-Cookiecutter%20Django-ff69b4.svg?logo=cookiecutter
      :target: https://github.com/pydanny/cookiecutter-django/
-     :alt: Built with Cookiecutter Django
-.. image:: https://img.shields.io/badge/code%20style-black-000000.svg
+
+.. |Black code style| image:: https://img.shields.io/badge/code%20style-black-000000.svg
      :target: https://github.com/ambv/black
-     :alt: Black code style
-.. image:: https://github.com/mfosterw/cookiestocracy/actions/workflows/ci.yml/badge.svg
+
+.. |Continuous integration| image:: https://github.com/mfosterw/cookiestocracy/actions/workflows/ci.yml/badge.svg
      :target: https://github.com/mfosterw/cookiestocracy/actions/workflows/ci.yml
-     :alt: Continuous integration
-.. image:: https://codecov.io/gh/mfosterw/cookiestocracy/branch/master/graph/badge.svg?token=NPV1TLXZIW
+
+.. |Coverage report| image:: https://codecov.io/gh/mfosterw/cookiestocracy/branch/master/graph/badge.svg?token=NPV1TLXZIW
      :target: https://codecov.io/gh/mfosterw/cookiestocracy
-     :alt: Coverage report
-.. image:: https://readthedocs.org/projects/cookiestocracy/badge/?version=latest
+
+.. |Documentation status| image:: https://readthedocs.org/projects/cookiestocracy/badge/?version=latest
      :target: https://cookiestocracy.readthedocs.io/en/latest/?badge=latest
-     :alt: Documentation status
+
+.. |Open in GitHub Codespaces| image:: 'https://github.com/codespaces/badge.svg'
+    :target: https://codespaces.new/mfosterw/cookiestocracy/tree/docker?quickstart=1
 
 :License: MIT
 
