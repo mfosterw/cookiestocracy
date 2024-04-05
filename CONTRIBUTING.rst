@@ -46,12 +46,12 @@ Setting up your local environment
 For larger changes, or changes to the dev or Docker containers, you should set up
 `Docker`_ on your local machine. If you develop in a dev container, the ``.envs``
 directory, which is required by Docker to create the container images, will be copied
-from ``.envs.sample`` automatically. If you do not create a dev container, then before
-you run the Docker containers you MUST copy the ``.envs.sample`` directory to
+from ``.envs.template`` automatically. If you do not create a dev container, then before
+you run the Docker containers you MUST copy the ``.envs.template`` directory to
 ``.envs`` yourself. You can create the copy without overwriting any existing changes
 you have made using this command::
 
-    $ cp -rn .envs.sample/ .envs/
+    $ cp -rn .envs.template/ .envs/
 
 Once ``.envs`` exists, you can personalize any environment variables you need, such as
 saving OAuth application credentials in ``.django`` and ``.node``. Remember to never

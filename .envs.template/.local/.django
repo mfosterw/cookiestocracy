@@ -1,4 +1,4 @@
-# Copy the .envs.sample directory to .envs to provide custom configuration for
+# Copy the .envs.template directory to .envs to provide custom configuration for
 # docker-compose.local.yml. Don't forget to set the API keys in this file and .node if
 # you want to use authentication
 
