@@ -29,7 +29,7 @@
   "remoteUser": "dev-user",
   "workspaceFolder": "/app",
   "forwardPorts": [
-    "democrasite-local-frontend:3000"
+    "democrasite-local-node:3000"
   ],
   "portsAttributes": {
     "3000": {
