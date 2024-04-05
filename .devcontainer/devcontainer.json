@@ -28,11 +28,8 @@
   // "remoteEnv": {"PATH": "/home/dev-user/.local/bin:${containerEnv:PATH}"},
   "remoteUser": "dev-user",
   "workspaceFolder": "/app",
-  "forwardPorts": [
-    "node:3000"
-  ],
   "portsAttributes": {
-    "node:3000": {
+    "3000": {
       "label": "Frontend",
       "onAutoForward": "openBrowser"
     },
