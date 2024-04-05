@@ -32,7 +32,7 @@
     "democrasite-local-node:3000"
   ],
   "portsAttributes": {
-    "3000": {
+    "democrasite-local-node:3000": {
       "label": "Frontend",
       "onAutoForward": "openBrowser"
     },

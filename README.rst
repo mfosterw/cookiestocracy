@@ -42,10 +42,9 @@ full version doesn't exist yet.
 Contributing
 ------------
 
-Please read the `contribution guide`_ to get set up on a local
-development environment with docker. See basic commands below, which can be run from
-within a dev container or by following the relevant instructions in the aforementioned
-guide.
+Please read the `contribution guide`_ to set up a local development environment with
+docker. See basic commands below, which can be run from within a dev container or by
+following the instructions in the guide.
 
 .. _`contribution guide`: https://github.com/mfosterw/cookiestocracy/blob/docker/CONTRIBUTING.rst
 
