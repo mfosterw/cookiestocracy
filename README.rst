@@ -72,11 +72,11 @@ Viewing server logs
 
 To view the logs from the backend server, run::
 
-    $ docker compose -f docker-compose.local.yml logs -f django
+    $ docker logs -f django
 
 For the frontend server, run::
 
-    $ docker compose -f docker-compose.local.yml logs -f node
+    $ docker logs -f node
 
 Note that the dev container runs from the backend server, so Django management commands
 can be run normally.
