@@ -5,7 +5,7 @@ volumes:
   democrasite_local_postgres_data_backups: {}
 
 services:
-  django: &django
+  django:
     build:
       context: .
       dockerfile: ./compose/local/django/Dockerfile
@@ -21,6 +21,10 @@ services:
     ports:
       - '8000:8000'
     command: /start
+    healthcheck:
+      test: "curl --fail --silent --write-out 'STATUS %{http_code}' --output /dev/null http://localhost:8000/"
+      timeout: 5s
+      start_period: 30s
 
   postgres:
     build:
@@ -38,18 +42,25 @@ services:
     image: docker.io/redis:6
     container_name: democrasite-local-redis
 
-  celeryworker:
-    <<: *django
+  celeryworker: &celery
+    build:
+      context: .
+      dockerfile: ./compose/local/django/Dockerfile
     image: democrasite-local-celeryworker
     container_name: democrasite-local-celeryworker
     depends_on:
       - redis
       - postgres
+    volumes:
+      - .:/app:z
+    env_file:
+      - ./.envs/.local/.django
+      - ./.envs/.local/.postgres
     ports: []
     command: /start-celeryworker
 
   celerybeat:
-    <<: *django
+    <<: *celery
     image: democrasite-local-celerybeat
     container_name: democrasite-local-celerybeat
     depends_on:
@@ -59,7 +70,7 @@ services:
     command: /start-celerybeat
 
   flower:
-    <<: *django
+    <<: *celery
     image: democrasite-local-flower
     container_name: democrasite-local-flower
     ports:
@@ -83,3 +94,7 @@ services:
     ports:
       - '3000:3000'
     command: npm run dev
+    healthcheck:
+      test: "curl --fail --silent --write-out 'STATUS %{http_code}' --output /dev/null http://localhost:3000/"
+      timeout: 5s
+      start_period: 30s
