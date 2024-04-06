@@ -28,10 +28,11 @@
   // "remoteEnv": {"PATH": "/home/dev-user/.local/bin:${containerEnv:PATH}"},
   "remoteUser": "dev-user",
   "workspaceFolder": "/app",
-  // "forwardPorts": [
-  //   3000,
-  //   8000
-  // ],
+  "forwardPorts": [
+    3000,
+    8000
+  ],
+  // Still holding out hope that one day autodiscovery will work in codespaces
   "portsAttributes": {
     "3000": {
       "label": "Frontend"
@@ -84,5 +85,5 @@
   // Uncomment the next line if you want to keep your containers running after VS Code shuts down.
   // "shutdownAction": "none",
   "initializeCommand": "cp -rn .envs.template/ .envs/ || echo '.envs/ already exists'",
-  "postCreateCommand": "cat .devcontainer/bashrc.override.sh >> ~/.bashrc && git config --global --add safe.directory /app && docker logs democrasite-local-node && docker logs democrasite-local-django"
+  "postCreateCommand": "cat .devcontainer/bashrc.override.sh >> ~/.bashrc && git config --global --add safe.directory /app"
 }
