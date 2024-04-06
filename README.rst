@@ -52,10 +52,11 @@ Getting Started
 .. |Open in GitHub Codespaces| image:: https://github.com/codespaces/badge.svg
     :target: https://codespaces.new/mfosterw/cookiestocracy/tree/docker?quickstart=1
 
-The easiest way to explore the repository is to open it in GitHub Codespaces. Once
-you're in the codespace, navigate to the ports tab right above the terminal and forward
-port 3000. Then, click on the browser icon that appears when you hover over the port
-number, and (once it compiles) you should see the homepage.
+The easiest way to explore the repository is to open it in GitHub Codespaces with the
+button above. Once you've given the container some time to set up (it should take about
+three minutes), navigate to the ports tab right above the terminal and hover over port
+3000, then click on the browser icon that appears. You should see the development
+version of the homepage! (With no data yet, see below).
 
 Please read the `contribution guide`_ to set up a local development environment with
 Docker. See basic commands below, which can be run from within a dev container or by
@@ -70,13 +71,13 @@ Management Commands
 Viewing server logs
 ^^^^^^^^^^^^^^^^^^^
 
-To view the logs from the backend server, run::
+To view the logs from the server process on the backend (django's ``runserver``) run::
 
-    $ docker logs -f django
+    $ docker logs -f democrasite-local-django
 
-For the frontend server, run::
+For logs from the frontend server (``next dev``), run::
 
-    $ docker logs -f node
+    $ docker logs -f democrasite-local-node
 
 Note that the dev container runs from the backend server, so Django management commands
 can be run normally.
