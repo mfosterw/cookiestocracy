@@ -6,6 +6,6 @@ BASE_API_URL=http://django:8000
 
 # NextAuth
 # ------------------------------------------------------------------------------
-GITHUB_CLIENT_ID=client
-GITHUB_SECRET=github
+GITHUB_CLIENT_ID=
+GITHUB_SECRET=
 NEXTAUTH_SECRET=secret

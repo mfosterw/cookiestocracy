@@ -1,4 +1,4 @@
-import { Bill } from "@/lib";
+import { type Bill } from "@/lib";
 import {
   Title,
   Text,
@@ -13,7 +13,7 @@ export function Bill({ bill }: { bill: Bill }) {
   return (
     <Stack>
       <Container ta="center">
-        <Anchor href={`/bills/${bill.id}`}>
+        <Anchor href={`/bills/${bill.id.toString()}`}>
           {bill.userSupports !== null && "⭐️"}
           <Title order={3}>
             Bill {bill.id}: {bill.name} (PR&nbsp;#{bill.pullRequest.number})
