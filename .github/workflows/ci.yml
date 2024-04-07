@@ -19,7 +19,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  linter:
+  # Doesn't require docker
+  pre-commit:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code Repository
@@ -29,14 +30,35 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+
       # Consider using pre-commit.ci for open source project
       - name: Run pre-commit
         uses: pre-commit/action@v3.0.1
 
+  # Since these don't run from the root they are difficult to add to pre-commit
+  typescript:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./democrasite-frontend/
+    steps:
+      - name: Checkout Code Repository
+        uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "21.x"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run eslint and tsc
+        run: npm run lint
+
   # With no caching at all the entire ci process takes 4m 30s to complete!
   pytest:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout Code Repository
         uses: actions/checkout@v4

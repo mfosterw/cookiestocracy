@@ -1,11 +1,11 @@
 import { Container, Center } from "@mantine/core";
 
 import { Bill } from "@/components";
-import { billsApi } from "@/lib";
+import { type Bill as BillType, billsApi } from "@/lib";
 
 export async function generateMetadata({ params }: { params: { id: number } }) {
   return {
-    title: `${(await billsApi.billsRetrieve({ id: params.id })).name}`,
+    title: (await billsApi.billsRetrieve({ id: params.id })).name,
   };
 }
 
@@ -28,7 +28,7 @@ export default async function BillDetail({
 export async function generateStaticParams() {
   const bills = await billsApi.billsList();
 
-  return bills.map((bill: any) => ({
+  return bills.map((bill: BillType) => ({
     id: bill.id.toString(),
   }));
 }
