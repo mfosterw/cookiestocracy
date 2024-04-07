@@ -3,7 +3,7 @@ version: "3.8"
 services:
   docs:
     image: democrasite_local_docs
-    container_name: democrasite_local_docs
+    container_name: democrasite-local-docs
     build:
       context: .
       dockerfile: ./compose/local/docs/Dockerfile

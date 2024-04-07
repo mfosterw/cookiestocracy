@@ -9,7 +9,7 @@ services:
     build:
       context: .
       dockerfile: ./compose/local/django/Dockerfile
-    image: democrasite-local-django
+    image: democrasite_local_django
     container_name: democrasite-local-django
     depends_on:
       - postgres
@@ -30,7 +30,7 @@ services:
     build:
       context: .
       dockerfile: ./compose/production/postgres/Dockerfile
-    image: democrasite-production-postgres
+    image: democrasite_production_postgres
     container_name: democrasite-local-postgres
     volumes:
       - democrasite_local_postgres_data:/var/lib/postgresql/data
@@ -46,7 +46,7 @@ services:
     build:
       context: .
       dockerfile: ./compose/local/django/Dockerfile
-    image: democrasite-local-celeryworker
+    image: democrasite_local_celeryworker
     container_name: democrasite-local-celeryworker
     depends_on:
       - redis
@@ -61,7 +61,7 @@ services:
 
   celerybeat:
     <<: *celery
-    image: democrasite-local-celerybeat
+    image: democrasite_local_celerybeat
     container_name: democrasite-local-celerybeat
     depends_on:
       - redis
@@ -71,7 +71,7 @@ services:
 
   flower:
     <<: *celery
-    image: democrasite-local-flower
+    image: democrasite_local_flower
     container_name: democrasite-local-flower
     ports:
       - "5555:5555"
@@ -81,7 +81,7 @@ services:
     build:
       context: .
       dockerfile: ./compose/local/node/Dockerfile
-    image: democrasite-local-node
+    image: democrasite_local_node
     container_name: democrasite-local-node
     depends_on:
       - django
