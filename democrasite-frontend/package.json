@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "check-types": "tsc --noemit",
-    "lint": "next lint && npm run check-types"
+    "lint": "next lint && npm run check-types",
+    "format": "prettier --write . --ignore-path ../.prettierignore --ignore-path .gitignore"
   },
   "dependencies": {
     "@mantine/core": "^7.5.3",
@@ -27,9 +28,11 @@
     "autoprefixer": "^10.0.1",
     "eslint": "^8.57.0",
     "eslint-config-next": "14.1.0",
+    "eslint-config-prettier": "^9.1.0",
     "postcss": "^8.4.35",
     "postcss-preset-mantine": "^1.13.0",
     "postcss-simple-vars": "^7.0.1",
+    "prettier": "3.2.5",
     "tailwindcss": "^3.3.0",
     "typescript": "^5",
     "typescript-eslint": "^7.5.0"

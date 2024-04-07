@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   docs:
@@ -16,5 +16,5 @@ services:
       - ./README.rst:/docs/README.rst:z
       - ./CONTRIBUTING.rst:/docs/CONTRIBUTING.rst:z
     ports:
-      - '9000:9000'
+      - "9000:9000"
     command: /start-docs

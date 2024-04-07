@@ -1,9 +1,7 @@
 // For format details, see https://containers.dev/implementors/json_reference/
 {
   "name": "democrasite_dev",
-  "dockerComposeFile": [
-    "../docker-compose.local.yml"
-  ],
+  "dockerComposeFile": ["../docker-compose.local.yml"],
   "init": true,
   "mounts": [
     {
@@ -22,16 +20,11 @@
   "overrideCommand": false,
   "service": "django",
   // Only run direct dependencies of the selected service
-  "runServices": [
-    "node"
-  ],
+  "runServices": ["node"],
   // "remoteEnv": {"PATH": "/home/dev-user/.local/bin:${containerEnv:PATH}"},
   "remoteUser": "dev-user",
   "workspaceFolder": "/app",
-  "forwardPorts": [
-    3000,
-    8000
-  ],
+  "forwardPorts": [3000, 8000],
   // Still holding out hope that one day autodiscovery will work in codespaces
   "portsAttributes": {
     "3000": {

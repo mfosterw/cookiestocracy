@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 volumes:
   democrasite_local_postgres_data: {}
@@ -19,7 +19,7 @@ services:
       - ./.envs/.local/.django
       - ./.envs/.local/.postgres
     ports:
-      - '8000:8000'
+      - "8000:8000"
     command: /start
     healthcheck:
       test: "curl --fail --silent --write-out 'STATUS %{http_code}' --output /dev/null http://localhost:8000/"
@@ -74,7 +74,7 @@ services:
     image: democrasite-local-flower
     container_name: democrasite-local-flower
     ports:
-      - '5555:5555'
+      - "5555:5555"
     command: /start-flower
 
   node:
@@ -92,7 +92,7 @@ services:
     env_file:
       - ./.envs/.local/.node
     ports:
-      - '3000:3000'
+      - "3000:3000"
     command: npm run dev
     healthcheck:
       test: "curl --fail --silent --write-out 'STATUS %{http_code}' --output /dev/null http://localhost:3000/"
