@@ -5,7 +5,7 @@ import type {
 } from "next";
 import { type NextAuthOptions, getServerSession } from "next-auth";
 import GithubProvider from "next-auth/providers/github";
-import { authApi } from "@/lib";
+import { authApi } from "@/lib/api";
 
 // You'll need to import and pass this to `NextAuth` in `app/api/auth/[...nextauth]/route.ts`
 export const authOptions = {

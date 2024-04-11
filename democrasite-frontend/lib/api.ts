@@ -1,5 +1,4 @@
 import { auth } from "@/auth";
-
 import { Configuration, AuthApi, BillsApi, UsersApi } from "./auto";
 
 const config = new Configuration({
@@ -21,6 +20,7 @@ const config = new Configuration({
   },
 });
 
+//server side only
 export const authApi = new AuthApi(config);
 export const billsApi = new BillsApi(config);
 export const usersApi = new UsersApi(config);
