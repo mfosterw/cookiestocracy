@@ -1,21 +1,23 @@
 Democrasite
 ===========
 
-.. image:: https://img.shields.io/badge/built%20with-Cookiecutter%20Django-ff69b4.svg?logo=cookiecutter
+|Built with Cookiecutter Django| |Black code style| |Continuous integration| |Coverage report| |Documentation status|
+
+.. |Built with Cookiecutter Django| image:: https://img.shields.io/badge/built%20with-Cookiecutter%20Django-ff69b4.svg?logo=cookiecutter
      :target: https://github.com/pydanny/cookiecutter-django/
-     :alt: Built with Cookiecutter Django
-.. image:: https://img.shields.io/badge/code%20style-black-000000.svg
+
+.. |Black code style| image:: https://img.shields.io/badge/code%20style-black-000000.svg
      :target: https://github.com/ambv/black
-     :alt: Black code style
-.. image:: https://github.com/mfosterw/cookiestocracy/actions/workflows/ci.yml/badge.svg
+
+.. |Continuous integration| image:: https://github.com/mfosterw/cookiestocracy/actions/workflows/ci.yml/badge.svg
      :target: https://github.com/mfosterw/cookiestocracy/actions/workflows/ci.yml
-     :alt: Continuous integration
-.. image:: https://codecov.io/gh/mfosterw/cookiestocracy/branch/master/graph/badge.svg?token=NPV1TLXZIW
+
+.. |Coverage report| image:: https://codecov.io/gh/mfosterw/cookiestocracy/branch/master/graph/badge.svg?token=NPV1TLXZIW
      :target: https://codecov.io/gh/mfosterw/cookiestocracy
-     :alt: Coverage report
-.. image:: https://readthedocs.org/projects/cookiestocracy/badge/?version=latest
+
+.. |Documentation status| image:: https://readthedocs.org/projects/cookiestocracy/badge/?version=latest
      :target: https://cookiestocracy.readthedocs.io/en/latest/?badge=latest
-     :alt: Documentation status
+
 
 :License: MIT
 
@@ -38,46 +40,77 @@ full version doesn't exist yet.
 .. _`kakistocracy`: https://en.wikipedia.org/wiki/Kakistocracy
 .. _`here`: https://github.com/mfosterw/democrasite-testing
 
+
 Contributing
 ------------
-
-Please read the `contribution guide <CONTRIBUTING.rst>`_ and then see the
-basic commands below. It is also recommended that you rename ".env.sample" in
-the root of the repository to ".env" and set the environment variable
-``DJANGO_READ_DOT_ENV_FILE=True`` so you can more easily keep track of your
-environment variables.
-
-
-Basic Commands
---------------
 
 Getting Started
 ^^^^^^^^^^^^^^^
 
-To start the server, run this command in the root of the repository::
+|Open in GitHub Codespaces|
 
-  $ python manage.py runserver_plus
+.. |Open in GitHub Codespaces| image:: https://github.com/codespaces/badge.svg
+    :target: https://codespaces.new/mfosterw/cookiestocracy/tree/docker?quickstart=1
 
-Setting Up Your Users
+The easiest way to explore the repository is to open it in GitHub Codespaces with the
+button above. Once you've given the container some time to set up (it should take about
+three minutes), navigate to the ports tab right above the terminal and hover over port
+3000, then click on the browser icon that appears. You should see the development
+version of the homepage! (With no data yet, see below).
+
+Please read the `contribution guide`_ to set up a local development environment with
+Docker. See basic commands below, which can be run from within a dev container or by
+following the instructions in the guide.
+
+.. _`contribution guide`: https://github.com/mfosterw/cookiestocracy/blob/docker/CONTRIBUTING.rst
+
+
+Management Commands
+-------------------
+
+Viewing server logs
+^^^^^^^^^^^^^^^^^^^
+
+To view the logs from the server process on the backend (django's ``runserver``) run::
+
+    $ docker logs -f democrasite-local-django
+
+For logs from the frontend server (``next dev``), run::
+
+    $ docker logs -f democrasite-local-node
+
+Note that the dev container runs from the backend server, so Django management commands
+can be run normally.
+
+Loading initial data
+^^^^^^^^^^^^^^^^^^^^
+
+To load some initial sample data into the database, run::
+
+    $ python manage.py loaddata initial.json
+
+Setting up your users
 ^^^^^^^^^^^^^^^^^^^^^
 
-* To create an **superuser account**, use this command::
+* To create a **superuser account** to log into the admin at localhost:8000/admin, use
+  this command::
 
     $ python manage.py createsuperuser
 
-* To test logging in with a third party provider, you will need oauth keys from
-  the provider you're using. See the information on `django-allauth`_ for
-  `GitHub`_ and `Google`_ keys respectively, and once you have the keys create
-  environment variables named `<provider>-CLIENT-ID` and `<provider>-SECRET`.
-  Once you have these set up, log in normally with your provider. For
-  convenience, you can keep your normal user logged in on Chrome and your
-  superuser logged in on Firefox (or similar), so that you can see how the site
-  behaves for both kinds of users.
+* To test logging in with a third party provider, you will need OAuth keys from the
+  provider you're using. See the information on `django-allauth`_ for `GitHub`_ and
+  `Google`_ keys respectively, and once you have the keys set the environment variables
+  ``<provider>-CLIENT-ID`` and ``<provider>-SECRET`` in both ``.envs/.local/.django``
+  and ``.envs/.local/.node`` and then rebuild the container. Once it is rebuilt, log in
+  through your provider with the button on the homepage. For convenience, you can keep
+  your normal user logged in on Chrome and your superuser logged in on Firefox (or your
+  browsers of choice), so that you can see  how the site behaves for both kinds of
+  users.
 
     .. note::
-        Accounts created through the admin page do not have a normal way to
-        sign in since there is no login page. To test working with
-        non-superuser accounts, please login through a social provider.
+        Accounts created through the admin page do not have a way to sign in on the
+        frontend since there is no login page. To test working with accounts on the
+        frontend, please login through a social provider.
 
 .. _`django-allauth`: https://django-allauth.readthedocs.io/en/latest/overview.html
 .. _`GitHub`: https://django-allauth.readthedocs.io/en/latest/providers.html#github
@@ -91,7 +124,7 @@ Running type checks with mypy::
   $ mypy democrasite
 
 
-Running tests with py.test
+Running tests with pytest
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ::
@@ -106,19 +139,3 @@ To run the tests, check your test coverage, and generate an HTML coverage report
     $ coverage run -m pytest
     $ coverage html
     $ open htmlcov/index.html
-
-
-Celery
-^^^^^^
-
-This app comes with Celery.
-
-To run a celery worker:
-
-.. code-block:: bash
-
-    celery -A config.celery_app worker -l info
-
-Please note: For Celery's import magic to work, it is important *where* the
-celery commands are run. If you are in the same folder with *manage.py*, you
-should be right.

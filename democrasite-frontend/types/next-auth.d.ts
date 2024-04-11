@@ -1,4 +1,4 @@
-import NextAuth from "next-auth";
+import type { DefaultSession } from "next-auth";
 
 declare module "next-auth" {
   /**
@@ -11,6 +11,14 @@ declare module "next-auth" {
     } & DefaultSession["user"];
   }
   interface User {
+    access_key: string;
+  }
+}
+
+declare module "next-auth/jwt" {
+  /** Returned by the `jwt` callback and `getToken`, when using JWT sessions */
+  interface JWT {
+    /** The user's API access token */
     access_key: string;
   }
 }

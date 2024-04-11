@@ -1,0 +1,20 @@
+version: "3.8"
+
+services:
+  docs:
+    image: democrasite_local_docs
+    container_name: democrasite-local-docs
+    build:
+      context: .
+      dockerfile: ./compose/local/docs/Dockerfile
+    env_file:
+      - ./.envs/.local/.django
+    volumes:
+      - ./docs:/docs:z
+      - ./config:/app/config:z
+      - ./democrasite:/app/democrasite:z
+      - ./README.rst:/docs/README.rst:z
+      - ./CONTRIBUTING.rst:/docs/CONTRIBUTING.rst:z
+    ports:
+      - "9000:9000"
+    command: /start-docs

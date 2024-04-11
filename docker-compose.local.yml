@@ -1,0 +1,100 @@
+version: "3.8"
+
+volumes:
+  democrasite_local_postgres_data: {}
+  democrasite_local_postgres_data_backups: {}
+
+services:
+  django:
+    build:
+      context: .
+      dockerfile: ./compose/local/django/Dockerfile
+    image: democrasite_local_django
+    container_name: democrasite-local-django
+    depends_on:
+      - postgres
+    volumes:
+      - .:/app:z
+    env_file:
+      - ./.envs/.local/.django
+      - ./.envs/.local/.postgres
+    ports:
+      - "8000:8000"
+    command: /start
+    healthcheck:
+      test: "curl --fail --silent --write-out 'STATUS %{http_code}' --output /dev/null http://localhost:8000/"
+      timeout: 5s
+      start_period: 30s
+
+  postgres:
+    build:
+      context: .
+      dockerfile: ./compose/production/postgres/Dockerfile
+    image: democrasite_production_postgres
+    container_name: democrasite-local-postgres
+    volumes:
+      - democrasite_local_postgres_data:/var/lib/postgresql/data
+      - democrasite_local_postgres_data_backups:/backups
+    env_file:
+      - ./.envs/.local/.postgres
+
+  redis:
+    image: docker.io/redis:6
+    container_name: democrasite-local-redis
+
+  celeryworker: &celery
+    build:
+      context: .
+      dockerfile: ./compose/local/django/Dockerfile
+    image: democrasite_local_celeryworker
+    container_name: democrasite-local-celeryworker
+    depends_on:
+      - redis
+      - postgres
+    volumes:
+      - .:/app:z
+    env_file:
+      - ./.envs/.local/.django
+      - ./.envs/.local/.postgres
+    ports: []
+    command: /start-celeryworker
+
+  celerybeat:
+    <<: *celery
+    image: democrasite_local_celerybeat
+    container_name: democrasite-local-celerybeat
+    depends_on:
+      - redis
+      - postgres
+    ports: []
+    command: /start-celerybeat
+
+  flower:
+    <<: *celery
+    image: democrasite_local_flower
+    container_name: democrasite-local-flower
+    ports:
+      - "5555:5555"
+    command: /start-flower
+
+  node:
+    build:
+      context: .
+      dockerfile: ./compose/local/node/Dockerfile
+    image: democrasite_local_node
+    container_name: democrasite-local-node
+    depends_on:
+      - django
+    volumes:
+      - .:/app:z
+      # http://jdlm.info/articles/2016/03/06/lessons-building-node-app-docker.html
+      - /app/democrasite-frontend/node_modules
+    env_file:
+      - ./.envs/.local/.node
+    ports:
+      - "3000:3000"
+    command: npm run dev
+    healthcheck:
+      test: "curl --fail --silent --write-out 'STATUS %{http_code}' --output /dev/null http://localhost:3000/"
+      timeout: 5s
+      start_period: 30s

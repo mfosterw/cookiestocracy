@@ -16,9 +16,11 @@ import sys
 import django
 
 if os.getenv("READTHEDOCS", default="False") == "True":
+    sys.path.insert(0, os.path.abspath(".."))  # noqa: PTH100
     os.environ["DJANGO_READ_DOT_ENV_FILE"] = "True"
     os.environ["USE_DOCKER"] = "no"
-sys.path.insert(0, os.path.abspath(".."))  # noqa: PTH100
+else:
+    sys.path.insert(0, os.path.abspath("/app"))  # noqa: PTH100
 django_settings = "config.settings.local"
 os.environ["DATABASE_URL"] = "sqlite:///readthedocs.db"
 os.environ["CELERY_BROKER_URL"] = os.getenv("REDIS_URL", "redis://redis:6379")

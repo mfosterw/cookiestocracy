@@ -1,20 +1,12 @@
-import { Bill } from "@/lib";
-import {
-  Title,
-  Text,
-  Anchor,
-  Divider,
-  Group,
-  Stack,
-  Container,
-} from "@mantine/core";
+import { Title, Text, Anchor, Divider, Stack, Container } from "@mantine/core";
+import { type Bill } from "@/lib/models";
+import { VoteButtons } from "@/components";
 
 export function Bill({ bill }: { bill: Bill }) {
   return (
     <Stack>
       <Container ta="center">
-        <Anchor href={`/bills/${bill.id}`}>
-          {bill.userSupports !== null && "⭐️"}
+        <Anchor href={`/bills/${bill.id.toString()}`}>
           <Title order={3}>
             Bill {bill.id}: {bill.name} (PR&nbsp;#{bill.pullRequest.number})
           </Title>
@@ -36,14 +28,13 @@ export function Bill({ bill }: { bill: Bill }) {
           -{bill.pullRequest.deletions}
         </Text>
       </Anchor>
-      <Group justify="space-between">
-        <Group>
-          <Text c="green">Yes: {bill.yesVotes.length}</Text>
-        </Group>
-        <Group>
-          <Text c="red">No: {bill.noVotes.length}</Text>
-        </Group>
-      </Group>
+      <VoteButtons
+        id={bill.id}
+        disabled={bill.status !== "Open"}
+        userSupports={bill.userSupports}
+        yesVotes={bill.yesVotes}
+        noVotes={bill.noVotes}
+      ></VoteButtons>
     </Stack>
   );
 }

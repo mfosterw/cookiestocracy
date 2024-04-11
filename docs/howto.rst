@@ -7,11 +7,9 @@ Get Started
 Documentation can be written as rst files in `democrasite/docs`.
 
 
-To build and serve docs, use the command::
+To build and serve docs, use the commands::
 
-    make livehtml
-
-from inside the `democrasite/docs` directory.
+    docker compose -f docker-compose.docs.yml up
 
 
 Changes to files in `docs` will be picked up and reloaded automatically.

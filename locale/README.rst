@@ -8,7 +8,7 @@ in this folder when running
 
 .. code:: bash
 
-    python manage.py makemessages -all --no-location
+    docker compose -f docker-compose.local.yml run --rm django python manage.py makemessages -all --no-location
 
 This should generate ``django.po`` (stands for Portable Object) files under
 each locale ``<locale name>/LC_MESSAGES/django.po``. Each translatable string
@@ -26,7 +26,7 @@ application:
 
 .. code:: bash
 
-    python manage.py compilemessages
+    docker compose -f docker-compose.local.yml run --rm django python manage.py compilemessages
 
 Note that the `.po` files are NOT used by the application directly, so if the
 `.mo` files are out of dates, the content won't appear as translated even if
