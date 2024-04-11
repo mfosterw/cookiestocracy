@@ -1,9 +1,9 @@
 from typing import TYPE_CHECKING
 
 from rest_framework.serializers import CharField
+from rest_framework.serializers import IntegerField
 from rest_framework.serializers import ModelSerializer
 from rest_framework.serializers import SerializerMethodField
-from rest_framework.serializers import SlugRelatedField
 
 from democrasite.users.api.serializers import UserSerializer
 from democrasite.webiscite.models import Bill
@@ -32,12 +32,8 @@ class BillSerializer(ModelSerializer):
     pull_request = PullRequestSerializer(read_only=True)
     status = CharField(source="get_status_display")
 
-    yes_votes: "SlugRelatedField[User]" = SlugRelatedField(
-        many=True, read_only=True, slug_field="username"
-    )
-    no_votes: "SlugRelatedField[User]" = SlugRelatedField(
-        many=True, read_only=True, slug_field="username"
-    )
+    yes_votes = IntegerField(read_only=True, source="yes_votes.count")
+    no_votes = IntegerField(read_only=True, source="no_votes.count")
     user_supports = SerializerMethodField(required=False)
 
     class Meta:

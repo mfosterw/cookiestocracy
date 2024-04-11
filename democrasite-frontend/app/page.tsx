@@ -1,4 +1,4 @@
-import { billsApi } from "@/lib";
+import { billsApi } from "@/lib/api";
 import { BillList, SignInButton, SignOutButton } from "@/components";
 import { auth } from "@/auth";
 
