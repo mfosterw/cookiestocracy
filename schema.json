@@ -737,17 +737,11 @@
                         "type": "string"
                     },
                     "yes_votes": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        },
+                        "type": "integer",
                         "readOnly": true
                     },
                     "no_votes": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        },
+                        "type": "integer",
                         "readOnly": true
                     },
                     "user_supports": {
@@ -813,17 +807,11 @@
                         "type": "string"
                     },
                     "yes_votes": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        },
+                        "type": "integer",
                         "readOnly": true
                     },
                     "no_votes": {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        },
+                        "type": "integer",
                         "readOnly": true
                     },
                     "user_supports": {

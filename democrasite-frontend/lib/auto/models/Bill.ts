@@ -58,16 +58,16 @@ export interface Bill {
     status: string;
     /**
      *
-     * @type {Array<string>}
+     * @type {number}
      * @memberof Bill
      */
-    readonly yesVotes: Array<string>;
+    readonly yesVotes: number;
     /**
      *
-     * @type {Array<string>}
+     * @type {number}
      * @memberof Bill
      */
-    readonly noVotes: Array<string>;
+    readonly noVotes: number;
     /**
      * Return whether the user supports the bill. If the user is not authenticated
      * or has not voted on this bill, return None.
