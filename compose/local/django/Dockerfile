@@ -47,6 +47,8 @@ RUN groupadd --gid 1000 dev-user \
 
 # Install required system dependencies
 RUN apt-get update && apt-get install --no-install-recommends -y \
+  # To run the Makefile for docs
+  make \
   # psycopg dependencies
   libpq-dev \
   # Translations dependencies
@@ -73,6 +75,10 @@ COPY ./compose/local/django/start /start
 RUN sed -i 's/\r$//g' /start
 RUN chmod +x /start
 
+
+COPY ./compose/local/django/start-docs /start-docs
+RUN sed -i 's/\r$//g' /start-docs
+RUN chmod +x /start-docs
 
 COPY ./compose/local/django/celery/worker/start /start-celeryworker
 RUN sed -i 's/\r$//g' /start-celeryworker
