@@ -1,4 +1,4 @@
-FROM docker.io/node:20-bookworm-slim
+FROM docker.io/node:21-bookworm-slim
 
 RUN apt-get update && apt-get install --no-install-recommends -y \
     # For healthcheck
