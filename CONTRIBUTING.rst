@@ -97,7 +97,8 @@ Open a terminal at the project root and run the following for to activate all se
 
     $ docker compose -f docker-compose.local.yml up
 
-The site should start and be accessible at http://localhost:3000, with the api visible at http://localhost:8000/api.
+The site should start and be accessible at http://localhost:3000, with the api visible
+at http://localhost:8000/api/ and the documentation at http://localhost:9000.
 
 You can also set the environment variable ``COMPOSE_FILE`` pointing to ``docker-compose.local.yml`` like this::
 
@@ -118,10 +119,6 @@ To run a full stack without Celery, start ``node``::
 To run in a detached (background) mode, just::
 
     $ docker compose up -d
-
-These commands don't run the docs service. In order to run docs service you can run::
-
-    $ docker compose -f docker-compose.docs.yml up
 
 
 Execute Management Commands
