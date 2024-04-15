@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Reducer, useReducer, useState } from "react";
 import { ActionIcon, Group, Text, Tooltip } from "@mantine/core";
 import { useSession } from "next-auth/react";
 import { billsVote } from "@/lib/actions";
@@ -48,6 +48,51 @@ const ThumbIcon: React.FC<ThumbProps> = ({
   </svg>
 );
 
+type VoteAction =
+  | { type: "vote"; vote: "yes" | "no" }
+  | ({ type: "update" } & VoteCounts)
+  | { type: "openTooltip"; vote: "yes" | "no"; timeout?: NodeJS.Timeout };
+
+type VoteState = {
+  vote: "yes" | "no" | null;
+  yesVotes: number;
+  noVotes: number;
+  yesTooltipOpenTimeout?: NodeJS.Timeout;
+  noTooltipOpenTimeout?: NodeJS.Timeout;
+};
+
+const voteReducer: Reducer<VoteState, VoteAction> = (state, action) => {
+  switch (action.type) {
+    case "vote": {
+      const yesVotesDiff =
+        state.vote === "yes" ? -1 : action.vote === "yes" ? 1 : 0;
+      const noVotesDiff =
+        state.vote === "no" ? -1 : action.vote === "no" ? 1 : 0;
+      const newVote = state.vote === action.vote ? null : action.vote;
+      return {
+        ...state,
+        yesVotes: state.yesVotes + yesVotesDiff,
+        noVotes: state.noVotes + noVotesDiff,
+        vote: newVote,
+      };
+    }
+    case "update":
+      return { ...state, yesVotes: action.yesVotes, noVotes: action.noVotes };
+
+    case "openTooltip":
+      // set id for state.yesTooltipOpenTimeout or state.no...
+      if (state[`${action.vote}TooltipOpenTimeout`] !== undefined) {
+        clearTimeout(state[`${action.vote}TooltipOpenTimeout`]);
+      }
+      return {
+        ...state,
+        [`${action.vote}TooltipOpenTimeout`]: action.timeout,
+      };
+    default:
+      throw Error("Invalid action type");
+  }
+};
+
 export function VoteButtons({
   id,
   disabled,
@@ -59,39 +104,41 @@ export function VoteButtons({
   disabled: boolean;
   userSupports: boolean | null;
 } & VoteCounts) {
-  const [vote, setVote] = useState<"yes" | "no" | null>(
-    userSupports ? "yes" : userSupports === false ? "no" : null,
-  );
-  const [yesVotesCount, setYesVotes] = useState<number>(yesVotes);
-  const [noVotesCount, setNoVotes] = useState<number>(noVotes);
-  const { status } = useSession();
+  const userVote =
+    userSupports === true ? "yes" : userSupports === false ? "no" : null;
+  const [state, dispatch] = useReducer(voteReducer, {
+    vote: userVote,
+    yesVotes,
+    noVotes,
+  });
+
+  const { status: authStatus } = useSession();
   // const session = await auth();
   // See BillList.tsx to understand the difficulty of accessing the session
   const [isVoting, setIsVoting] = useState(false);
 
   const handleVote = async (newVote: "yes" | "no") => {
-    if (status !== "authenticated") {
-      alert("You must be signed in to vote");
-      return;
+    if (authStatus !== "authenticated") {
+      dispatch({
+        type: "openTooltip",
+        vote: newVote,
+        timeout: setTimeout(() => {
+          dispatch({ type: "openTooltip", vote: newVote, timeout: undefined });
+        }, 3000),
+      });
     }
 
     // Disable voting while a vote is being processed
     setIsVoting(true);
 
-    const yesVotesDiff = vote === "yes" ? -1 : newVote === "yes" ? 1 : 0;
-    setYesVotes((current) => current + yesVotesDiff);
-    const noVotesDiff = vote === "no" ? -1 : newVote === "no" ? 1 : 0;
-    setNoVotes((current) => current + noVotesDiff);
-
-    setVote((currentVote) => (currentVote === newVote ? null : newVote));
+    dispatch({ type: "vote", vote: newVote });
 
     try {
-      const { yesVotes, noVotes } = await billsVote({
+      const voteCounts = await billsVote({
         id,
         vote: { support: newVote === "yes" },
       });
-      setYesVotes(yesVotes);
-      setNoVotes(noVotes);
+      dispatch({ type: "update", ...voteCounts });
     } catch (error) {
       console.error("Failed to cast vote", error);
     } finally {
@@ -101,37 +148,26 @@ export function VoteButtons({
   };
 
   function VoteButton({ voteType }: { voteType: "yes" | "no" }) {
-    const [tooltipOpen, setTooltipOpen] = useState(false);
+    const loading = !disabled && (isVoting || authStatus === "loading");
     return (
       <Tooltip
         label="You must be logged in to vote"
-        opened={tooltipOpen}
+        opened={state[`${voteType}TooltipOpenTimeout`] !== undefined}
         color="blue"
         withArrow
       >
         <ActionIcon
           color={voteType === "yes" ? "green" : "red"}
-          variant={vote === voteType ? "filled" : "outline"}
-          loading={isVoting || status === "loading"}
+          variant={state.vote === voteType ? "filled" : "outline"}
           disabled={disabled}
+          loading={loading}
           onClick={() => {
-            if (status !== "authenticated") {
-              setTooltipOpen((current) => {
-                if (!current) {
-                  setTimeout(() => {
-                    setTooltipOpen(false);
-                  }, 3000);
-                }
-                return !current;
-              });
-              return;
-            }
             void handleVote(voteType);
           }}
         >
           <ThumbIcon
             type={voteType === "yes" ? "up" : "down"}
-            selected={vote === voteType}
+            selected={state.vote === voteType}
           />
         </ActionIcon>
       </Tooltip>
@@ -142,10 +178,10 @@ export function VoteButtons({
     <Group justify="space-between">
       <Group c="green">
         <VoteButton voteType="yes" />
-        <Text>{yesVotesCount}</Text>
+        <Text>{state.yesVotes}</Text>
       </Group>
       <Group c="red">
-        <Text>{noVotesCount}</Text>
+        <Text>{state.noVotes}</Text>
         <VoteButton voteType="no" />
       </Group>
     </Group>
