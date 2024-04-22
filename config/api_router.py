@@ -3,6 +3,7 @@ from django.conf import settings
 from django.urls import path
 from rest_framework.routers import DefaultRouter
 from rest_framework.routers import SimpleRouter
+from rest_framework_simplejwt.views import TokenRefreshView
 
 from democrasite.users.api.views import GitHubLogin
 from democrasite.users.api.views import UserViewSet
@@ -20,4 +21,5 @@ urlpatterns = [
     *router.urls,
     path("auth/github/", GitHubLogin.as_view(), name="github_login"),
     path("auth/logout/", LogoutView.as_view(), name="rest_logout"),
+    path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
 ]

@@ -399,11 +399,22 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework.authentication.SessionAuthentication",
         "rest_framework.authentication.TokenAuthentication",
+        # "dj_rest_auth.jwt_auth.JWTCookieAuthentication",
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
     "DEFAULT_PERMISSION_CLASSES": (
         "rest_framework.permissions.IsAuthenticatedOrReadOnly",
     ),
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
+
+# dj-rest-auth - https://dj-rest-auth.readthedocs.io/en/latest/configuration.html
+REST_AUTH = {
+    # https://dj-rest-auth.readthedocs.io/en/latest/installation.html#json-web-token-jwt-support-optional
+    "USE_JWT": True,
+    # https://dj-rest-auth.readthedocs.io/en/latest/configuration.html#jwt-auth-httponly
+    # Required for refresh cookie to be present in JSON response
+    "JWT_AUTH_HTTPONLY": False,
 }
 
 # django-cors-headers - https://github.com/adamchainz/django-cors-headers#setup

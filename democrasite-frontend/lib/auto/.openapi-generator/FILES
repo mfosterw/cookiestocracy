@@ -1,4 +1,5 @@
 .openapi-generator-ignore
+apis/ApiApi.ts
 apis/AuthApi.ts
 apis/BillsApi.ts
 apis/SchemaApi.ts
@@ -6,13 +7,15 @@ apis/UsersApi.ts
 apis/index.ts
 index.ts
 models/Bill.ts
+models/JWT.ts
 models/PatchedBill.ts
 models/PatchedUser.ts
 models/PullRequest.ts
 models/RestAuthDetail.ts
 models/SocialLogin.ts
-models/Token.ts
+models/TokenRefresh.ts
 models/User.ts
+models/UserDetails.ts
 models/Vote.ts
 models/VoteCounts.ts
 models/index.ts

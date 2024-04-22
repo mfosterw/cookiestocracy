@@ -15,17 +15,17 @@
 
 import * as runtime from '../runtime';
 import type {
+  JWT,
   RestAuthDetail,
   SocialLogin,
-  Token,
 } from '../models/index';
 import {
+    JWTFromJSON,
+    JWTToJSON,
     RestAuthDetailFromJSON,
     RestAuthDetailToJSON,
     SocialLoginFromJSON,
     SocialLoginToJSON,
-    TokenFromJSON,
-    TokenToJSON,
 } from '../models/index';
 
 export interface AuthGithubCreateRequest {
@@ -41,7 +41,7 @@ export class AuthApi extends runtime.BaseAPI {
      * Login with GitHub using OAuth2
      * Login with GitHub
      */
-    async authGithubCreateRaw(requestParameters: AuthGithubCreateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Token>> {
+    async authGithubCreateRaw(requestParameters: AuthGithubCreateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<JWT>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -52,6 +52,14 @@ export class AuthApi extends runtime.BaseAPI {
             headerParameters["Authorization"] = await this.configuration.apiKey("Authorization"); // tokenAuth authentication
         }
 
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("jwtAuth", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
         const response = await this.request({
             path: `/api/auth/github/`,
             method: 'POST',
@@ -60,14 +68,14 @@ export class AuthApi extends runtime.BaseAPI {
             body: SocialLoginToJSON(requestParameters.socialLogin),
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => TokenFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => JWTFromJSON(jsonValue));
     }
 
     /**
      * Login with GitHub using OAuth2
      * Login with GitHub
      */
-    async authGithubCreate(requestParameters: AuthGithubCreateRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Token> {
+    async authGithubCreate(requestParameters: AuthGithubCreateRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<JWT> {
         const response = await this.authGithubCreateRaw(requestParameters, initOverrides);
         return await response.value();
     }
@@ -84,6 +92,14 @@ export class AuthApi extends runtime.BaseAPI {
             headerParameters["Authorization"] = await this.configuration.apiKey("Authorization"); // tokenAuth authentication
         }
 
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("jwtAuth", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
         const response = await this.request({
             path: `/api/auth/logout/`,
             method: 'POST',

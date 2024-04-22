@@ -6,6 +6,47 @@
         "description": "Documentation of API endpoints of Democrasite"
     },
     "paths": {
+        "/api/api/token/refresh/": {
+            "post": {
+                "operationId": "api_token_refresh_create",
+                "description": "Takes a refresh type JSON web token and returns an access type JSON web\ntoken if the refresh token is valid.",
+                "tags": [
+                    "api"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/TokenRefresh"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/TokenRefresh"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/TokenRefresh"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TokenRefresh"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
         "/api/auth/github/": {
             "post": {
                 "operationId": "auth_github_create",
@@ -40,6 +81,9 @@
                     {
                         "tokenAuth": []
                     },
+                    {
+                        "jwtAuth": []
+                    },
                     {}
                 ],
                 "responses": {
@@ -47,7 +91,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/Token"
+                                    "$ref": "#/components/schemas/JWT"
                                 }
                             }
                         },
@@ -69,6 +113,9 @@
                     },
                     {
                         "tokenAuth": []
+                    },
+                    {
+                        "jwtAuth": []
                     },
                     {}
                 ],
@@ -98,6 +145,9 @@
                     },
                     {
                         "tokenAuth": []
+                    },
+                    {
+                        "jwtAuth": []
                     },
                     {}
                 ],
@@ -141,6 +191,9 @@
                     },
                     {
                         "tokenAuth": []
+                    },
+                    {
+                        "jwtAuth": []
                     },
                     {}
                 ],
@@ -199,6 +252,9 @@
                     },
                     {
                         "tokenAuth": []
+                    },
+                    {
+                        "jwtAuth": []
                     }
                 ],
                 "responses": {
@@ -255,6 +311,9 @@
                     },
                     {
                         "tokenAuth": []
+                    },
+                    {
+                        "jwtAuth": []
                     }
                 ],
                 "responses": {
@@ -314,6 +373,9 @@
                     },
                     {
                         "tokenAuth": []
+                    },
+                    {
+                        "jwtAuth": []
                     }
                 ],
                 "responses": {
@@ -463,6 +525,9 @@
                     },
                     {
                         "tokenAuth": []
+                    },
+                    {
+                        "jwtAuth": []
                     }
                 ],
                 "responses": {
@@ -511,6 +576,9 @@
                     {
                         "tokenAuth": []
                     },
+                    {
+                        "jwtAuth": []
+                    },
                     {}
                 ],
                 "responses": {
@@ -553,6 +621,9 @@
                     },
                     {
                         "tokenAuth": []
+                    },
+                    {
+                        "jwtAuth": []
                     },
                     {}
                 ],
@@ -611,6 +682,9 @@
                     },
                     {
                         "tokenAuth": []
+                    },
+                    {
+                        "jwtAuth": []
                     }
                 ],
                 "responses": {
@@ -667,6 +741,9 @@
                     },
                     {
                         "tokenAuth": []
+                    },
+                    {
+                        "jwtAuth": []
                     }
                 ],
                 "responses": {
@@ -695,6 +772,9 @@
                     },
                     {
                         "tokenAuth": []
+                    },
+                    {
+                        "jwtAuth": []
                     },
                     {}
                 ],
@@ -783,6 +863,26 @@
                     "status",
                     "user_supports",
                     "yes_votes"
+                ]
+            },
+            "JWT": {
+                "type": "object",
+                "description": "Serializer for JWT authentication.",
+                "properties": {
+                    "access": {
+                        "type": "string"
+                    },
+                    "refresh": {
+                        "type": "string"
+                    },
+                    "user": {
+                        "$ref": "#/components/schemas/UserDetails"
+                    }
+                },
+                "required": [
+                    "access",
+                    "refresh",
+                    "user"
                 ]
             },
             "PatchedBill": {
@@ -933,17 +1033,21 @@
                     }
                 }
             },
-            "Token": {
+            "TokenRefresh": {
                 "type": "object",
-                "description": "Serializer for Token model.",
                 "properties": {
-                    "key": {
+                    "access": {
                         "type": "string",
-                        "maxLength": 40
+                        "readOnly": true
+                    },
+                    "refresh": {
+                        "type": "string",
+                        "writeOnly": true
                     }
                 },
                 "required": [
-                    "key"
+                    "access",
+                    "refresh"
                 ]
             },
             "User": {
@@ -968,6 +1072,44 @@
                 },
                 "required": [
                     "url",
+                    "username"
+                ]
+            },
+            "UserDetails": {
+                "type": "object",
+                "description": "User model w/o password",
+                "properties": {
+                    "pk": {
+                        "type": "integer",
+                        "readOnly": true,
+                        "title": "ID"
+                    },
+                    "username": {
+                        "type": "string",
+                        "description": "Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.",
+                        "pattern": "^[\\w.@+-]+$",
+                        "maxLength": 150
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "readOnly": true,
+                        "title": "Email address"
+                    },
+                    "first_name": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "last_name": {
+                        "type": "string",
+                        "readOnly": true
+                    }
+                },
+                "required": [
+                    "email",
+                    "first_name",
+                    "last_name",
+                    "pk",
                     "username"
                 ]
             },
@@ -1003,6 +1145,11 @@
                 "type": "apiKey",
                 "in": "cookie",
                 "name": "sessionid"
+            },
+            "jwtAuth": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT"
             },
             "tokenAuth": {
                 "type": "apiKey",
