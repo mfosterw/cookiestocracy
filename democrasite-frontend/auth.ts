@@ -1,14 +1,9 @@
-import type {
-  GetServerSidePropsContext,
-  NextApiRequest,
-  NextApiResponse,
-} from "next";
-import { type NextAuthOptions, getServerSession } from "next-auth";
+import NextAuth, { DefaultSession } from "next-auth";
 import GithubProvider from "next-auth/providers/github";
 import { authApi } from "@/lib/api";
+import "next-auth/jwt";
 
-// You'll need to import and pass this to `NextAuth` in `app/api/auth/[...nextauth]/route.ts`
-export const authOptions = {
+export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
     GithubProvider({
       clientId: process.env.GITHUB_CLIENT_ID || "",
@@ -25,7 +20,7 @@ export const authOptions = {
 
         // I named this access_key to distinguish from an OAuth access_token
         // It is not technically an API key even though the API client calls it one
-        user.access_key = token.key;
+        user.access_key = token.access;
 
         return true;
       }
@@ -56,14 +51,25 @@ export const authOptions = {
       await authApi.authLogoutCreate();
     },
   },
-} satisfies NextAuthOptions;
+});
 
-// In the next version this will be returned by NextAuth(), which will be called here,
-export function auth(
-  ...args:
-    | [GetServerSidePropsContext["req"], GetServerSidePropsContext["res"]]
-    | [NextApiRequest, NextApiResponse]
-    | []
-) {
-  return getServerSession(...args, authOptions);
+declare module "next-auth" {
+  /**
+   * Returned by `useSession`, `getSession` and received as a prop on the `SessionProvider` React Context
+   */
+  interface Session {
+    user: {
+      /** The user's API access token */
+      access_key: string;
+    } & DefaultSession["user"];
+  }
+  interface User {
+    access_key: string;
+  }
+}
+
+declare module "next-auth/jwt" {
+  interface JWT {
+    access_key: string;
+  }
 }
