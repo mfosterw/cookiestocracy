@@ -1,5 +1,3 @@
-"use client";
-
 import { Title, Text, Anchor, Divider, Stack, Container } from "@mantine/core";
 import { type Bill } from "@/lib/models";
 import { VoteButtons } from "@/components";

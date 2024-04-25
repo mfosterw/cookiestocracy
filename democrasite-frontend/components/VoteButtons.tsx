@@ -145,7 +145,7 @@ export function VoteButtons({
     try {
       const voteCounts = await billsVote({
         id,
-        vote: { support: newVote === "yes" },
+        voteRequest: { support: newVote === "yes" },
       });
       dispatch({ type: "update", ...voteCounts });
     } catch (error) {

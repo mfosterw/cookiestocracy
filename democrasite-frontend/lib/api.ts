@@ -1,5 +1,5 @@
 import { auth } from "@/auth";
-import { Configuration, AuthApi, BillsApi, UsersApi } from "./auto";
+import { Configuration, AuthApi, BillsApi, UsersApi, TokenApi } from "./auto";
 
 const config = new Configuration({
   basePath: process.env.BASE_API_URL,
@@ -10,7 +10,7 @@ const config = new Configuration({
 
       if (session) {
         // see https://www.django-rest-framework.org/api-guide/authentication/#tokenauthentication
-        return session.user.access_key;
+        return session.access_token;
       }
     } catch (error) {
       // e.g. when running getStaticProps
@@ -20,7 +20,7 @@ const config = new Configuration({
   },
 });
 
-//server side only
 export const authApi = new AuthApi(config);
 export const billsApi = new BillsApi(config);
 export const usersApi = new UsersApi(config);
+export const tokenApi = new TokenApi(config);

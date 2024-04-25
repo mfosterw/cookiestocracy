@@ -16,43 +16,43 @@ import { exists, mapValues } from '../runtime';
 /**
  *
  * @export
- * @interface SocialLogin
+ * @interface SocialLoginRequest
  */
-export interface SocialLogin {
+export interface SocialLoginRequest {
     /**
      *
      * @type {string}
-     * @memberof SocialLogin
+     * @memberof SocialLoginRequest
      */
     accessToken?: string;
     /**
      *
      * @type {string}
-     * @memberof SocialLogin
+     * @memberof SocialLoginRequest
      */
     code?: string;
     /**
      *
      * @type {string}
-     * @memberof SocialLogin
+     * @memberof SocialLoginRequest
      */
     idToken?: string;
 }
 
 /**
- * Check if a given object implements the SocialLogin interface.
+ * Check if a given object implements the SocialLoginRequest interface.
  */
-export function instanceOfSocialLogin(value: object): boolean {
+export function instanceOfSocialLoginRequest(value: object): boolean {
     let isInstance = true;
 
     return isInstance;
 }
 
-export function SocialLoginFromJSON(json: any): SocialLogin {
-    return SocialLoginFromJSONTyped(json, false);
+export function SocialLoginRequestFromJSON(json: any): SocialLoginRequest {
+    return SocialLoginRequestFromJSONTyped(json, false);
 }
 
-export function SocialLoginFromJSONTyped(json: any, ignoreDiscriminator: boolean): SocialLogin {
+export function SocialLoginRequestFromJSONTyped(json: any, ignoreDiscriminator: boolean): SocialLoginRequest {
     if ((json === undefined) || (json === null)) {
         return json;
     }
@@ -64,7 +64,7 @@ export function SocialLoginFromJSONTyped(json: any, ignoreDiscriminator: boolean
     };
 }
 
-export function SocialLoginToJSON(value?: SocialLogin | null): any {
+export function SocialLoginRequestToJSON(value?: SocialLoginRequest | null): any {
     if (value === undefined) {
         return undefined;
     }

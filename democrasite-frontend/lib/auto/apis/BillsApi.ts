@@ -16,24 +16,27 @@
 import * as runtime from '../runtime';
 import type {
   Bill,
-  PatchedBill,
-  Vote,
+  BillRequest,
+  PatchedBillRequest,
   VoteCounts,
+  VoteRequest,
 } from '../models/index';
 import {
     BillFromJSON,
     BillToJSON,
-    PatchedBillFromJSON,
-    PatchedBillToJSON,
-    VoteFromJSON,
-    VoteToJSON,
+    BillRequestFromJSON,
+    BillRequestToJSON,
+    PatchedBillRequestFromJSON,
+    PatchedBillRequestToJSON,
     VoteCountsFromJSON,
     VoteCountsToJSON,
+    VoteRequestFromJSON,
+    VoteRequestToJSON,
 } from '../models/index';
 
 export interface BillsPartialUpdateRequest {
     id: number;
-    patchedBill?: PatchedBill;
+    patchedBillRequest?: PatchedBillRequest;
 }
 
 export interface BillsRetrieveRequest {
@@ -42,12 +45,12 @@ export interface BillsRetrieveRequest {
 
 export interface BillsUpdateRequest {
     id: number;
-    bill: Bill;
+    billRequest: BillRequest;
 }
 
 export interface BillsVoteCreateRequest {
     id: number;
-    vote: Vote;
+    voteRequest: VoteRequest;
 }
 
 /**
@@ -121,7 +124,7 @@ export class BillsApi extends runtime.BaseAPI {
             method: 'PATCH',
             headers: headerParameters,
             query: queryParameters,
-            body: PatchedBillToJSON(requestParameters.patchedBill),
+            body: PatchedBillRequestToJSON(requestParameters.patchedBillRequest),
         }, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => BillFromJSON(jsonValue));
@@ -181,8 +184,8 @@ export class BillsApi extends runtime.BaseAPI {
             throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling billsUpdate.');
         }
 
-        if (requestParameters.bill === null || requestParameters.bill === undefined) {
-            throw new runtime.RequiredError('bill','Required parameter requestParameters.bill was null or undefined when calling billsUpdate.');
+        if (requestParameters.billRequest === null || requestParameters.billRequest === undefined) {
+            throw new runtime.RequiredError('billRequest','Required parameter requestParameters.billRequest was null or undefined when calling billsUpdate.');
         }
 
         const queryParameters: any = {};
@@ -208,7 +211,7 @@ export class BillsApi extends runtime.BaseAPI {
             method: 'PUT',
             headers: headerParameters,
             query: queryParameters,
-            body: BillToJSON(requestParameters.bill),
+            body: BillRequestToJSON(requestParameters.billRequest),
         }, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => BillFromJSON(jsonValue));
@@ -228,8 +231,8 @@ export class BillsApi extends runtime.BaseAPI {
             throw new runtime.RequiredError('id','Required parameter requestParameters.id was null or undefined when calling billsVoteCreate.');
         }
 
-        if (requestParameters.vote === null || requestParameters.vote === undefined) {
-            throw new runtime.RequiredError('vote','Required parameter requestParameters.vote was null or undefined when calling billsVoteCreate.');
+        if (requestParameters.voteRequest === null || requestParameters.voteRequest === undefined) {
+            throw new runtime.RequiredError('voteRequest','Required parameter requestParameters.voteRequest was null or undefined when calling billsVoteCreate.');
         }
 
         const queryParameters: any = {};
@@ -255,7 +258,7 @@ export class BillsApi extends runtime.BaseAPI {
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: VoteToJSON(requestParameters.vote),
+            body: VoteRequestToJSON(requestParameters.voteRequest),
         }, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => VoteCountsFromJSON(jsonValue));

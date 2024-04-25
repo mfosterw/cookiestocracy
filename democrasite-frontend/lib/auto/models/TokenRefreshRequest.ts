@@ -16,42 +16,42 @@ import { exists, mapValues } from '../runtime';
 /**
  *
  * @export
- * @interface TokenRefresh
+ * @interface TokenRefreshRequest
  */
-export interface TokenRefresh {
+export interface TokenRefreshRequest {
     /**
      *
      * @type {string}
-     * @memberof TokenRefresh
+     * @memberof TokenRefreshRequest
      */
-    readonly access: string;
+    refresh: string;
 }
 
 /**
- * Check if a given object implements the TokenRefresh interface.
+ * Check if a given object implements the TokenRefreshRequest interface.
  */
-export function instanceOfTokenRefresh(value: object): boolean {
+export function instanceOfTokenRefreshRequest(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "access" in value;
+    isInstance = isInstance && "refresh" in value;
 
     return isInstance;
 }
 
-export function TokenRefreshFromJSON(json: any): TokenRefresh {
-    return TokenRefreshFromJSONTyped(json, false);
+export function TokenRefreshRequestFromJSON(json: any): TokenRefreshRequest {
+    return TokenRefreshRequestFromJSONTyped(json, false);
 }
 
-export function TokenRefreshFromJSONTyped(json: any, ignoreDiscriminator: boolean): TokenRefresh {
+export function TokenRefreshRequestFromJSONTyped(json: any, ignoreDiscriminator: boolean): TokenRefreshRequest {
     if ((json === undefined) || (json === null)) {
         return json;
     }
     return {
 
-        'access': json['access'],
+        'refresh': json['refresh'],
     };
 }
 
-export function TokenRefreshToJSON(value?: TokenRefresh | null): any {
+export function TokenRefreshRequestToJSON(value?: TokenRefreshRequest | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -60,5 +60,6 @@ export function TokenRefreshToJSON(value?: TokenRefresh | null): any {
     }
     return {
 
+        'refresh': value.refresh,
     };
 }

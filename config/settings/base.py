@@ -95,6 +95,7 @@ THIRD_PARTY_APPS = [
     "drf_spectacular",
     "dj_rest_auth",
     "dj_rest_auth.registration",
+    "rest_framework_simplejwt.token_blacklist",
     # Machina (forum) dependencies:
     "mptt",
     "haystack",
@@ -417,6 +418,12 @@ REST_AUTH = {
     "JWT_AUTH_HTTPONLY": False,
 }
 
+# https://django-rest-framework-simplejwt.readthedocs.io/en/latest/settings.html
+SIMPLE_JWT = {
+    # https://django-rest-framework-simplejwt.readthedocs.io/en/latest/settings.html#user-id-field
+    "USER_ID_FIELD": "username",
+}
+
 # django-cors-headers - https://github.com/adamchainz/django-cors-headers#setup
 CORS_URLS_REGEX = r"^/api/.*$"
 
@@ -427,6 +434,7 @@ SPECTACULAR_SETTINGS = {
     "DESCRIPTION": "Documentation of API endpoints of Democrasite",
     "VERSION": "1.0.0",
     "SERVE_PERMISSIONS": ["rest_framework.permissions.IsAdminUser"],
+    "COMPONENT_SPLIT_REQUEST": True,
 }
 
 # Machina

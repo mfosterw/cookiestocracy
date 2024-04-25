@@ -16,20 +16,24 @@
 import * as runtime from '../runtime';
 import type {
   JWT,
-  RestAuthDetail,
-  SocialLogin,
+  SocialLoginRequest,
+  TokenRefreshRequest,
 } from '../models/index';
 import {
     JWTFromJSON,
     JWTToJSON,
-    RestAuthDetailFromJSON,
-    RestAuthDetailToJSON,
-    SocialLoginFromJSON,
-    SocialLoginToJSON,
+    SocialLoginRequestFromJSON,
+    SocialLoginRequestToJSON,
+    TokenRefreshRequestFromJSON,
+    TokenRefreshRequestToJSON,
 } from '../models/index';
 
 export interface AuthGithubCreateRequest {
-    socialLogin?: SocialLogin;
+    socialLoginRequest?: SocialLoginRequest;
+}
+
+export interface AuthLogoutCreateRequest {
+    tokenRefreshRequest: TokenRefreshRequest;
 }
 
 /**
@@ -65,7 +69,7 @@ export class AuthApi extends runtime.BaseAPI {
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: SocialLoginToJSON(requestParameters.socialLogin),
+            body: SocialLoginRequestToJSON(requestParameters.socialLoginRequest),
         }, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => JWTFromJSON(jsonValue));
@@ -81,12 +85,19 @@ export class AuthApi extends runtime.BaseAPI {
     }
 
     /**
-     * Calls Django logout method and delete the Token object assigned to the current User object.  Accepts/Returns nothing.
+     * Logs out the current user and blacklists their refresh token
+     * Logout
      */
-    async authLogoutCreateRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<RestAuthDetail>> {
+    async authLogoutCreateRaw(requestParameters: AuthLogoutCreateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        if (requestParameters.tokenRefreshRequest === null || requestParameters.tokenRefreshRequest === undefined) {
+            throw new runtime.RequiredError('tokenRefreshRequest','Required parameter requestParameters.tokenRefreshRequest was null or undefined when calling authLogoutCreate.');
+        }
+
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
 
         if (this.configuration && this.configuration.apiKey) {
             headerParameters["Authorization"] = await this.configuration.apiKey("Authorization"); // tokenAuth authentication
@@ -105,17 +116,18 @@ export class AuthApi extends runtime.BaseAPI {
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
+            body: TokenRefreshRequestToJSON(requestParameters.tokenRefreshRequest),
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => RestAuthDetailFromJSON(jsonValue));
+        return new runtime.VoidApiResponse(response);
     }
 
     /**
-     * Calls Django logout method and delete the Token object assigned to the current User object.  Accepts/Returns nothing.
+     * Logs out the current user and blacklists their refresh token
+     * Logout
      */
-    async authLogoutCreate(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<RestAuthDetail> {
-        const response = await this.authLogoutCreateRaw(initOverrides);
-        return await response.value();
+    async authLogoutCreate(requestParameters: AuthLogoutCreateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.authLogoutCreateRaw(requestParameters, initOverrides);
     }
 
 }

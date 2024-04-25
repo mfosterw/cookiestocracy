@@ -2,6 +2,7 @@ from allauth.socialaccount.providers.github.views import GitHubOAuth2Adapter
 from allauth.socialaccount.providers.oauth2.client import OAuth2Client
 from dj_rest_auth.registration.views import SocialLoginView
 from dj_rest_auth.serializers import JWTSerializer
+from dj_rest_auth.views import LogoutView
 from drf_spectacular.utils import extend_schema
 from drf_spectacular.utils import extend_schema_view
 from rest_framework import status
@@ -11,6 +12,7 @@ from rest_framework.mixins import RetrieveModelMixin
 from rest_framework.mixins import UpdateModelMixin
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
+from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 
 from democrasite.users.models import User
 
@@ -46,3 +48,18 @@ class GitHubLogin(SocialLoginView):
     adapter_class = GitHubOAuth2Adapter
     callback_url = "http://localhost:3000/api/auth/callback/github"
     client_class = OAuth2Client
+
+
+@extend_schema_view(
+    get=extend_schema(exclude=True),
+    post=extend_schema(
+        summary="Logout",
+        description="Logs out the current user and blacklists their refresh token",
+        request=TokenRefreshSerializer,
+    ),
+)
+class JwtLogoutView(LogoutView):
+    pass
+
+
+logout = JwtLogoutView.as_view()
