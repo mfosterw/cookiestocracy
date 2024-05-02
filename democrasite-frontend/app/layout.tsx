@@ -4,6 +4,7 @@ import "./globals.css";
 
 import "@mantine/core/styles.css";
 import { ColorSchemeScript, MantineProvider } from "@mantine/core";
+import { SessionProvider } from "next-auth/react";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -26,7 +27,9 @@ export default function RootLayout({
         <ColorSchemeScript />
       </head>
       <body className={inter.className}>
-        <MantineProvider>{children}</MantineProvider>
+        <SessionProvider>
+          <MantineProvider>{children}</MantineProvider>
+        </SessionProvider>
       </body>
     </html>
   );

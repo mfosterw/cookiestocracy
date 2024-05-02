@@ -95,6 +95,7 @@ THIRD_PARTY_APPS = [
     "drf_spectacular",
     "dj_rest_auth",
     "dj_rest_auth.registration",
+    "rest_framework_simplejwt.token_blacklist",
     # Machina (forum) dependencies:
     "mptt",
     "haystack",
@@ -399,11 +400,28 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework.authentication.SessionAuthentication",
         "rest_framework.authentication.TokenAuthentication",
+        # "dj_rest_auth.jwt_auth.JWTCookieAuthentication",
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
     "DEFAULT_PERMISSION_CLASSES": (
         "rest_framework.permissions.IsAuthenticatedOrReadOnly",
     ),
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
+
+# dj-rest-auth - https://dj-rest-auth.readthedocs.io/en/latest/configuration.html
+REST_AUTH = {
+    # https://dj-rest-auth.readthedocs.io/en/latest/installation.html#json-web-token-jwt-support-optional
+    "USE_JWT": True,
+    # https://dj-rest-auth.readthedocs.io/en/latest/configuration.html#jwt-auth-httponly
+    # Required for refresh cookie to be present in JSON response
+    "JWT_AUTH_HTTPONLY": False,
+}
+
+# https://django-rest-framework-simplejwt.readthedocs.io/en/latest/settings.html
+SIMPLE_JWT = {
+    # https://django-rest-framework-simplejwt.readthedocs.io/en/latest/settings.html#user-id-field
+    "USER_ID_FIELD": "username",
 }
 
 # django-cors-headers - https://github.com/adamchainz/django-cors-headers#setup
@@ -416,6 +434,7 @@ SPECTACULAR_SETTINGS = {
     "DESCRIPTION": "Documentation of API endpoints of Democrasite",
     "VERSION": "1.0.0",
     "SERVE_PERMISSIONS": ["rest_framework.permissions.IsAdminUser"],
+    "COMPONENT_SPLIT_REQUEST": True,
 }
 
 # Machina

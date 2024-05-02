@@ -1,14 +1,34 @@
-import type {
-  GetServerSidePropsContext,
-  NextApiRequest,
-  NextApiResponse,
-} from "next";
-import { type NextAuthOptions, getServerSession } from "next-auth";
+import NextAuth from "next-auth";
 import GithubProvider from "next-auth/providers/github";
-import { authApi } from "@/lib/api";
+import { decodeJwt } from "jose";
+import { authApi, tokenApi } from "@/lib/api";
+import "next-auth/jwt";
+import { JWT } from "next-auth/jwt";
 
-// You'll need to import and pass this to `NextAuth` in `app/api/auth/[...nextauth]/route.ts`
-export const authOptions = {
+async function refreshAccessToken(token: JWT) {
+  try {
+    if (!token.refresh_token) {
+      return;
+    }
+
+    const tokens = await tokenApi.tokenRefreshCreate({
+      tokenRefreshRequest: { refresh: token.refresh_token },
+    });
+
+    const { exp } = decodeJwt(tokens.access);
+
+    return {
+      ...token,
+      access_token: tokens.access,
+      expires_at: exp,
+      // refresh_token: tokens.refresh || token.refresh_token, // If token rotation is enabled
+    } as JWT;
+  } catch (error) {
+    console.error("Error refreshing access token.", error?.toString());
+  }
+}
+
+export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
     GithubProvider({
       clientId: process.env.GITHUB_CLIENT_ID || "",
@@ -20,12 +40,11 @@ export const authOptions = {
     async signIn({ user, account }) {
       if (account?.provider === "github") {
         const token = await authApi.authGithubCreate({
-          socialLogin: { accessToken: account.access_token },
+          socialLoginRequest: { accessToken: account.access_token },
         });
 
-        // I named this access_key to distinguish from an OAuth access_token
-        // It is not technically an API key even though the API client calls it one
-        user.access_key = token.key;
+        user.access_token = token.access;
+        user.refresh_token = token.refresh;
 
         return true;
       }
@@ -33,37 +52,66 @@ export const authOptions = {
       return false; // Unreachable
     },
 
-    jwt({ token, user }) {
-      // TODO: This if statement was included in documentation examples but eslint
-      // doesn't like it.
+    async jwt({ token, user, account }) {
+      // eslint thinks user is always defined but it is not
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      if (user) {
-        token.access_key = user.access_key;
+      if (account && user) {
+        const { exp } = decodeJwt(user.access_token);
+
+        return {
+          access_token: user.access_token,
+          expires_at: exp,
+          refresh_token: user.refresh_token,
+        } as JWT;
       }
 
-      return token;
+      // TODO: This doesn't seem to always catch server actions using expired tokens
+      if (token.expires_at && Date.now() < token.expires_at * 1000) {
+        return token;
+      }
+
+      console.debug("Token expired, refreshing");
+      // Refresh the token or end session by returning null
+      return (await refreshAccessToken(token)) || null;
     },
 
     session({ session, token }) {
-      session.user.access_key = token.access_key;
+      // I would prefer to keep this server-side only but currently that is impractical
+      session.access_token = token.access_token as string;
 
       return session;
     },
   },
 
   events: {
-    async signOut() {
-      await authApi.authLogoutCreate();
+    async signOut(message) {
+      if ("token" in message) {
+        const jwt = await message.token;
+        if (jwt?.refresh_token) {
+          await authApi.authLogoutCreate({
+            tokenRefreshRequest: { refresh: jwt.refresh_token },
+          });
+        }
+      }
     },
   },
-} satisfies NextAuthOptions;
+});
 
-// In the next version this will be returned by NextAuth(), which will be called here,
-export function auth(
-  ...args:
-    | [GetServerSidePropsContext["req"], GetServerSidePropsContext["res"]]
-    | [NextApiRequest, NextApiResponse]
-    | []
-) {
-  return getServerSession(...args, authOptions);
+declare module "next-auth" {
+  interface Session {
+    /** The user's API access token */
+    access_token: string;
+  }
+
+  interface User {
+    access_token: string;
+    refresh_token: string;
+  }
+}
+
+declare module "next-auth/jwt" {
+  interface JWT {
+    refresh_token?: string;
+    expires_at?: number;
+  }
 }

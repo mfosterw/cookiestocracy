@@ -14,44 +14,44 @@
 
 import { exists, mapValues } from '../runtime';
 /**
- * Serializer for Token model.
+ *
  * @export
- * @interface Token
+ * @interface TokenRefreshRequest
  */
-export interface Token {
+export interface TokenRefreshRequest {
     /**
      *
      * @type {string}
-     * @memberof Token
+     * @memberof TokenRefreshRequest
      */
-    key: string;
+    refresh: string;
 }
 
 /**
- * Check if a given object implements the Token interface.
+ * Check if a given object implements the TokenRefreshRequest interface.
  */
-export function instanceOfToken(value: object): boolean {
+export function instanceOfTokenRefreshRequest(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "key" in value;
+    isInstance = isInstance && "refresh" in value;
 
     return isInstance;
 }
 
-export function TokenFromJSON(json: any): Token {
-    return TokenFromJSONTyped(json, false);
+export function TokenRefreshRequestFromJSON(json: any): TokenRefreshRequest {
+    return TokenRefreshRequestFromJSONTyped(json, false);
 }
 
-export function TokenFromJSONTyped(json: any, ignoreDiscriminator: boolean): Token {
+export function TokenRefreshRequestFromJSONTyped(json: any, ignoreDiscriminator: boolean): TokenRefreshRequest {
     if ((json === undefined) || (json === null)) {
         return json;
     }
     return {
 
-        'key': json['key'],
+        'refresh': json['refresh'],
     };
 }
 
-export function TokenToJSON(value?: Token | null): any {
+export function TokenRefreshRequestToJSON(value?: TokenRefreshRequest | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -60,6 +60,6 @@ export function TokenToJSON(value?: Token | null): any {
     }
     return {
 
-        'key': value.key,
+        'refresh': value.refresh,
     };
 }

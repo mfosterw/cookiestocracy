@@ -15,21 +15,25 @@
 
 import * as runtime from '../runtime';
 import type {
-  RestAuthDetail,
-  SocialLogin,
-  Token,
+  JWT,
+  SocialLoginRequest,
+  TokenRefreshRequest,
 } from '../models/index';
 import {
-    RestAuthDetailFromJSON,
-    RestAuthDetailToJSON,
-    SocialLoginFromJSON,
-    SocialLoginToJSON,
-    TokenFromJSON,
-    TokenToJSON,
+    JWTFromJSON,
+    JWTToJSON,
+    SocialLoginRequestFromJSON,
+    SocialLoginRequestToJSON,
+    TokenRefreshRequestFromJSON,
+    TokenRefreshRequestToJSON,
 } from '../models/index';
 
 export interface AuthGithubCreateRequest {
-    socialLogin?: SocialLogin;
+    socialLoginRequest?: SocialLoginRequest;
+}
+
+export interface AuthLogoutCreateRequest {
+    tokenRefreshRequest: TokenRefreshRequest;
 }
 
 /**
@@ -41,7 +45,7 @@ export class AuthApi extends runtime.BaseAPI {
      * Login with GitHub using OAuth2
      * Login with GitHub
      */
-    async authGithubCreateRaw(requestParameters: AuthGithubCreateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Token>> {
+    async authGithubCreateRaw(requestParameters: AuthGithubCreateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<JWT>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -52,54 +56,78 @@ export class AuthApi extends runtime.BaseAPI {
             headerParameters["Authorization"] = await this.configuration.apiKey("Authorization"); // tokenAuth authentication
         }
 
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("jwtAuth", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
         const response = await this.request({
             path: `/api/auth/github/`,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: SocialLoginToJSON(requestParameters.socialLogin),
+            body: SocialLoginRequestToJSON(requestParameters.socialLoginRequest),
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => TokenFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => JWTFromJSON(jsonValue));
     }
 
     /**
      * Login with GitHub using OAuth2
      * Login with GitHub
      */
-    async authGithubCreate(requestParameters: AuthGithubCreateRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Token> {
+    async authGithubCreate(requestParameters: AuthGithubCreateRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<JWT> {
         const response = await this.authGithubCreateRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
     /**
-     * Calls Django logout method and delete the Token object assigned to the current User object.  Accepts/Returns nothing.
+     * Logs out the current user and blacklists their refresh token
+     * Logout
      */
-    async authLogoutCreateRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<RestAuthDetail>> {
+    async authLogoutCreateRaw(requestParameters: AuthLogoutCreateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        if (requestParameters.tokenRefreshRequest === null || requestParameters.tokenRefreshRequest === undefined) {
+            throw new runtime.RequiredError('tokenRefreshRequest','Required parameter requestParameters.tokenRefreshRequest was null or undefined when calling authLogoutCreate.');
+        }
+
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
 
         if (this.configuration && this.configuration.apiKey) {
             headerParameters["Authorization"] = await this.configuration.apiKey("Authorization"); // tokenAuth authentication
         }
 
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("jwtAuth", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
         const response = await this.request({
             path: `/api/auth/logout/`,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
+            body: TokenRefreshRequestToJSON(requestParameters.tokenRefreshRequest),
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => RestAuthDetailFromJSON(jsonValue));
+        return new runtime.VoidApiResponse(response);
     }
 
     /**
-     * Calls Django logout method and delete the Token object assigned to the current User object.  Accepts/Returns nothing.
+     * Logs out the current user and blacklists their refresh token
+     * Logout
      */
-    async authLogoutCreate(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<RestAuthDetail> {
-        const response = await this.authLogoutCreateRaw(initOverrides);
-        return await response.value();
+    async authLogoutCreate(requestParameters: AuthLogoutCreateRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.authLogoutCreateRaw(requestParameters, initOverrides);
     }
 
 }

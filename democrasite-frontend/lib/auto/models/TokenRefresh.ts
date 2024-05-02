@@ -16,42 +16,42 @@ import { exists, mapValues } from '../runtime';
 /**
  *
  * @export
- * @interface Vote
+ * @interface TokenRefresh
  */
-export interface Vote {
+export interface TokenRefresh {
     /**
      *
-     * @type {boolean}
-     * @memberof Vote
+     * @type {string}
+     * @memberof TokenRefresh
      */
-    support: boolean;
+    readonly access: string;
 }
 
 /**
- * Check if a given object implements the Vote interface.
+ * Check if a given object implements the TokenRefresh interface.
  */
-export function instanceOfVote(value: object): boolean {
+export function instanceOfTokenRefresh(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "support" in value;
+    isInstance = isInstance && "access" in value;
 
     return isInstance;
 }
 
-export function VoteFromJSON(json: any): Vote {
-    return VoteFromJSONTyped(json, false);
+export function TokenRefreshFromJSON(json: any): TokenRefresh {
+    return TokenRefreshFromJSONTyped(json, false);
 }
 
-export function VoteFromJSONTyped(json: any, ignoreDiscriminator: boolean): Vote {
+export function TokenRefreshFromJSONTyped(json: any, ignoreDiscriminator: boolean): TokenRefresh {
     if ((json === undefined) || (json === null)) {
         return json;
     }
     return {
 
-        'support': json['support'],
+        'access': json['access'],
     };
 }
 
-export function VoteToJSON(value?: Vote | null): any {
+export function TokenRefreshToJSON(value?: TokenRefresh | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -60,6 +60,5 @@ export function VoteToJSON(value?: Vote | null): any {
     }
     return {
 
-        'support': value.support,
     };
 }

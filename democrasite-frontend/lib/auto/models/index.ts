@@ -1,12 +1,16 @@
 /* tslint:disable */
 /* eslint-disable */
 export * from './Bill';
-export * from './PatchedBill';
-export * from './PatchedUser';
+export * from './BillRequest';
+export * from './JWT';
+export * from './PatchedBillRequest';
+export * from './PatchedUserRequest';
 export * from './PullRequest';
-export * from './RestAuthDetail';
-export * from './SocialLogin';
-export * from './Token';
+export * from './SocialLoginRequest';
+export * from './TokenRefresh';
+export * from './TokenRefreshRequest';
 export * from './User';
-export * from './Vote';
+export * from './UserDetails';
+export * from './UserRequest';
 export * from './VoteCounts';
+export * from './VoteRequest';

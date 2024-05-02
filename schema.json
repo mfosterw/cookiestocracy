@@ -18,17 +18,17 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/SocialLogin"
+                                "$ref": "#/components/schemas/SocialLoginRequest"
                             }
                         },
                         "application/x-www-form-urlencoded": {
                             "schema": {
-                                "$ref": "#/components/schemas/SocialLogin"
+                                "$ref": "#/components/schemas/SocialLoginRequest"
                             }
                         },
                         "multipart/form-data": {
                             "schema": {
-                                "$ref": "#/components/schemas/SocialLogin"
+                                "$ref": "#/components/schemas/SocialLoginRequest"
                             }
                         }
                     }
@@ -40,6 +40,9 @@
                     {
                         "tokenAuth": []
                     },
+                    {
+                        "jwtAuth": []
+                    },
                     {}
                 ],
                 "responses": {
@@ -47,7 +50,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/Token"
+                                    "$ref": "#/components/schemas/JWT"
                                 }
                             }
                         },
@@ -59,10 +62,31 @@
         "/api/auth/logout/": {
             "post": {
                 "operationId": "auth_logout_create",
-                "description": "Calls Django logout method and delete the Token object\nassigned to the current User object.\n\nAccepts/Returns nothing.",
+                "description": "Logs out the current user and blacklists their refresh token",
+                "summary": "Logout",
                 "tags": [
                     "auth"
                 ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/TokenRefreshRequest"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/TokenRefreshRequest"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/TokenRefreshRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
                 "security": [
                     {
                         "cookieAuth": []
@@ -70,18 +94,14 @@
                     {
                         "tokenAuth": []
                     },
+                    {
+                        "jwtAuth": []
+                    },
                     {}
                 ],
                 "responses": {
                     "200": {
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/RestAuthDetail"
-                                }
-                            }
-                        },
-                        "description": ""
+                        "description": "No response body"
                     }
                 }
             }
@@ -98,6 +118,9 @@
                     },
                     {
                         "tokenAuth": []
+                    },
+                    {
+                        "jwtAuth": []
                     },
                     {}
                 ],
@@ -142,6 +165,9 @@
                     {
                         "tokenAuth": []
                     },
+                    {
+                        "jwtAuth": []
+                    },
                     {}
                 ],
                 "responses": {
@@ -177,17 +203,17 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/Bill"
+                                "$ref": "#/components/schemas/BillRequest"
                             }
                         },
                         "application/x-www-form-urlencoded": {
                             "schema": {
-                                "$ref": "#/components/schemas/Bill"
+                                "$ref": "#/components/schemas/BillRequest"
                             }
                         },
                         "multipart/form-data": {
                             "schema": {
-                                "$ref": "#/components/schemas/Bill"
+                                "$ref": "#/components/schemas/BillRequest"
                             }
                         }
                     },
@@ -199,6 +225,9 @@
                     },
                     {
                         "tokenAuth": []
+                    },
+                    {
+                        "jwtAuth": []
                     }
                 ],
                 "responses": {
@@ -234,17 +263,17 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/PatchedBill"
+                                "$ref": "#/components/schemas/PatchedBillRequest"
                             }
                         },
                         "application/x-www-form-urlencoded": {
                             "schema": {
-                                "$ref": "#/components/schemas/PatchedBill"
+                                "$ref": "#/components/schemas/PatchedBillRequest"
                             }
                         },
                         "multipart/form-data": {
                             "schema": {
-                                "$ref": "#/components/schemas/PatchedBill"
+                                "$ref": "#/components/schemas/PatchedBillRequest"
                             }
                         }
                     }
@@ -255,6 +284,9 @@
                     },
                     {
                         "tokenAuth": []
+                    },
+                    {
+                        "jwtAuth": []
                     }
                 ],
                 "responses": {
@@ -292,17 +324,17 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/Vote"
+                                "$ref": "#/components/schemas/VoteRequest"
                             }
                         },
                         "application/x-www-form-urlencoded": {
                             "schema": {
-                                "$ref": "#/components/schemas/Vote"
+                                "$ref": "#/components/schemas/VoteRequest"
                             }
                         },
                         "multipart/form-data": {
                             "schema": {
-                                "$ref": "#/components/schemas/Vote"
+                                "$ref": "#/components/schemas/VoteRequest"
                             }
                         }
                     },
@@ -314,6 +346,9 @@
                     },
                     {
                         "tokenAuth": []
+                    },
+                    {
+                        "jwtAuth": []
                     }
                 ],
                 "responses": {
@@ -463,6 +498,9 @@
                     },
                     {
                         "tokenAuth": []
+                    },
+                    {
+                        "jwtAuth": []
                     }
                 ],
                 "responses": {
@@ -498,6 +536,47 @@
                 }
             }
         },
+        "/api/token/refresh/": {
+            "post": {
+                "operationId": "token_refresh_create",
+                "description": "Takes a refresh type JSON web token and returns an access type JSON web\ntoken if the refresh token is valid.",
+                "tags": [
+                    "token"
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/TokenRefreshRequest"
+                            }
+                        },
+                        "application/x-www-form-urlencoded": {
+                            "schema": {
+                                "$ref": "#/components/schemas/TokenRefreshRequest"
+                            }
+                        },
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/TokenRefreshRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TokenRefresh"
+                                }
+                            }
+                        },
+                        "description": ""
+                    }
+                }
+            }
+        },
         "/api/users/": {
             "get": {
                 "operationId": "users_list",
@@ -510,6 +589,9 @@
                     },
                     {
                         "tokenAuth": []
+                    },
+                    {
+                        "jwtAuth": []
                     },
                     {}
                 ],
@@ -554,6 +636,9 @@
                     {
                         "tokenAuth": []
                     },
+                    {
+                        "jwtAuth": []
+                    },
                     {}
                 ],
                 "responses": {
@@ -589,17 +674,17 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/User"
+                                "$ref": "#/components/schemas/UserRequest"
                             }
                         },
                         "application/x-www-form-urlencoded": {
                             "schema": {
-                                "$ref": "#/components/schemas/User"
+                                "$ref": "#/components/schemas/UserRequest"
                             }
                         },
                         "multipart/form-data": {
                             "schema": {
-                                "$ref": "#/components/schemas/User"
+                                "$ref": "#/components/schemas/UserRequest"
                             }
                         }
                     },
@@ -611,6 +696,9 @@
                     },
                     {
                         "tokenAuth": []
+                    },
+                    {
+                        "jwtAuth": []
                     }
                 ],
                 "responses": {
@@ -646,17 +734,17 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/PatchedUser"
+                                "$ref": "#/components/schemas/PatchedUserRequest"
                             }
                         },
                         "application/x-www-form-urlencoded": {
                             "schema": {
-                                "$ref": "#/components/schemas/PatchedUser"
+                                "$ref": "#/components/schemas/PatchedUserRequest"
                             }
                         },
                         "multipart/form-data": {
                             "schema": {
-                                "$ref": "#/components/schemas/PatchedUser"
+                                "$ref": "#/components/schemas/PatchedUserRequest"
                             }
                         }
                     }
@@ -667,6 +755,9 @@
                     },
                     {
                         "tokenAuth": []
+                    },
+                    {
+                        "jwtAuth": []
                     }
                 ],
                 "responses": {
@@ -695,6 +786,9 @@
                     },
                     {
                         "tokenAuth": []
+                    },
+                    {
+                        "jwtAuth": []
                     },
                     {}
                 ],
@@ -785,45 +879,15 @@
                     "yes_votes"
                 ]
             },
-            "PatchedBill": {
+            "BillRequest": {
                 "type": "object",
                 "properties": {
-                    "id": {
-                        "type": "integer",
-                        "readOnly": true
-                    },
                     "author": {
-                        "$ref": "#/components/schemas/User"
-                    },
-                    "pull_request": {
-                        "allOf": [
-                            {
-                                "$ref": "#/components/schemas/PullRequest"
-                            }
-                        ],
-                        "readOnly": true
+                        "$ref": "#/components/schemas/UserRequest"
                     },
                     "status": {
-                        "type": "string"
-                    },
-                    "yes_votes": {
-                        "type": "integer",
-                        "readOnly": true
-                    },
-                    "no_votes": {
-                        "type": "integer",
-                        "readOnly": true
-                    },
-                    "user_supports": {
-                        "type": "boolean",
-                        "nullable": true,
-                        "description": "Return whether the user supports the bill. If the user is not authenticated\nor has not voted on this bill, return None.\n\nArgs:\n    bill: The bill to check\n\nReturns:\n    Whether the user supports the bill, or None if not applicable",
-                        "readOnly": true
-                    },
-                    "created": {
                         "type": "string",
-                        "format": "date-time",
-                        "readOnly": true
+                        "minLength": 1
                     },
                     "status_changed": {
                         "type": "string",
@@ -831,23 +895,69 @@
                     },
                     "name": {
                         "type": "string",
+                        "minLength": 1,
                         "maxLength": 100
                     },
                     "description": {
                         "type": "string"
+                    }
+                },
+                "required": [
+                    "author",
+                    "name",
+                    "status"
+                ]
+            },
+            "JWT": {
+                "type": "object",
+                "description": "Serializer for JWT authentication.",
+                "properties": {
+                    "access": {
+                        "type": "string"
                     },
-                    "constitutional": {
-                        "type": "boolean",
-                        "readOnly": true,
-                        "description": "True if this bill is an amendment to the constitution"
+                    "refresh": {
+                        "type": "string"
+                    },
+                    "user": {
+                        "$ref": "#/components/schemas/UserDetails"
+                    }
+                },
+                "required": [
+                    "access",
+                    "refresh",
+                    "user"
+                ]
+            },
+            "PatchedBillRequest": {
+                "type": "object",
+                "properties": {
+                    "author": {
+                        "$ref": "#/components/schemas/UserRequest"
+                    },
+                    "status": {
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "status_changed": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "name": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 100
+                    },
+                    "description": {
+                        "type": "string"
                     }
                 }
             },
-            "PatchedUser": {
+            "PatchedUserRequest": {
                 "type": "object",
                 "properties": {
                     "username": {
                         "type": "string",
+                        "minLength": 1,
                         "description": "Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.",
                         "pattern": "^[\\w.@+-]+$",
                         "maxLength": 150
@@ -856,11 +966,6 @@
                         "type": "string",
                         "title": "Name of User",
                         "maxLength": 255
-                    },
-                    "url": {
-                        "type": "string",
-                        "format": "uri",
-                        "readOnly": true
                     }
                 }
             },
@@ -907,19 +1012,7 @@
                     "title"
                 ]
             },
-            "RestAuthDetail": {
-                "type": "object",
-                "properties": {
-                    "detail": {
-                        "type": "string",
-                        "readOnly": true
-                    }
-                },
-                "required": [
-                    "detail"
-                ]
-            },
-            "SocialLogin": {
+            "SocialLoginRequest": {
                 "type": "object",
                 "properties": {
                     "access_token": {
@@ -933,17 +1026,29 @@
                     }
                 }
             },
-            "Token": {
+            "TokenRefresh": {
                 "type": "object",
-                "description": "Serializer for Token model.",
                 "properties": {
-                    "key": {
+                    "access": {
                         "type": "string",
-                        "maxLength": 40
+                        "readOnly": true
                     }
                 },
                 "required": [
-                    "key"
+                    "access"
+                ]
+            },
+            "TokenRefreshRequest": {
+                "type": "object",
+                "properties": {
+                    "refresh": {
+                        "type": "string",
+                        "writeOnly": true,
+                        "minLength": 1
+                    }
+                },
+                "required": [
+                    "refresh"
                 ]
             },
             "User": {
@@ -971,15 +1076,62 @@
                     "username"
                 ]
             },
-            "Vote": {
+            "UserDetails": {
                 "type": "object",
+                "description": "User model w/o password",
                 "properties": {
-                    "support": {
-                        "type": "boolean"
+                    "pk": {
+                        "type": "integer",
+                        "readOnly": true,
+                        "title": "ID"
+                    },
+                    "username": {
+                        "type": "string",
+                        "description": "Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.",
+                        "pattern": "^[\\w.@+-]+$",
+                        "maxLength": 150
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "readOnly": true,
+                        "title": "Email address"
+                    },
+                    "first_name": {
+                        "type": "string",
+                        "readOnly": true
+                    },
+                    "last_name": {
+                        "type": "string",
+                        "readOnly": true
                     }
                 },
                 "required": [
-                    "support"
+                    "email",
+                    "first_name",
+                    "last_name",
+                    "pk",
+                    "username"
+                ]
+            },
+            "UserRequest": {
+                "type": "object",
+                "properties": {
+                    "username": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.",
+                        "pattern": "^[\\w.@+-]+$",
+                        "maxLength": 150
+                    },
+                    "name": {
+                        "type": "string",
+                        "title": "Name of User",
+                        "maxLength": 255
+                    }
+                },
+                "required": [
+                    "username"
                 ]
             },
             "VoteCounts": {
@@ -996,6 +1148,17 @@
                     "no_votes",
                     "yes_votes"
                 ]
+            },
+            "VoteRequest": {
+                "type": "object",
+                "properties": {
+                    "support": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "support"
+                ]
             }
         },
         "securitySchemes": {
@@ -1003,6 +1166,11 @@
                 "type": "apiKey",
                 "in": "cookie",
                 "name": "sessionid"
+            },
+            "jwtAuth": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT"
             },
             "tokenAuth": {
                 "type": "apiKey",

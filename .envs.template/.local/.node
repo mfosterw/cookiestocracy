@@ -8,4 +8,4 @@ BASE_API_URL=http://django:8000
 # ------------------------------------------------------------------------------
 GITHUB_CLIENT_ID=
 GITHUB_SECRET=
-NEXTAUTH_SECRET=secret
+AUTH_SECRET=secret

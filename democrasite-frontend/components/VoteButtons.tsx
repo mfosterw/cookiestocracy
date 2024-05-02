@@ -119,13 +119,22 @@ export function VoteButtons({
 
   const handleVote = async (newVote: "yes" | "no") => {
     if (authStatus !== "authenticated") {
+      const newTimeout =
+        state[`${newVote}TooltipOpenTimeout`] === undefined
+          ? setTimeout(() => {
+              dispatch({
+                type: "openTooltip",
+                vote: newVote,
+                timeout: undefined,
+              });
+            }, 3000)
+          : undefined;
       dispatch({
         type: "openTooltip",
         vote: newVote,
-        timeout: setTimeout(() => {
-          dispatch({ type: "openTooltip", vote: newVote, timeout: undefined });
-        }, 3000),
+        timeout: newTimeout,
       });
+      return;
     }
 
     // Disable voting while a vote is being processed
@@ -136,7 +145,7 @@ export function VoteButtons({
     try {
       const voteCounts = await billsVote({
         id,
-        vote: { support: newVote === "yes" },
+        voteRequest: { support: newVote === "yes" },
       });
       dispatch({ type: "update", ...voteCounts });
     } catch (error) {

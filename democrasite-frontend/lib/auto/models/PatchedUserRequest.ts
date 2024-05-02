@@ -16,43 +16,37 @@ import { exists, mapValues } from '../runtime';
 /**
  *
  * @export
- * @interface PatchedUser
+ * @interface PatchedUserRequest
  */
-export interface PatchedUser {
+export interface PatchedUserRequest {
     /**
      * Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.
      * @type {string}
-     * @memberof PatchedUser
+     * @memberof PatchedUserRequest
      */
     username?: string;
     /**
      *
      * @type {string}
-     * @memberof PatchedUser
+     * @memberof PatchedUserRequest
      */
     name?: string;
-    /**
-     *
-     * @type {string}
-     * @memberof PatchedUser
-     */
-    readonly url?: string;
 }
 
 /**
- * Check if a given object implements the PatchedUser interface.
+ * Check if a given object implements the PatchedUserRequest interface.
  */
-export function instanceOfPatchedUser(value: object): boolean {
+export function instanceOfPatchedUserRequest(value: object): boolean {
     let isInstance = true;
 
     return isInstance;
 }
 
-export function PatchedUserFromJSON(json: any): PatchedUser {
-    return PatchedUserFromJSONTyped(json, false);
+export function PatchedUserRequestFromJSON(json: any): PatchedUserRequest {
+    return PatchedUserRequestFromJSONTyped(json, false);
 }
 
-export function PatchedUserFromJSONTyped(json: any, ignoreDiscriminator: boolean): PatchedUser {
+export function PatchedUserRequestFromJSONTyped(json: any, ignoreDiscriminator: boolean): PatchedUserRequest {
     if ((json === undefined) || (json === null)) {
         return json;
     }
@@ -60,11 +54,10 @@ export function PatchedUserFromJSONTyped(json: any, ignoreDiscriminator: boolean
 
         'username': !exists(json, 'username') ? undefined : json['username'],
         'name': !exists(json, 'name') ? undefined : json['name'],
-        'url': !exists(json, 'url') ? undefined : json['url'],
     };
 }
 
-export function PatchedUserToJSON(value?: PatchedUser | null): any {
+export function PatchedUserRequestToJSON(value?: PatchedUserRequest | null): any {
     if (value === undefined) {
         return undefined;
     }

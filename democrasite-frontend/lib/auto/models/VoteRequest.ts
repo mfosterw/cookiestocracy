@@ -16,42 +16,42 @@ import { exists, mapValues } from '../runtime';
 /**
  *
  * @export
- * @interface RestAuthDetail
+ * @interface VoteRequest
  */
-export interface RestAuthDetail {
+export interface VoteRequest {
     /**
      *
-     * @type {string}
-     * @memberof RestAuthDetail
+     * @type {boolean}
+     * @memberof VoteRequest
      */
-    readonly detail: string;
+    support: boolean;
 }
 
 /**
- * Check if a given object implements the RestAuthDetail interface.
+ * Check if a given object implements the VoteRequest interface.
  */
-export function instanceOfRestAuthDetail(value: object): boolean {
+export function instanceOfVoteRequest(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "detail" in value;
+    isInstance = isInstance && "support" in value;
 
     return isInstance;
 }
 
-export function RestAuthDetailFromJSON(json: any): RestAuthDetail {
-    return RestAuthDetailFromJSONTyped(json, false);
+export function VoteRequestFromJSON(json: any): VoteRequest {
+    return VoteRequestFromJSONTyped(json, false);
 }
 
-export function RestAuthDetailFromJSONTyped(json: any, ignoreDiscriminator: boolean): RestAuthDetail {
+export function VoteRequestFromJSONTyped(json: any, ignoreDiscriminator: boolean): VoteRequest {
     if ((json === undefined) || (json === null)) {
         return json;
     }
     return {
 
-        'detail': json['detail'],
+        'support': json['support'],
     };
 }
 
-export function RestAuthDetailToJSON(value?: RestAuthDetail | null): any {
+export function VoteRequestToJSON(value?: VoteRequest | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -60,5 +60,6 @@ export function RestAuthDetailToJSON(value?: RestAuthDetail | null): any {
     }
     return {
 
+        'support': value.support,
     };
 }
