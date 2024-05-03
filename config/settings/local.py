@@ -2,12 +2,18 @@
 
 import contextlib
 
+import django_stubs_ext
+
 from .base import *  # noqa: F403
 from .base import BASE_DIR
 from .base import CACHES
 from .base import INSTALLED_APPS
 from .base import MIDDLEWARE
 from .base import env
+
+# Monkeypatching Django, so stubs will work for all generics,
+# see: https://github.com/typeddjango/django-stubs
+django_stubs_ext.monkeypatch()
 
 # GENERAL
 # ------------------------------------------------------------------------------
