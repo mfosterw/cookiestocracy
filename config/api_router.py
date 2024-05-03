@@ -19,7 +19,7 @@ router.register("bills", BillViewSet)
 # app_name = "api"  # noqa: ERA001
 urlpatterns = [
     *router.urls,
-    path("auth/github/", GitHubLogin.as_view(), name="github_login"),
+    path("auth/github/", GitHubLogin.as_view(), name="rest_github_login"),
     path("auth/logout/", logout, name="rest_logout"),
     path("token/refresh/", token_refresh, name="token_refresh"),
 ]
