@@ -1,12 +1,3 @@
-FROM docker.io/node:20-bookworm-slim as client-builder
-
-ARG APP_HOME=/app
-WORKDIR ${APP_HOME}
-
-COPY ./package.json ${APP_HOME}
-RUN npm install && npm cache clean --force
-COPY . ${APP_HOME}
-RUN npm run build
 # define an alias for the specific python version used in this file.
 FROM docker.io/python:3.12.3-slim-bookworm as python
 
@@ -43,7 +34,7 @@ ENV BUILD_ENV ${BUILD_ENVIRONMENT}
 WORKDIR ${APP_HOME}
 
 RUN addgroup --system django \
-    && adduser --system --ingroup django django
+  && adduser --system --ingroup django django
 
 
 # Install required system dependencies
@@ -89,7 +80,7 @@ RUN chmod +x /start-flower
 
 
 # copy application code to WORKDIR
-COPY --from=client-builder --chown=django:django ${APP_HOME} ${APP_HOME}
+COPY --chown=django:django . ${APP_HOME}
 
 
 # make django owner of the WORKDIR directory as well.
@@ -98,7 +89,6 @@ RUN chown -R django:django ${APP_HOME}
 USER django
 
 RUN DATABASE_URL="" \
-  CELERY_BROKER_URL="" \
   DJANGO_SETTINGS_MODULE="config.settings.test" \
   python manage.py compilemessages
 
