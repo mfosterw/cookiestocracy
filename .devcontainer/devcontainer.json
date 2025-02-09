@@ -20,20 +20,9 @@
   "overrideCommand": false,
   "service": "django",
   // Only run direct dependencies of the selected service
-  "runServices": ["node"],
   // "remoteEnv": {"PATH": "/home/dev-user/.local/bin:${containerEnv:PATH}"},
   "remoteUser": "dev-user",
   "workspaceFolder": "/app",
-  "forwardPorts": [3000, 8000],
-  // Still holding out hope that one day autodiscovery will work in codespaces
-  "portsAttributes": {
-    "3000": {
-      "label": "Frontend"
-    },
-    "8000": {
-      "label": "Backend"
-    }
-  },
   "features": {
     "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
   },

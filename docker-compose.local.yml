@@ -77,25 +77,3 @@ services:
     ports:
       - "5555:5555"
     command: /start-flower
-
-  node:
-    build:
-      context: .
-      dockerfile: ./compose/local/node/Dockerfile
-    image: democrasite_local_node
-    container_name: democrasite-local-node
-    depends_on:
-      - django
-    volumes:
-      - .:/app:z
-      # http://jdlm.info/articles/2016/03/06/lessons-building-node-app-docker.html
-      - /app/democrasite-frontend/node_modules
-    env_file:
-      - ./.envs/.local/.node
-    ports:
-      - "3000:3000"
-    command: npm run dev
-    healthcheck:
-      test: "curl --fail --silent --write-out 'STATUS %{http_code}' --output /dev/null http://localhost:3000/"
-      timeout: 5s
-      start_period: 30s
