@@ -26,6 +26,9 @@
   "features": {
     "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
   },
+  "remoteEnv": {
+    "DATABASE_URL": "postgres://${containerEnv:POSTGRES_USER}:${containerEnv:POSTGRES_PASSWORD}@${containerEnv:POSTGRES_HOST}:${containerEnv:POSTGRES_PORT}/${containerEnv:POSTGRES_DB}"
+  },
   // Set *default* container specific settings.json values on container create.
   "customizations": {
     "vscode": {
@@ -57,6 +60,7 @@
         "ms-python.vscode-pylance",
         "charliermarsh.ruff",
         "ms-python.mypy-type-checker",
+        "ms-python.debugpy",
         // django
         "batisteo.vscode-django",
         "tamasfe.even-better-toml",
