@@ -1,5 +1,4 @@
 from .base import *  # noqa: F403
-from .base import CACHES
 from .base import DATABASES
 from .base import INSTALLED_APPS
 from .base import SPECTACULAR_SETTINGS
@@ -18,15 +17,17 @@ DATABASES["default"]["CONN_MAX_AGE"] = env.int("CONN_MAX_AGE", default=60)
 
 # CACHES
 # ------------------------------------------------------------------------------
-CACHES["default"] = {
-    "BACKEND": "django_redis.cache.RedisCache",
-    "LOCATION": env("REDIS_URL"),
-    "OPTIONS": {  # type: ignore[dict-item]
-        "CLIENT_CLASS": "django_redis.client.DefaultClient",
-        # Mimicing memcache behavior.
-        # https://github.com/jazzband/django-redis#memcached-exceptions-behavior
-        "IGNORE_EXCEPTIONS": True,
-    },
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": env("REDIS_URL"),
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            # Mimicing memcache behavior.
+            # https://github.com/jazzband/django-redis#memcached-exceptions-behavior
+            "IGNORE_EXCEPTIONS": True,
+        },
+    }
 }
 
 # SECURITY
@@ -143,5 +144,5 @@ LOGGING = {
 # -------------------------------------------------------------------------------
 # Tools that generate code samples can use SERVERS to point to the correct domain
 SPECTACULAR_SETTINGS["SERVERS"] = [
-    {"url": "https://democrasite.herokuapp.com", "description": "Production server"},  # type: ignore[list-item]
+    {"url": "https://democrasite.herokuapp.com", "description": "Production server"},
 ]
