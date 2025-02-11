@@ -1,7 +1,9 @@
 // For format details, see https://containers.dev/implementors/json_reference/
 {
   "name": "democrasite_dev",
-  "dockerComposeFile": ["../docker-compose.local.yml"],
+  "dockerComposeFile": [
+    "../docker-compose.local.yml"
+  ],
   "init": true,
   "mounts": [
     {
@@ -71,5 +73,7 @@
   // Uncomment the next line if you want to keep your containers running after VS Code shuts down.
   // "shutdownAction": "none",
   "initializeCommand": "cp -rn .envs.template/ .envs/ || echo '.envs/ already exists'",
-  "postCreateCommand": "cat .devcontainer/bashrc.override.sh >> ~/.bashrc && git config --global --add safe.directory /app"
+  "postCreateCommand": "cat .devcontainer/bashrc.override.sh >> ~/.bashrc && git config --global --add safe.directory /app",
+  // Ensure pre-commit dependencies install in background
+  "postStartCommand": "pre-commit run --all"
 }
