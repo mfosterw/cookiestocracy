@@ -36,7 +36,7 @@ WORKDIR ${APP_HOME}
 
 # devcontainer dependencies and utils
 RUN apt-get update && apt-get install --no-install-recommends -y \
-  sudo git bash-completion nano ssh
+  sudo git bash-completion nano ssh locales
 
 # Create devcontainer user and add it to sudoers
 RUN groupadd --gid 1000 dev-user \
@@ -44,6 +44,8 @@ RUN groupadd --gid 1000 dev-user \
   && echo dev-user ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/dev-user \
   && chmod 0440 /etc/sudoers.d/dev-user
 
+# Silence bash locale warning
+RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && locale-gen
 
 # Install required system dependencies
 RUN apt-get update && apt-get install --no-install-recommends -y \
