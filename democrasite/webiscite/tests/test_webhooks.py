@@ -75,7 +75,7 @@ class TestGithubHookView:
 
         assert response == "Invalid remote address for GitHub webhook request"
 
-    @pytest.fixture()
+    @pytest.fixture
     def signed_request(self, rf: RequestFactory):
         request = rf.post(
             "/fake-url/",
@@ -112,7 +112,7 @@ class TestGithubHookView:
 
 
 class TestPullRequestHandler:
-    @pytest.fixture()
+    @pytest.fixture
     def pr_handler(self):
         return GithubWebhookView().pull_request
 

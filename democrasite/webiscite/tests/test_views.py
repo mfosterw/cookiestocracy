@@ -60,9 +60,9 @@ class TestBillVotesView:
         assert bill in view.get_queryset(), "Negative votes are included"
 
         bill.vote(user, support=False)
-        assert (
-            bill not in view.get_queryset()
-        ), "When a vote is undone it gets removed from queryset"
+        assert bill not in view.get_queryset(), (
+            "When a vote is undone it gets removed from queryset"
+        )
 
 
 class TestBillDetailView:
