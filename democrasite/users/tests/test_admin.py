@@ -17,7 +17,7 @@ class TestUserAdmin:
         # Admin site is only enabled during development
         settings.DEBUG = True
 
-    @pytest.fixture()
+    @pytest.fixture
     def _force_allauth(self, settings):
         settings.DJANGO_ADMIN_FORCE_ALLAUTH = True
         # Reload the admin module to apply the setting change

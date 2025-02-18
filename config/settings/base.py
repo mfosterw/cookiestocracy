@@ -3,8 +3,6 @@
 from pathlib import Path
 
 import environ
-from machina import MACHINA_MAIN_STATIC_DIR
-from machina import MACHINA_MAIN_TEMPLATE_DIR
 
 BASE_DIR = Path(__file__).resolve(strict=True).parent.parent.parent
 # democrasite/
@@ -44,18 +42,6 @@ DATABASES["default"]["ATOMIC_REQUESTS"] = True
 # https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-DEFAULT_AUTO_FIELD
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# CACHES
-# ------------------------------------------------------------------------------
-# Machina needs this cache to be defined
-# TODO: I don't know if this will work in production
-CACHES = {
-    "machina_attachments": {
-        "BACKEND": "django.core.cache.backends.filebased.FileBasedCache",
-        "LOCATION": "/tmp",  # noqa: S108
-    },
-}
-
-
 # URLS
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#root-urlconf
@@ -91,22 +77,6 @@ THIRD_PARTY_APPS = [
     "dj_rest_auth",
     "dj_rest_auth.registration",
     "rest_framework_simplejwt.token_blacklist",
-    # Machina (forum) dependencies:
-    "mptt",
-    "haystack",
-    "widget_tweaks",
-    # Machina apps:
-    "machina",
-    "machina.apps.forum",
-    "machina.apps.forum_conversation",
-    "machina.apps.forum_conversation.forum_attachments",
-    "machina.apps.forum_conversation.forum_polls",
-    "machina.apps.forum_feeds",
-    "machina.apps.forum_moderation",
-    "machina.apps.forum_search",
-    "machina.apps.forum_tracking",
-    "machina.apps.forum_member",
-    "machina.apps.forum_permission",
 ]
 
 LOCAL_APPS = [
@@ -171,8 +141,6 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "allauth.account.middleware.AccountMiddleware",
-    # Machina
-    "machina.apps.forum_permission.middleware.ForumPermissionMiddleware",
 ]
 
 # STATIC
@@ -182,7 +150,7 @@ STATIC_ROOT = str(BASE_DIR / "staticfiles")
 # https://docs.djangoproject.com/en/dev/ref/settings/#static-url
 STATIC_URL = "/static/"
 # https://docs.djangoproject.com/en/dev/ref/contrib/staticfiles/#std:setting-STATICFILES_DIRS
-STATICFILES_DIRS = [str(APPS_DIR / "static"), MACHINA_MAIN_STATIC_DIR]
+STATICFILES_DIRS = [str(APPS_DIR / "static")]
 # https://docs.djangoproject.com/en/dev/ref/contrib/staticfiles/#staticfiles-finders
 STATICFILES_FINDERS = [
     "django.contrib.staticfiles.finders.FileSystemFinder",
@@ -204,7 +172,7 @@ TEMPLATES = [
         # https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-TEMPLATES-BACKEND
         "BACKEND": "django.template.backends.django.DjangoTemplates",
         # https://docs.djangoproject.com/en/dev/ref/settings/#dirs
-        "DIRS": [str(APPS_DIR / "templates"), MACHINA_MAIN_TEMPLATE_DIR],
+        "DIRS": [str(APPS_DIR / "templates")],
         # https://docs.djangoproject.com/en/dev/ref/settings/#app-dirs
         "APP_DIRS": True,
         "OPTIONS": {
@@ -220,8 +188,6 @@ TEMPLATES = [
                 "django.contrib.messages.context_processors.messages",
                 # Custom context processors
                 "democrasite.webiscite.context_processors.settings_context",
-                # Machina
-                "machina.core.context_processors.metadata",
             ],
         },
     }
@@ -430,32 +396,6 @@ SPECTACULAR_SETTINGS = {
     "VERSION": "1.0.0",
     "SERVE_PERMISSIONS": ["rest_framework.permissions.IsAdminUser"],
     "COMPONENT_SPLIT_REQUEST": True,
-}
-
-# Machina
-# ------------------------------------------------------------------------------
-# https://django-machina.readthedocs.io/en/stable/settings.html#machina-forum-name
-MACHINA_FORUM_NAME = "Democrasite Forum"
-# https://django-machina.readthedocs.io/en/stable/settings.html#machina-default-authenticated-user-forum-permissions
-# Default permissions for authenticated users on new forums. All other
-# permissions, including for anonymous users, must be added directly to the
-# database (i.e. through the admin site)
-MACHINA_DEFAULT_AUTHENTICATED_USER_FORUM_PERMISSIONS = [
-    "can_see_forum",
-    "can_read_forum",
-    "can_start_new_topics",
-    "can_reply_to_topics",
-    "can_edit_own_posts",
-    "can_create_polls",
-    "can_vote_in_polls",
-    "can_download_file",
-]
-# https://django-haystack.readthedocs.io/en/master/settings.html#haystack-connections
-HAYSTACK_CONNECTIONS = {
-    # TODO: Switch to a real search engine, use across all apps
-    "default": {
-        "ENGINE": "haystack.backends.simple_backend.SimpleEngine",
-    },
 }
 
 # Webiscite

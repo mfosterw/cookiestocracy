@@ -6,7 +6,6 @@ import django_stubs_ext
 
 from .base import *  # noqa: F403
 from .base import BASE_DIR
-from .base import CACHES
 from .base import INSTALLED_APPS
 from .base import MIDDLEWARE
 from .base import env
@@ -40,9 +39,11 @@ INSTALLED_APPS += ["django.contrib.admin"]
 # CACHES
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#caches
-CACHES["default"] = {
-    "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
-    "LOCATION": "",
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "",
+    }
 }
 
 # EMAIL

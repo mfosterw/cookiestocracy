@@ -5,7 +5,6 @@ Currently, the defined tasks are all related to processing pull requests
 from :func:`democrasite.webiscite.webhooks`.
 """
 
-
 import requests
 from celery import shared_task
 from celery.utils.log import get_task_logger

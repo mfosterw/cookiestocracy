@@ -18,13 +18,13 @@ def _enable_db_access_for_all_tests(db):
     """Give all tests access to the database."""
 
 
-@pytest.fixture()
+@pytest.fixture
 def user() -> User:
     """Return a User instance."""
     return UserFactory()
 
 
-@pytest.fixture()
+@pytest.fixture
 def api_rf():
     """Return a RequestFactory for use in API tests."""
     return APIRequestFactory()

@@ -6,7 +6,7 @@ from democrasite.users.models import User
 
 
 class TestUserViewSet:
-    @pytest.fixture()
+    @pytest.fixture
     def view(self) -> UserViewSet:
         return UserViewSet()
 

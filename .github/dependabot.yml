@@ -89,11 +89,8 @@ updates:
     # Every weekday
     schedule:
       interval: "daily"
-
-  # Enable version updates for javascript/npm
-  - package-ecosystem: "npm"
-    # Look for a `packages.json` in the `root` directory
-    directory: "/democrasite-frontend/"
-    # Every weekday
-    schedule:
-      interval: "daily"
+    groups:
+      production-dependencies:
+        dependency-type: "production"
+      development-dependencies:
+        dependency-type: "development"

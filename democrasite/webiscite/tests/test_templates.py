@@ -1,4 +1,5 @@
 """Render each branch on each template to ensure there are no rendering errors."""
+
 from http import HTTPStatus
 
 import pytest

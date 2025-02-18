@@ -1,4 +1,5 @@
 """Views for the webiscite app."""
+
 from http import HTTPStatus
 
 from django import http

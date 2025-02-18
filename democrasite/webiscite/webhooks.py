@@ -42,9 +42,9 @@ class PullRequestHandler:
             An object containing the primary keys of the pull request and bill affected,
             if applicable
         """
-        handler: Callable[
-            [dict[str, Any]], tuple[PullRequest | None, Bill | None]
-        ] | None
+        handler: (
+            Callable[[dict[str, Any]], tuple[PullRequest | None, Bill | None]] | None
+        )
         handler = getattr(self, payload["action"], None)
         if handler is None:
             return HttpResponseBadRequest(f"Unsupported action: {payload['action']}")

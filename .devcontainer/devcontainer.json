@@ -1,7 +1,9 @@
 // For format details, see https://containers.dev/implementors/json_reference/
 {
   "name": "democrasite_dev",
-  "dockerComposeFile": ["../docker-compose.local.yml"],
+  "dockerComposeFile": [
+    "../docker-compose.local.yml"
+  ],
   "init": true,
   "mounts": [
     {
@@ -20,22 +22,14 @@
   "overrideCommand": false,
   "service": "django",
   // Only run direct dependencies of the selected service
-  "runServices": ["node"],
   // "remoteEnv": {"PATH": "/home/dev-user/.local/bin:${containerEnv:PATH}"},
   "remoteUser": "dev-user",
   "workspaceFolder": "/app",
-  "forwardPorts": [3000, 8000],
-  // Still holding out hope that one day autodiscovery will work in codespaces
-  "portsAttributes": {
-    "3000": {
-      "label": "Frontend"
-    },
-    "8000": {
-      "label": "Backend"
-    }
-  },
   "features": {
     "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
+  },
+  "remoteEnv": {
+    "DATABASE_URL": "postgres://${containerEnv:POSTGRES_USER}:${containerEnv:POSTGRES_PASSWORD}@${containerEnv:POSTGRES_HOST}:${containerEnv:POSTGRES_PORT}/${containerEnv:POSTGRES_DB}"
   },
   // Set *default* container specific settings.json values on container create.
   "customizations": {
@@ -63,11 +57,13 @@
         "mrmlnc.vscode-duplicate",
         "visualstudioexptteam.vscodeintellicode",
         "visualstudioexptteam.intellicode-api-usage-examples",
+        "eamodio.gitlens",
         // python
         "ms-python.python",
         "ms-python.vscode-pylance",
         "charliermarsh.ruff",
-        "matangover.mypy",
+        "ms-python.mypy-type-checker",
+        "ms-python.debugpy",
         // django
         "batisteo.vscode-django",
         "tamasfe.even-better-toml",
@@ -78,5 +74,7 @@
   // Uncomment the next line if you want to keep your containers running after VS Code shuts down.
   // "shutdownAction": "none",
   "initializeCommand": "cp -rn .envs.template/ .envs/ || echo '.envs/ already exists'",
-  "postCreateCommand": "cat .devcontainer/bashrc.override.sh >> ~/.bashrc && git config --global --add safe.directory /app"
+  "postCreateCommand": "cat .devcontainer/bashrc.override.sh >> ~/.bashrc && git config --global --add safe.directory /app",
+  // Ensure pre-commit dependencies install in background
+  "postStartCommand": "pre-commit run --all"
 }
