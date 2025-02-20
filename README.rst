@@ -50,7 +50,7 @@ Getting Started
 |Open in GitHub Codespaces|
 
 .. |Open in GitHub Codespaces| image:: https://github.com/codespaces/badge.svg
-    :target: https://codespaces.new/mfosterw/cookiestocracy/tree/docker?quickstart=1
+    :target: https://codespaces.new/mfosterw/cookiestocracy?quickstart=1
 
 The easiest way to explore the repository is to open it in GitHub Codespaces with the
 button above. Once you've given the container some time to set up (it should take about
