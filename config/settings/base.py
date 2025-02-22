@@ -307,8 +307,8 @@ ACCOUNT_ALLOW_LOCAL_REGISTRATION = env.bool(
 ACCOUNT_ALLOW_SOCIAL_REGISTRATION = env.bool(
     "DJANGO_ACCOUNT_ALLOW_SOCIAL_REGISTRATION", ACCOUNT_ALLOW_REGISTRATION
 )
-# https://django-allauth.readthedocs.io/en/latest/configuration.html
-ACCOUNT_AUTHENTICATION_METHOD = "email"
+# https://docs.allauth.org/en/latest/account/configuration.html
+ACCOUNT_LOGIN_METHODS = {"email"}
 ACCOUNT_EMAIL_REQUIRED = True
 # If email verification is used I would like to apply it to each linked account
 # individually so we don't have to rely on providers to do so

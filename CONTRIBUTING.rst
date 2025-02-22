@@ -27,7 +27,7 @@ Some ideas for contributions include:
 
 - Adding a new feature to an existing app
 
-- Adding a new page to the front end
+- Adding a new page
 
 - Improving Documentation
 
@@ -54,7 +54,7 @@ you have made using this command::
     $ cp -rn .envs.template/ .envs/
 
 Once ``.envs`` exists, you can personalize any environment variables you need, such as
-saving OAuth application credentials in ``.django`` and ``.node``. Remember to never
+saving OAuth application credentials in ``.django``. Remember to never
 put sensitive information anywhere it might be added to source control!
 
 .. _`Docker`: https://docs.docker.com/get-docker/
@@ -63,27 +63,27 @@ Prerequisites
 -------------
 
 * Docker; if you don't have it yet, follow the `installation instructions`_.
-
-.. warning::
-    If you are using an Intel Mac, you may experience crashes when trying to launch the
-    ``node`` service. To fix it, see the `Intel Mac Segmentation Fault`_ section below.
-
 * Docker Compose; refer to the official documentation for the `installation guide`_.
 * Pre-commit; refer to the official documentation for the `pre-commit`_.
+* Just (optional); to simplify running commands, install `just`_.
+
+The commands below assume you have ``just`` installed. If you don't, you can reference the
+commands in the ``justfile`` directly.
 
 .. _`installation instructions`: https://docs.docker.com/install/#supported-platforms
 .. _`installation guide`: https://docs.docker.com/compose/install/
 .. _`pre-commit`: https://pre-commit.com/#install
+.. _`just`: https://github.com/casey/just?tab=readme-ov-file#packages
 
 
 Build the stack
 ---------------
 
-This can take a while, especially the first time you run this particular command on your development system::
+Building the stack can take a while, especially the first time you run this command on your system::
 
-    $ docker compose -f docker-compose.local.yml build
+    $ just build
 
-Before doing any git commit, `pre-commit`_ should be installed globally on your local machine, and then::
+Before making a git commit, you must have installed `pre-commit`_ and then run::
 
     $ pre-commit install
 
@@ -91,62 +91,28 @@ Before doing any git commit, `pre-commit`_ should be installed globally on your 
 Run the Stack
 -------------
 
-The first time it is run it might take a while to get started, but subsequent runs should occur quickly.
+The first time the container is run it might take a while to get started, but subsequent runs should start quickly.
 
 Open a terminal at the project root and run the following for to activate all services::
 
-    $ docker compose -f docker-compose.local.yml up
+    $ just up
 
-The site should start and be accessible at http://localhost:3000, with the api visible
-at http://localhost:8000/api/ and the documentation at http://localhost:9000.
-
-You can also set the environment variable ``COMPOSE_FILE`` pointing to ``docker-compose.local.yml`` like this::
-
-    $ export COMPOSE_FILE=docker-compose.local.yml
-
-And then run::
-
-    $ docker compose up
+The site should start and be accessible at http://localhost:8000/ and the documentation at http://localhost:9000.
 
 To run a specific service and its dependencies, run::
 
-    $ docker compose up <service_name>
+    $ just up <service_name>
 
-To run a full stack without Celery, start ``node``::
+To run a full stack without Celery, start ``django``::
 
-    $ docker compose up node
-
-To run in a detached (background) mode, just::
-
-    $ docker compose up -d
+    $ just up django
 
 
 Execute Management Commands
 ---------------------------
 
-This is done using the ``docker compose -f docker-compose.local.yml run --rm`` command: ::
-
-    $ docker compose -f docker-compose.local.yml run --rm django python manage.py migrate
-    $ docker compose -f docker-compose.local.yml run --rm django python manage.py createsuperuser
-
-Here, ``django`` is the target service we are executing the commands against.
-Also, please note that the ``docker exec`` does not work for running management commands.
-
-
-Troubleshooting
----------------
-
-.. _Intel Mac Segmentation Fault:
-
-If you are developing on a Mac with an Intel core, you will get a segmentation fault
-when trying to launch the ``node`` service due to a `bug`_ in ``docker-compose``.
-To fix it, disable the ``Virtualization Framework`` in `Docker Desktop settings`_.
-
-For other problems, you can open an `issue`_ in the repository.
-
-.. _bug: https://github.com/docker/for-mac/issues/6824
-.. _`Docker Desktop settings`: https://docs.docker.com/desktop/settings/mac/
-.. _`issue`: https://github.com/mfosterw/cookiestocracy/issues
+Shortcuts for all the management commands mentioned in the ``README`` are available in the ``justfile``.
+To see a list of all the available commands, run ``just`` without any arguments.
 
 
 Creating a Webhook
@@ -170,8 +136,8 @@ to set the correct port and path.
 .. _instructions: https://docs.github.com/en/webhooks/using-webhooks/handling-webhook-deliveries
 
 
-Automating the Repository
--------------------------
+Automating Your Repository
+--------------------------
 
 When a :class:`~democrasite.webiscite.models.Bill` passes, the corresponding pull
 request is automatically merged into the master branch, and if code blocks from the

@@ -50,7 +50,7 @@ Getting Started
 |Open in GitHub Codespaces|
 
 .. |Open in GitHub Codespaces| image:: https://github.com/codespaces/badge.svg
-    :target: https://codespaces.new/mfosterw/cookiestocracy/tree/docker?quickstart=1
+    :target: https://codespaces.new/mfosterw/cookiestocracy?quickstart=1
 
 The easiest way to explore the repository is to open it in GitHub Codespaces with the
 button above. Once you've given the container some time to set up (it should take about
@@ -62,7 +62,7 @@ Please read the `contribution guide`_ to set up a local development environment 
 Docker. See basic commands below, which can be run from within a dev container or by
 following the instructions in the guide.
 
-.. _`contribution guide`: https://github.com/mfosterw/cookiestocracy/blob/docker/CONTRIBUTING.rst
+.. _`contribution guide`: https://cookiestocracy.readthedocs.io/en/latest/CONTRIBUTING.html
 
 
 Management Commands
@@ -71,16 +71,9 @@ Management Commands
 Viewing server logs
 ^^^^^^^^^^^^^^^^^^^
 
-To view the logs from the server process on the backend (django's ``runserver``) run::
+To view the logs from the runserver process run::
 
     $ docker logs -f democrasite-local-django
-
-For logs from the frontend server (``next dev``), run::
-
-    $ docker logs -f democrasite-local-node
-
-Note that the dev container runs from the backend server, so Django management commands
-can be run normally.
 
 Loading initial data
 ^^^^^^^^^^^^^^^^^^^^
@@ -100,21 +93,26 @@ Setting up your users
 * To test logging in with a third party provider, you will need OAuth keys from the
   provider you're using. See the information on `django-allauth`_ for `GitHub`_ and
   `Google`_ keys respectively, and once you have the keys set the environment variables
-  ``<provider>-CLIENT-ID`` and ``<provider>-SECRET`` in both ``.envs/.local/.django``
-  and ``.envs/.local/.node`` and then rebuild the container. Once it is rebuilt, log in
-  through your provider with the button on the homepage. For convenience, you can keep
-  your normal user logged in on Chrome and your superuser logged in on Firefox (or your
-  browsers of choice), so that you can see  how the site behaves for both kinds of
-  users.
+  ``<provider>-CLIENT-ID`` and ``<provider>-SECRET`` in ``.envs/.local/.django`` and then
+  rebuild the container. Once it is rebuilt, log in through your provider with the button
+  on the homepage. For convenience, you can keep your normal user logged in on Chrome and
+  your superuser logged in on Firefox (or your browsers of choice), so that you can see
+  how the site behaves for both kinds of users.
 
-    .. note::
-        Accounts created through the admin page do not have a way to sign in on the
-        frontend since there is no login page. To test working with accounts on the
-        frontend, please login through a social provider.
-
-.. _`django-allauth`: https://django-allauth.readthedocs.io/en/latest/overview.html
+.. _`django-allauth`: https://docs.allauth.org/en/latest/introduction/index.html
 .. _`GitHub`: https://django-allauth.readthedocs.io/en/latest/providers.html#github
-.. _`Google`: https://django-allauth.readthedocs.io/en/latest/providers.html#google
+.. _`Google`: https://docs.allauth.org/en/latest/socialaccount/providers/github.html
+
+Linting
+^^^^^^^
+
+To lint your staged changes, run::
+
+    $ pre-commit run
+
+To lint all files, run::
+
+    $ pre-commit run --all
 
 Type checks
 ^^^^^^^^^^^
@@ -124,7 +122,7 @@ Running type checks with mypy::
   $ mypy democrasite
 
 
-Running tests with pytest
+Running tests
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ::

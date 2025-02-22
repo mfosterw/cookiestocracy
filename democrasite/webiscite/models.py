@@ -4,7 +4,6 @@ import json
 from logging import getLogger
 from typing import Any
 from typing import Self
-from typing import cast
 
 import requests
 from django.conf import settings
@@ -87,7 +86,7 @@ class PullRequest(StatusModel, TimeStampedModel):
         act = "created" if created else "updated"
         logger.info("PR %s: Pull request %s", pr["number"], act)
 
-        return cast(Self, pull_request)  # mypy infers wrong type (Pylance doesn't 👀)
+        return pull_request
 
     def close(self) -> "Bill | None":
         """Close a pull request and update the local representation
@@ -199,7 +198,7 @@ class Bill(StatusModel, TimeStampedModel):
         except Vote.DoesNotExist:
             # Stubs issue fixed (by me!) in https://github.com/typeddjango/django-stubs/pull/1943
             # Just waiting for new version to be released
-            self.votes.add(user, through_defaults={"support": support})  # type: ignore[call-arg]
+            self.votes.add(user, through_defaults={"support": support})
 
     def user_supports(self, user: User) -> bool | None:
         """
