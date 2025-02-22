@@ -6,18 +6,18 @@ updates:
   # Update GitHub actions in workflows
   - package-ecosystem: "github-actions"
     directory: "/"
-    # Every weekday
+    # Every Monday
     schedule:
-      interval: "daily"
+      interval: "weekly"
 
   # Enable version updates for Docker
   - package-ecosystem: "docker"
     # Look for `Dockerfiles` in the `compose/local/django` directory
     # and in the compose/production subdirectories
     directories: "compose/*/*/"
-    # Every weekday
+    # Every Monday
     schedule:
-      interval: "daily"
+      interval: "weekly"
     # Ignore minor version updates (3.12 -> 3.13) but update patch versions
     ignore:
       - dependency-name: "*"
@@ -31,9 +31,9 @@ updates:
     # Look for a `requirements.txt` in the `root` directory
     # also 'setup.cfg', 'runtime.txt' and 'requirements/*.txt'
     directory: "/"
-    # Every weekday
+    # Every Monday
     schedule:
-      interval: "daily"
+      interval: "weekly"
     groups:
       production-dependencies:
         dependency-type: "production"
