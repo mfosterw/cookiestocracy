@@ -67,8 +67,8 @@ Prerequisites
 * Pre-commit; refer to the official documentation for the `pre-commit`_.
 * Just (optional); to simplify running commands, install `just`_.
 
-The commands below assume you have `just`_ installed. If you don't, you can reference the
-commands in the `justfile`_ directly.
+The commands below assume you have ``just`` installed. If you don't, you can reference the
+commands in the ``justfile`` directly.
 
 .. _`installation instructions`: https://docs.docker.com/install/#supported-platforms
 .. _`installation guide`: https://docs.docker.com/compose/install/
@@ -111,7 +111,7 @@ To run a full stack without Celery, start ``django``::
 Execute Management Commands
 ---------------------------
 
-Shortcuts for all the management commands mentioned in the `README`_ are available in the `justfile`_.
+Shortcuts for all the management commands mentioned in the ``README`` are available in the ``justfile``.
 To see a list of all the available commands, run ``just`` without any arguments.
 
 
@@ -137,7 +137,7 @@ to set the correct port and path.
 
 
 Automating Your Repository
--------------------------
+--------------------------
 
 When a :class:`~democrasite.webiscite.models.Bill` passes, the corresponding pull
 request is automatically merged into the master branch, and if code blocks from the
