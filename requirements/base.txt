@@ -7,7 +7,7 @@ hiredis==3.1.0  # https://github.com/redis/hiredis-py
 celery==5.4.0  # pyup: < 6.0  # https://github.com/celery/celery
 django-celery-beat==2.7.0  # https://github.com/celery/django-celery-beat
 flower==2.0.1  # https://github.com/mher/flower
-PyGithub==2.5.0  # https://github.com/PyGithub/PyGithub
+PyGithub==2.6.1  # https://github.com/PyGithub/PyGithub
 unidiff==0.7.5  # https://github.com/matiasb/python-unidiff
 
 # Django
