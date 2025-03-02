@@ -58,9 +58,7 @@ manage +args:
 
 # Make and apply database migrations
 [group("management")]
-migrate:
-    (manage "makemigrations")
-    (manage "migrate")
+migrate: (manage "makemigrations") (manage "migrate")
 
 # Load initial data into the database
 [group("management")]
@@ -68,8 +66,7 @@ loaddata +filename="initial.json": (manage "loaddata" filename)
 
 # Create a superuser account
 [group("management")]
-createsuperuser:
-    (manage "createsuperuser")
+createsuperuser: (manage "createsuperuser")
 
 # Open a Python shell in the Django container
 [group("management")]

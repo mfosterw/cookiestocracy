@@ -32,6 +32,6 @@ django-extensions==3.2.3  # https://github.com/django-extensions/django-extensio
 django-coverage-plugin==3.1.0  # https://github.com/nedbat/django_coverage_plugin
 pytest-django==4.9.0  # https://github.com/pytest-dev/pytest-django
 
-# Dev Container
+# Containers
 # ------------------------------------------------------------------------------
 rust-just==1.39.0  # https://github.com/casey/just
