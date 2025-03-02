@@ -1,3 +1,5 @@
+from typing import Any
+
 import factory
 
 from democrasite.users.tests.factories import UserFactory
@@ -5,7 +7,7 @@ from democrasite.webiscite.models import Bill
 from democrasite.webiscite.models import PullRequest
 
 
-class PullRequestFactory(factory.django.DjangoModelFactory):
+class PullRequestFactory(factory.django.DjangoModelFactory[PullRequest]):
     number = factory.Sequence(
         lambda n: -n
     )  # Use negative numbers to represent fake PRs
@@ -20,7 +22,7 @@ class PullRequestFactory(factory.django.DjangoModelFactory):
         model = PullRequest
 
 
-class BillFactory(factory.django.DjangoModelFactory):
+class BillFactory(factory.django.DjangoModelFactory[Bill]):
     name = factory.Faker("text", max_nb_chars=50)
     description = factory.Faker("paragraph")
     author = factory.SubFactory(UserFactory)
@@ -35,7 +37,7 @@ class BillFactory(factory.django.DjangoModelFactory):
         model = Bill
 
 
-class GithubPullRequestFactory(factory.Factory):
+class GithubPullRequestFactory(factory.Factory[dict[str, Any]]):
     bill = factory.SubFactory(BillFactory)
 
     user = factory.DictFactory(

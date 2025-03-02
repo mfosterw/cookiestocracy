@@ -21,7 +21,7 @@ def _enable_db_access_for_all_tests(db):
 @pytest.fixture
 def user() -> User:
     """Return a User instance."""
-    return UserFactory()
+    return UserFactory.create()
 
 
 @pytest.fixture

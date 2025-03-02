@@ -30,7 +30,7 @@ class TestPullRequest:
     """Test class for all tests related to the PullRequest model"""
 
     def test_create_from_pr_create(self, caplog):
-        pr = GithubPullRequestFactory(number=Faker("random_int"))
+        pr = GithubPullRequestFactory.create(number=Faker("random_int"))
         pull_request = PullRequest.create_from_pr(pr)
         assert any(
             record.message == f"PR {pull_request.number}: Pull request created"
@@ -39,7 +39,7 @@ class TestPullRequest:
 
     def test_create_from_pr_update(self, bill: Bill, caplog):
         # PullRequest is created in the BillFactory
-        pr = GithubPullRequestFactory(bill=bill)
+        pr = GithubPullRequestFactory.create(bill=bill)
         pull_request = PullRequest.create_from_pr(pr)
         assert any(
             record.message == f"PR {pull_request.number}: Pull request updated"
@@ -57,7 +57,7 @@ class TestPullRequest:
         assert not pull_request.bill_set.filter(status=Bill.Status.OPEN).exists()
 
     def test_close_no_bill(self):
-        pull_request = PullRequestFactory()
+        pull_request = PullRequestFactory.create()
         assert pull_request.status == "open"
 
         pull_request.close()
@@ -71,7 +71,7 @@ class TestBill:
     """Test class for all tests related to the Bill model"""
 
     def test_bill_str(self):
-        bill = BillFactory(name="The Test Act", pk=1, pull_request__number="-2")
+        bill = BillFactory.create(name="The Test Act", pk=1, pull_request__number="-2")
         assert str(bill) == "Bill 1: The Test Act (PR #-2)"
 
     def test_bill_get_absolute_url(self, bill: Bill):
@@ -108,7 +108,7 @@ class TestBillOpened:
     def test_pr_opened_no_user(self):
         # If the creation step was reached, a ValidationError would be raised
         # The factory doesn't create a real user, so we can use it here
-        pr = GithubPullRequestFactory()
+        pr = GithubPullRequestFactory.create()
 
         response = Bill.create_from_pr(pr)
 
@@ -121,7 +121,7 @@ class TestBillOpened:
             user=bill.author, provider="github", uid=Faker("random_int")
         )
         # The factory seems to be ignoring my arguments for some reason
-        pr = GithubPullRequestFactory(bill=bill, user__id=github_account.uid)
+        pr = GithubPullRequestFactory.create(bill=bill, user__id=github_account.uid)
         pr["user"]["id"] = github_account.uid
 
         with pytest.raises(
@@ -134,7 +134,7 @@ class TestBillOpened:
         github_account = SocialAccount.objects.create(
             user=bill.author, provider="github", uid=Faker("random_int")
         )
-        pr = GithubPullRequestFactory(bill=bill, user__id=github_account.uid)
+        pr = GithubPullRequestFactory.create(bill=bill, user__id=github_account.uid)
         pr["user"]["id"] = github_account.uid
         bill.status = Bill.Status.CLOSED
         bill.save()
@@ -166,7 +166,7 @@ class TestBillClosed:
 
 class TestBillSubmit:
     def test_bill_not_open(self):
-        bill: Bill = BillFactory(status=Bill.Status.CLOSED)
+        bill: Bill = BillFactory.create(status=Bill.Status.CLOSED)
 
         bill.submit()
 
@@ -188,7 +188,7 @@ class TestBillSubmit:
         assert bill.status == Bill.Status.REJECTED
 
     def test_constitutional_bill_rejected(self):
-        bill = BillFactory(constitutional=True)
+        bill = BillFactory.create(constitutional=True)
         voters = UserFactory.create_batch(settings.WEBISCITE_MINIMUM_QUORUM)
         Vote.objects.bulk_create(
             [Vote(bill=bill, user=voter, support=False) for voter in voters]

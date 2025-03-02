@@ -7,4 +7,4 @@ from .factories import BillFactory
 
 @pytest.fixture
 def bill() -> Bill:
-    return BillFactory()
+    return BillFactory.create()

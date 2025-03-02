@@ -47,7 +47,9 @@ class TestBillDetailTemplate:
         status: Bill.Status,
         constitutional: bool,  # noqa: FBT001
     ):
-        bill = BillFactory(status=status, author=user, constitutional=constitutional)
+        bill = BillFactory.create(
+            status=status, author=user, constitutional=constitutional
+        )
 
         content = self._test_get_response(client, bill.id)
 
@@ -88,7 +90,7 @@ class TestBillListTemplate:
 
     @pytest.mark.parametrize("constitutional", [True, False])
     def test_logged_out(self, client: Client, constitutional: bool):  # noqa: FBT001
-        bill = BillFactory(constitutional=constitutional)
+        bill = BillFactory.create(constitutional=constitutional)
 
         response = client.get(reverse("webiscite:index"))
         content = response.content.decode()

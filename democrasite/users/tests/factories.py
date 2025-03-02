@@ -5,13 +5,13 @@ from factory.django import DjangoModelFactory
 from democrasite.users.models import User
 
 
-class UserFactory(DjangoModelFactory):
+class UserFactory(DjangoModelFactory[User]):
     username = Faker("user_name")
     email = Faker("email")
     name = Faker("name")
 
     @post_generation
-    def password(obj: User, create: bool, extracted: str, **kwargs):  # noqa: N805, FBT001
+    def password(obj: User, create: bool, extracted: str, **kwargs):  # type: ignore[misc] # noqa: N805, FBT001
         password = extracted or Faker(
             "password",
             length=42,

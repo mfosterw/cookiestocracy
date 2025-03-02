@@ -119,7 +119,7 @@ class TestPagesTemplates:
 
 class TestUsersTemplates:
     def test_user_detail(self, client: Client, user: User):
-        visitor = UserFactory()
+        visitor = UserFactory.create()
         client.force_login(visitor)
 
         response = client.get(reverse("users:detail", args=(user.username,)))

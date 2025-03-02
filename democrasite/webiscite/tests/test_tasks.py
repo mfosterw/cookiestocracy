@@ -16,7 +16,7 @@ class TestSubmitBill:
     @patch("github.Github.get_repo")
     @patch("github.Auth.Token", spec=True)
     def test_bill_failed(self, mock_token, mock_repo):
-        bill = BillFactory(status=Bill.Status.CLOSED)
+        bill = BillFactory.create(status=Bill.Status.CLOSED)
 
         submit_bill(bill.id)
 
@@ -27,7 +27,8 @@ class TestSubmitBill:
     @patch("github.Github.get_repo")
     @patch("github.Auth.Token", spec=True)
     def test_bill_passed(self, mock_token, mock_repo):
-        bill = BillFactory(constitutional=True)  # so _update_constitution isn't called
+        bill = BillFactory.create(constitutional=True)
+        # constitutional so _update_constitution isn't called
         voters = UserFactory.create_batch(settings.WEBISCITE_MINIMUM_QUORUM)
         Vote.objects.bulk_create(
             [Vote(bill=bill, user=voter, support=True) for voter in voters]
