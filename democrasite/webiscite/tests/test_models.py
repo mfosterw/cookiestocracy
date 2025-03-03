@@ -52,6 +52,19 @@ class TestPullRequest:
         assert pull_request.status == "closed"
         assert not pull_request.bill_set.filter(status=Bill.Status.OPEN).exists()
 
+    def test_close_no_bill(self, caplog):
+        pull_request = PullRequestFactory.create()
+        assert pull_request.status == "open"
+
+        pull_request.close()
+
+        pull_request.refresh_from_db()
+        assert pull_request.status == "closed"
+        assert any(
+            record.message == f"PR {pull_request.number}: No open bill found"
+            for record in caplog.records
+        )
+
 
 class TestBillManager:
     def test_create_from_github(self, user: User):
