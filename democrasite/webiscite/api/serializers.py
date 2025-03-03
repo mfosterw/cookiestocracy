@@ -38,7 +38,7 @@ class BillSerializer(ModelSerializer):
 
     class Meta:
         model = Bill
-        exclude = ["votes", "modified", "submit_task"]
+        exclude = ["votes", "modified", "_submit_task"]
         read_only_fields = [
             "author",
             "pull_request",

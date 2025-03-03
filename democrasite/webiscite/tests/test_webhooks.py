@@ -5,14 +5,18 @@ from typing import cast
 from unittest.mock import patch
 
 import pytest
+from allauth.socialaccount.models import SocialAccount
 from django.conf import settings
 from django.http import HttpResponse
 from django.http import JsonResponse
 from django.test import RequestFactory
 from django.utils.encoding import force_bytes
+from factory.faker import faker
 
+from democrasite.users.models import User
 from democrasite.webiscite.models import Bill
 from democrasite.webiscite.models import PullRequest
+from democrasite.webiscite.tests.factories import GithubPullRequestFactory
 from democrasite.webiscite.webhooks import GithubWebhookView
 from democrasite.webiscite.webhooks import PullRequestHandler
 from democrasite.webiscite.webhooks import github_webhook_view
@@ -140,21 +144,40 @@ class TestPullRequestHandler:
             "bill": bill.id,
         }
 
-    @patch.object(Bill, "create_from_pr")
-    def test_opened(self, mock_create, pr_handler: PullRequestHandler):
-        # This just calls the create_from_pr method
-        response = pr_handler.opened({})
+    def test_pr_opened_no_user(self, pr_handler: PullRequestHandler):
+        # The factory doesn't create a real user, so we can use it here
+        response = pr_handler.opened(GithubPullRequestFactory.create())
 
-        mock_create.assert_called_once_with({})
-        assert response == mock_create.return_value
+        assert isinstance(response[0], PullRequest)
+        assert response[1] is None
 
-    @patch.object(Bill, "create_from_pr")
-    def test_reopened(self, mock_create, pr_handler: PullRequestHandler):
-        # This does the exact same thing
+    @patch("requests.get")
+    def test_opened(self, mock_get, user: User, pr_handler: PullRequestHandler):
+        pr = GithubPullRequestFactory.create()
+        pr["user"]["id"] = SocialAccount.objects.create(
+            user=user,
+            provider="github",
+            uid=faker.Faker().random_int(),
+        ).uid
+
+        pull_request, bill = pr_handler.opened(pr)
+
+        # All this is probably overkill
+        mock_get.assert_called_once_with(pr["diff_url"], timeout=10)
+        assert pull_request is not None
+        assert pull_request.number == pr["number"]
+        assert pull_request.author_name == pr["user"]["login"]
+        assert bill is not None
+        assert bill.author == user
+        assert bill.constitutional is False
+
+    @patch.object(PullRequestHandler, "opened")
+    def test_reopened(self, mock_opened, pr_handler: PullRequestHandler):
+        # Basically just for 100% coverage
         response = pr_handler.reopened({})
 
-        mock_create.assert_called_once_with({})
-        assert response == mock_create.return_value
+        mock_opened.assert_called_once_with({})
+        assert response == mock_opened.return_value
 
     def test_closed_no_pr(self, pr_handler: PullRequestHandler):
         response = pr_handler.closed({"number": 1})

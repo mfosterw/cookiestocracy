@@ -20,6 +20,8 @@ from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 
+from democrasite.users.models import User
+
 from .models import Bill
 from .models import PullRequest
 
@@ -67,8 +69,8 @@ class PullRequestHandler:
 
     def opened(self, pr: dict[str, Any]) -> tuple[PullRequest, Bill | None]:
         """Create a :class:`~democrasite.webiscite.models.PullRequest` and, if the
-        creator has an account,
-        :class:`~democrasite.webiscite.models.Bill` instance from a pull request
+        creator has an account, :class:`~democrasite.webiscite.models.Bill` instance
+        from a pull request
 
         Args:
             pr: The parsed JSON object representing the pull request
@@ -76,7 +78,26 @@ class PullRequestHandler:
         Returns:
             A tuple containing the pull request and bill, if applicable
         """
-        return Bill.create_from_pr(pr)
+        pull_request = PullRequest.objects.create_from_github(pr)
+
+        try:
+            author = User.objects.filter(socialaccount__provider="github").get(
+                socialaccount__uid=pr["user"]["id"]
+            )
+        except User.DoesNotExist:
+            # If the creator of the pull request does not have a linked account,
+            # a Bill cannot be created and the pr is ignored.
+            logger.warning("PR %s: No bill created (user does not exist)", pr["number"])
+            return pull_request, None
+
+        diff_text = requests.get(pr["diff_url"], timeout=10).text
+
+        # pr["body"] is None if the body is empty
+        bill = Bill.objects.create_from_github(
+            pr["title"], pr["body"] or "", author, diff_text, pull_request
+        )
+
+        return pull_request, bill
 
     def closed(self, pr: dict[str, Any]) -> tuple[PullRequest | None, Bill | None]:
         """Disables the open bill associated with the pull request
