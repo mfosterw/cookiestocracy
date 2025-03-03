@@ -148,3 +148,15 @@ your django environment file as ``GITHUB_TOKEN``. Make sure it at least has writ
 access to your fork of the repository.
 
 .. _create a Github personal access token: https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens
+
+
+Running Tests Locally
+---------------------
+
+The easiest way to run tests is by running ``just test``. This will run the tests from
+the ``django`` Docker service so they have access to Postgres. To run the tests in the
+local environment, for example using the VSCode test runner, you must have PostgreSQL_
+installed on your computer. Django should automatically create a test database for you
+when you run the tests.
+
+.. _PostgreSQL: https://www.postgresql.org/download/

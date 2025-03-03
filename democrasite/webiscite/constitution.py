@@ -8,10 +8,8 @@ resulting in constitutional amendments
 
 import json
 from typing import TYPE_CHECKING
-from typing import cast
 
 from django.conf import settings
-from unidiff import Hunk
 from unidiff import PatchedFile
 from unidiff import PatchSet
 
@@ -26,7 +24,6 @@ def _check_hunks(hunks: PatchedFile, locks: list[list[int]]) -> bool:
     """Check if any portions of an edit overlap with constitutional protections"""
     HUNK_MIN_LENGTH = 7  # noqa: N806
     for hunk in hunks:
-        hunk = cast(Hunk, hunk)
         # diff shows 3 lines above and below for context
         # If the diff starts beyond line 1, remove the top 3 lines
         start = 1 if hunk.source_start == 1 else hunk.source_start + 3
@@ -69,15 +66,13 @@ def is_constitutional(diff_str: str) -> list[str]:
         diff_str: A string containing the output of a git diff
 
     Returns:
-        list[str]: A list containing the paths of files relative to the root of the
-        repository which include consitutionally protected edits
+        list[str]: A list of the files that include consitutionally protected edits
     """
     constitution = read_constitution()
     patch = PatchSet(diff_str)
     matched_files: list[str] = []
 
     for file in patch:
-        file = cast(PatchedFile, file)
         # Remove "a/" from start of source file path
         filepath = file.source_file[2:] if file.is_rename else file.path
         if filepath in constitution:
