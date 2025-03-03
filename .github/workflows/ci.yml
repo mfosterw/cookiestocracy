@@ -45,14 +45,17 @@ jobs:
       - name: Copy environment files
         run: cp -r .envs.template .envs
 
-      - name: Build the Stack
+      - name: Build the stack
         run: docker compose -f docker-compose.local.yml build django
 
-      - name: Run DB Migrations
+      - name: Run DB migrations
         run: docker compose -f docker-compose.local.yml run --rm django python manage.py migrate
 
-      - name: Run Django Tests
-        run: docker compose -f docker-compose.local.yml run django pytest
+      - name: Test with Pytest and Coverage
+        run: docker compose -f docker-compose.local.yml run django coverage run -m pytest
 
-      - name: Tear down the Stack
+      - name: Send Coverage report to Codecov
+        uses: codecov/codecov-action@v3
+
+      - name: Tear down the stack
         run: docker compose -f docker-compose.local.yml down
