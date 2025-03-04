@@ -14,14 +14,14 @@ from .models import User
 class UserAdminChangeForm(admin_forms.UserChangeForm):
     """Override UserChangeForm to use custom User model."""
 
-    class Meta(admin_forms.UserChangeForm.Meta):
+    class Meta(admin_forms.UserChangeForm.Meta):  # type: ignore[name-defined]
         model = User
 
 
 class UserAdminCreationForm(admin_forms.AdminUserCreationForm):
     """Override UserCreationForm to use custom User model."""
 
-    class Meta(admin_forms.UserCreationForm.Meta):
+    class Meta(admin_forms.UserCreationForm.Meta):  # type: ignore[name-defined]
         model = User
 
         error_messages = {

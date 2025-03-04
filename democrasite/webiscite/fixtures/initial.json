@@ -97,7 +97,7 @@
       "pull_request": -1,
       "status": "closed",
       "constitutional": false,
-      "submit_task": null
+      "_submit_task": 1
     }
   },
   {
@@ -113,7 +113,7 @@
       "pull_request": -1,
       "status": "failed",
       "constitutional": false,
-      "submit_task": null
+      "_submit_task": 2
     }
   },
   {
@@ -129,7 +129,7 @@
       "pull_request": -1,
       "status": "open",
       "constitutional": false,
-      "submit_task": null
+      "_submit_task": 3
     }
   },
   {
@@ -145,7 +145,7 @@
       "pull_request": -2,
       "status": "rejected",
       "constitutional": true,
-      "submit_task": null
+      "_submit_task": 4
     }
   },
   {
@@ -161,7 +161,7 @@
       "pull_request": -2,
       "status": "open",
       "constitutional": true,
-      "submit_task": null
+      "_submit_task": 5
     }
   },
   {
@@ -177,7 +177,84 @@
       "pull_request": -3,
       "status": "approved",
       "constitutional": true,
-      "submit_task": null
+      "_submit_task": 6
+    }
+  },
+  {
+    "model": "django_celery_beat.intervalschedule",
+    "pk": 1,
+    "fields": { "every": 7, "period": "days" }
+  },
+  {
+    "model": "django_celery_beat.periodictask",
+    "pk": 1,
+    "fields": {
+      "name": "bill_submit:1",
+      "task": "democrasite.webiscite.tasks.submit_bill",
+      "interval": 1,
+      "args": "[1]",
+      "enabled": false,
+      "date_changed": "2024-02-20T12:00:22.856Z"
+    }
+  },
+  {
+    "model": "django_celery_beat.periodictask",
+    "pk": 2,
+    "fields": {
+      "name": "bill_submit:2",
+      "task": "democrasite.webiscite.tasks.submit_bill",
+      "interval": 1,
+      "args": "[2]",
+      "enabled": false,
+      "date_changed": "2024-02-20T12:00:22.856Z"
+    }
+  },
+  {
+    "model": "django_celery_beat.periodictask",
+    "pk": 3,
+    "fields": {
+      "name": "bill_submit:3",
+      "task": "democrasite.webiscite.tasks.submit_bill",
+      "interval": 1,
+      "args": "[3]",
+      "enabled": false,
+      "date_changed": "2024-02-20T12:00:22.856Z"
+    }
+  },
+  {
+    "model": "django_celery_beat.periodictask",
+    "pk": 4,
+    "fields": {
+      "name": "bill_submit:4",
+      "task": "democrasite.webiscite.tasks.submit_bill",
+      "interval": 1,
+      "args": "[4]",
+      "enabled": false,
+      "date_changed": "2024-02-20T12:00:22.856Z"
+    }
+  },
+  {
+    "model": "django_celery_beat.periodictask",
+    "pk": 5,
+    "fields": {
+      "name": "bill_submit:5",
+      "task": "democrasite.webiscite.tasks.submit_bill",
+      "interval": 1,
+      "args": "[5]",
+      "enabled": false,
+      "date_changed": "2024-02-20T12:00:22.856Z"
+    }
+  },
+  {
+    "model": "django_celery_beat.periodictask",
+    "pk": 6,
+    "fields": {
+      "name": "bill_submit:6",
+      "task": "democrasite.webiscite.tasks.submit_bill",
+      "interval": 1,
+      "args": "[6]",
+      "enabled": false,
+      "date_changed": "2024-02-20T12:00:22.856Z"
     }
   }
 ]

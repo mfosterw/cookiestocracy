@@ -7,4 +7,5 @@ from .factories import BillFactory
 
 @pytest.fixture
 def bill() -> Bill:
-    return BillFactory()
+    """Create a Bill instance with status 'open'"""
+    return BillFactory.create()

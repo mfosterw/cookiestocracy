@@ -3,7 +3,7 @@ from http import HTTPStatus
 from importlib import reload
 
 import pytest
-from django.contrib.admin.sites import AlreadyRegistered
+from django.contrib.admin.exceptions import AlreadyRegistered
 from django.test import Client
 from django.urls import reverse
 from pytest_django.asserts import assertRedirects

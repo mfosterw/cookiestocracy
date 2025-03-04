@@ -18,8 +18,8 @@ from .factories import BillFactory
 
 class TestBillListView:
     def test_queryset(self):
-        open_bill = BillFactory(status=Bill.Status.OPEN)
-        closed_bill = BillFactory(status=Bill.Status.CLOSED)
+        open_bill = BillFactory.create(status=Bill.Status.OPEN)
+        closed_bill = BillFactory.create(status=Bill.Status.CLOSED)
 
         assert open_bill in views.BillListView.queryset
         assert closed_bill not in views.BillListView.queryset
@@ -129,7 +129,7 @@ class TestVoteView:
         request = rf.post("/fake-url/", data=data)
         request.user = user
 
-        bill = BillFactory(status=Bill.Status.CLOSED)
+        bill = BillFactory.create(status=Bill.Status.CLOSED)
         response = views.vote_view(request, bill.id)
 
         assert response.status_code == status
