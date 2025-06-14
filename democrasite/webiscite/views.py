@@ -41,7 +41,8 @@ class BillProposalsView(LoginRequiredMixin, ListView):
         """
         Return the list of items for this view - bills proposed by the current user.
         """
-        return self.request.user.bill_set.all()  # type: ignore [union-attr]
+        assert self.request.user.is_authenticated  # type guard
+        return self.request.user.bill_set.all()
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -62,7 +63,7 @@ class BillVotesView(LoginRequiredMixin, ListView):
         """
         Return the list of items for this view - bills voted on by the current user.
         """
-        assert self.request.user.is_authenticated
+        assert self.request.user.is_authenticated  # type guard
         return self.request.user.votes.all()
 
     def get_context_data(self, **kwargs):
@@ -100,7 +101,6 @@ class BillUpdateView(UserPassesTestMixin, SuccessMessageMixin, UpdateView):
 bill_update_view = BillUpdateView.as_view()
 
 
-# Use vote_view below, this would be decorated if possible
 @require_POST
 def vote_view(request: http.HttpRequest, pk: int) -> http.HttpResponse:
     """View for ajax request made when a user votes on a bill

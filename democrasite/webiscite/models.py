@@ -158,7 +158,7 @@ class BillManager[T](models.Manager):
             The task that was scheduled
         """
         # This can be extracted to a signal if we want to support other creation methods
-        voting_ends, _ = IntervalSchedule.objects.get_or_create(
+        voting_ends, __ = IntervalSchedule.objects.get_or_create(
             every=settings.WEBISCITE_VOTING_PERIOD, period=IntervalSchedule.DAYS
         )
 
@@ -247,8 +247,16 @@ class Bill(StatusModel, TimeStampedModel):
         If the user already voted the way the method would set, their vote is
         removed from the bill (i.e. if ``user`` is in ``bill.yes_votes`` and support is
         ``True``, ``user`` is removed from ``bill.yes_votes``)
+
+        Args:
+            user (User): The user voting on the bill
+            support (bool): Whether the user supports the bill
+
+        Raises:
+            ValueError: If the bill is not open for voting
         """
-        assert self.status == self.Status.OPEN, "Only open bills may be voted on"
+        if self.status != self.Status.OPEN:
+            raise ValueError("Only open bills may be voted on")
 
         try:
             vote: Vote = self.vote_set.get(user=user)

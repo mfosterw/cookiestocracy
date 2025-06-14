@@ -18,7 +18,7 @@ class UserAdminChangeForm(admin_forms.UserChangeForm):
         model = User
 
 
-class UserAdminCreationForm(admin_forms.AdminUserCreationForm):
+class UserAdminCreationForm(admin_forms.AdminUserCreationForm):  # type: ignore[name-defined]
     """Override UserCreationForm to use custom User model."""
 
     class Meta(admin_forms.UserCreationForm.Meta):  # type: ignore[name-defined]
