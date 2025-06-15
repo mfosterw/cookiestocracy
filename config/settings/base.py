@@ -69,6 +69,7 @@ THIRD_PARTY_APPS = [
     "allauth.account",
     "allauth.socialaccount",
     "django_celery_beat",
+    "mptt",
     # django rest framework
     "rest_framework",
     "rest_framework.authtoken",
@@ -83,6 +84,7 @@ LOCAL_APPS = [
     # Custom apps
     "democrasite.users",
     "democrasite.webiscite",
+    "democrasite.activitypub",
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS

@@ -44,3 +44,14 @@ body {
   text-align: justify;
   text-align-last: center;
 }
+
+.note-create {
+  position: fixed;
+  bottom: 10px;
+  right: 5%;
+}
+
+.reply-link {
+  z-index: 2;
+  position: relative;
+}

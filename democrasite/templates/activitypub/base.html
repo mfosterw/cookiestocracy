@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}
+  {% block sub_title %}
+  {% endblock sub_title %}
+  - ActivityPub on Democrasite
+{% endblock title %}
+
+{% block nav_user_pages %}
+  <li class="nav-item">
+    <a class="nav-link" href="{% url 'activitypub:note-list' %}">Notes</a>
+  </li>
+  {# Add profile links #}
+{% endblock nav_user_pages %}
+
+{% block content %}
+  {% block note_content %}
+  {% endblock note_content %}
+
+  {% if user.is_authenticated %}
+    {% block post_button %}
+      {# wrap in block to allow hiding e.g. in note_form #}
+      <div class="note-create text-center mb-3">
+        {% if user.person %}
+          <a href="{% url 'activitypub:note-create' %}"
+             class="btn btn-dark rounded-pill">Create Note</a>
+        {% else %}
+          <form action="{% url 'activitypub:person-create' %}" method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-dark rounded-pill">Create Profile</button>
+          </form>
+        {% endif %}
+      </div>
+    {% endblock post_button %}
+  {% endif %}
+{% endblock content %}
