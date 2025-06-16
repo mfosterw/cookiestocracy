@@ -5,10 +5,10 @@ from django.contrib.auth.mixins import UserPassesTestMixin
 from django.http import HttpRequest
 from django.http import HttpResponseRedirect
 from django.urls import reverse
-from django.urls import reverse_lazy
 from django.views.generic import CreateView
 from django.views.generic import DetailView
 from django.views.generic import ListView
+from django.views.generic import UpdateView
 
 from .models import Note
 from .models import Person
@@ -96,11 +96,6 @@ class NoteReplyView(UserProfileMixin, CreateView):
     model = Note
     fields = ["content"]
 
-    def get_initial(self):
-        initial = super().get_initial()
-        initial["in_reply_to"] = self.kwargs["pk"]
-        return initial
-
     def form_valid(self, form):
         assert self.request.user.is_authenticated  # type guard
         form.instance.author = self.request.user.person
@@ -111,10 +106,25 @@ class NoteReplyView(UserProfileMixin, CreateView):
 note_reply_view = NoteReplyView.as_view()
 
 
+class PersonDetailView(UserProfileMixin, DetailView):
+    model = Person
+
+    slug_field = "user__username"
+    slug_url_kwarg = "username"
+
+    def get_object(self, queryset=None):
+        """Get the Person object by username."""
+        person = super().get_object(queryset)
+        person.ordered_notes = person.notes.order_by("-created").all()
+        return person
+
+
+person_detail_view = PersonDetailView.as_view()
+
+
 class PersonCreateView(UserPassesTestMixin, CreateView):
     model = Person
     fields = []
-    success_url = reverse_lazy("activitypub:note-list")
 
     def form_valid(self, form: "ModelForm[Person]"):
         assert self.request.user.is_authenticated  # type guard
@@ -133,5 +143,23 @@ class PersonCreateView(UserPassesTestMixin, CreateView):
         except Person.DoesNotExist:
             return True
 
+    def get_success_url(self):
+        """Redirect to the note list after creating a Person profile."""
+        messages.success(self.request, "Your ActivityPub profile has been created.")
+        return reverse("activitypub:note-list")
+
 
 person_create_view = PersonCreateView.as_view()
+
+
+class PersonUpdateView(UserProfileMixin, UpdateView):
+    model = Person
+    fields = ["bio"]
+
+    def get_object(self, queryset=None):
+        """Get the Person object for the current user."""
+        assert self.request.user.is_authenticated  # type guard
+        return self.request.user.person
+
+
+person_update_view = PersonUpdateView.as_view()

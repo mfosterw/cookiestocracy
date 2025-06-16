@@ -16,7 +16,7 @@ class PersonManager(models.Manager):
         return super().get_queryset().select_related("user")
 
 
-class Person(models.Model):  # type: ignore[django-manager-missing] # Issue caused by mptt
+class Person(TimeStampedModel):  # type: ignore[django-manager-missing] # Issue caused by mptt
     """A person in the ActivityPub network, linked to a Django User."""
 
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -29,6 +29,10 @@ class Person(models.Model):  # type: ignore[django-manager-missing] # Issue caus
         blank=True,
         help_text=_("People this person is following"),
     )
+    bio = models.TextField(
+        blank=True,
+        help_text=_("A short biography or description of the person"),
+    )
 
     objects = PersonManager()
 
@@ -37,6 +41,25 @@ class Person(models.Model):  # type: ignore[django-manager-missing] # Issue caus
 
     def __str__(self):
         return f"Person: {self.user.username}"
+
+    @property
+    def display_name(self):
+        """Get the display name for the person.
+
+        Returns:
+            str: The username of the person.
+        """
+        return self.user.username
+
+    def get_absolute_url(self):
+        """Get the URL for the person's detail view.
+
+        Returns:
+            str: URL for the person detail.
+        """
+        return reverse(
+            "activitypub:person-detail", kwargs={"username": self.user.username}
+        )
 
 
 class Note(TimeStampedModel, MPTTModel):  # type: ignore[django-manager-missing] # Issue caused by mptt
@@ -55,6 +78,10 @@ class Note(TimeStampedModel, MPTTModel):  # type: ignore[django-manager-missing]
     class MPTTMeta:
         order_insertion_by = ["created"]
         parent_attr = "in_reply_to"
+
+    class Meta:
+        # TODO: determine why queryset ordering is not being applied
+        ordering = ["-created"]
 
     def __str__(self):
         preview_length = 10

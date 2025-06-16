@@ -4,7 +4,7 @@
 {% load crispy_forms_tags %}
 
 {% block sub_title %}
-  {% trans 'Create Note' %}
+  {% trans 'Update Bio' %}
 {% endblock sub_title %}
 
 {# content, not activitypub_content, so vote button is removed #}
@@ -14,7 +14,7 @@
     {{ form|crispy }}
     <div class="control-group">
       <div class="controls">
-        <button type="submit" class="btn btn-primary">{% trans 'Post' %}</button>
+        <button type="submit" class="btn btn-primary">{% trans 'Update' %}</button>
       </div>
     </div>
   </form>
