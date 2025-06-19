@@ -1,5 +1,6 @@
 from typing import TYPE_CHECKING
 
+from django import forms
 from django.contrib import messages
 from django.contrib.auth.mixins import UserPassesTestMixin
 from django.http import HttpRequest
@@ -79,9 +80,25 @@ class NoteDetailView(DetailView):
 note_detail_view = NoteDetailView.as_view()
 
 
+class NoteForm(forms.ModelForm):
+    """Form for creating or replying to a note."""
+
+    content = forms.CharField(
+        max_length=500,
+        widget=forms.Textarea(
+            attrs={"rows": 3, "placeholder": "Share your thoughts..."}
+        ),
+        help_text="Your note content (max 500 characters).",
+    )
+
+    class Meta:
+        model = Note
+        fields = ["content"]
+
+
 class NoteCreateView(UserProfileMixin, CreateView):
     model = Note
-    fields = ["content"]
+    form_class = NoteForm
 
     def form_valid(self, form):
         assert self.request.user.is_authenticated  # type guard
@@ -94,7 +111,7 @@ note_create_view = NoteCreateView.as_view()
 
 class NoteReplyView(UserProfileMixin, CreateView):
     model = Note
-    fields = ["content"]
+    form_class = NoteForm
 
     def form_valid(self, form):
         assert self.request.user.is_authenticated  # type guard
@@ -152,9 +169,23 @@ class PersonCreateView(UserPassesTestMixin, CreateView):
 person_create_view = PersonCreateView.as_view()
 
 
+class PersonForm(forms.ModelForm):
+    """Form for creating or updating a person's profile."""
+
+    bio = forms.CharField(
+        max_length=500,
+        widget=forms.Textarea(attrs={"rows": 3, "placeholder": "Describe yourself"}),
+        help_text="Your bio content (max 500 characters).",
+    )
+
+    class Meta:
+        model = Person
+        fields = ["bio"]
+
+
 class PersonUpdateView(UserProfileMixin, UpdateView):
     model = Person
-    fields = ["bio"]
+    form_class = PersonForm
 
     def get_object(self, queryset=None):
         """Get the Person object for the current user."""

@@ -51,7 +51,7 @@ body {
   right: 5%;
 }
 
-.reply-link {
+.note a:not(.stretched-link) {
   z-index: 2;
   position: relative;
 }
