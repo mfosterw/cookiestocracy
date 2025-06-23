@@ -28,6 +28,6 @@
     </div>
   </div>
 
-  {% include "activitypub/snippets/note_list.html" with note_list=person.ordered_notes empty_message="This user hasn't posted anything yet." %}
+  {% include "activitypub/snippets/note_list.html" with note_list=note_list empty_message="This user hasn't posted anything yet." %}
 
 {% endblock activitypub_content %}

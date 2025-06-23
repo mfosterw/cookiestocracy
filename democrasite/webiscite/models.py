@@ -61,8 +61,8 @@ class PullRequestManager[T](models.Manager):
             },
         )
 
-        act = "created" if created else "updated"
-        logger.info("PR %s: Pull request %s", pr["number"], act)
+        action = "created" if created else "updated"
+        logger.info("PR %s: Pull request %s", pr["number"], action)
         return pull_request
 
 
@@ -256,7 +256,7 @@ class Bill(StatusModel, TimeStampedModel):
             ValueError: If the bill is not open for voting
         """
         if self.status != self.Status.OPEN:
-            raise ValueError("Only open bills may be voted on")
+            raise ValueError("Bill is not open for voting")
 
         try:
             vote: Vote = self.vote_set.get(user=user)

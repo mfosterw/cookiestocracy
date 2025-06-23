@@ -4,6 +4,7 @@ from http import HTTPStatus
 import pytest
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
+from django.core.exceptions import PermissionDenied
 from django.http import HttpResponseRedirect
 from django.test import Client
 from django.test import RequestFactory
@@ -27,7 +28,7 @@ class TestBillListView:
 
 class TestBillProposalsView:
     def test_get_queryset(self, bill: Bill, rf: RequestFactory):
-        assert bill.author is not None  # Silences mypy and better than ignore imo
+        assert bill.author is not None  # type guard
 
         view = views.BillProposalsView()
         request = rf.get("/fake-url/")
@@ -42,7 +43,7 @@ class TestBillProposalsView:
 
 
 class TestBillVotesView:
-    def test_get_queryset(self, rf: RequestFactory, bill: Bill):
+    def test_get_queryset(self, bill: Bill, rf: RequestFactory):
         # Note that this function depends heavily on the vote method, which is tested in
         # test_models.py
         user = bill.author  # could be any user, this is just for convenience
@@ -74,30 +75,34 @@ class TestBillDetailView:
 
 
 class TestBillUpdateView:
-    def test_test_func(self, bill: Bill, rf: RequestFactory):
-        assert bill.author is not None  # Also silences mypy
+    def test_test_func(self, user: User, rf: RequestFactory, bill: Bill):
+        # Unauthenticated
+        noauth_request = rf.get("/fake-url/")
+        noauth_request.user = AnonymousUser()
 
-        # Expect redirect because request fails test
-        bad_request = rf.get("/fake-url/")
-        bad_request.user = AnonymousUser()
+        noauth_response = views.bill_update_view(noauth_request, pk=bill.id)
 
-        bad_response = views.bill_update_view(bad_request, pk=bill.id)
+        assert isinstance(noauth_response, HttpResponseRedirect)
+        assert noauth_response.status_code == HTTPStatus.FOUND
+        assert noauth_response.url == f"{reverse(settings.LOGIN_URL)}?next=/fake-url/"
 
-        assert isinstance(bad_response, HttpResponseRedirect)
-        assert bad_response.status_code == HTTPStatus.FOUND
-        assert bad_response.url == f"{reverse(settings.LOGIN_URL)}?next=/fake-url/"
+        # Authenticated, not author
+        not_author_request = rf.get("/fake-url/")
+        not_author_request.user = user
 
-        # Expect success response because request passes test
-        good_request = rf.get("/fake-url/")
-        good_request.user = bill.author
+        with pytest.raises(PermissionDenied):
+            views.bill_update_view(not_author_request, pk=bill.id)
 
-        good_response = views.bill_update_view(good_request, pk=bill.id)
+        # Authenticated as author
+        author_request = rf.get("/fake-url/")
+        author_request.user = bill.author
 
-        assert good_response.status_code == HTTPStatus.OK
+        author_response = views.bill_update_view(author_request, pk=bill.id)
+
+        assert author_response.status_code == HTTPStatus.OK
 
     def test_messages(self, bill: Bill, client: Client):
         """Tests that bills update and emit proper messages afterwards"""
-        assert bill.author is not None  # Silences mypy
         client.force_login(bill.author)
 
         response = client.post(
@@ -106,8 +111,8 @@ class TestBillUpdateView:
             follow=True,
         )
 
-        messages_sent = [m.message for m in response.context["messages"]]
-        assert messages_sent == ["Information successfully updated"]
+        messages = [m.message for m in response.context["messages"]]
+        assert messages == ["Information successfully updated"]
 
 
 class TestVoteView:

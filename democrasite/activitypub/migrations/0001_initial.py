@@ -10,8 +10,6 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    replaces = [('activitypub', '0001_initial'), ('activitypub', '0002_alter_person_options_alter_person_following_and_more'), ('activitypub', '0003_alter_person_options_alter_person_following_and_more'), ('activitypub', '0004_person_bio_person_created_person_modified'), ('activitypub', '0005_alter_note_options'), ('activitypub', '0006_alter_note_options'), ('activitypub', '0007_alter_note_options')]
-
     initial = True
 
     dependencies = [

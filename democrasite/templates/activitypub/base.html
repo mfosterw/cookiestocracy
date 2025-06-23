@@ -8,8 +8,15 @@
 
 {% block nav_user_pages %}
   <li class="nav-item">
-    <a class="nav-link"
-       href="{% url 'activitypub:person-detail' username=user.username %}">Profile</a>
+    {% if user.person %}
+      <a class="nav-link"
+         href="{% url 'activitypub:person-detail' username=user.username %}">Profile</a>
+    {% else %}
+      <form action="{% url 'activitypub:person-create' %}" method="post">
+        {% csrf_token %}
+        <button class="btn btn-link nav-link" type="submit">Create Profile</button>
+      </form>
+    {% endif %}
   </li>
   {# Add profile links #}
 {% endblock nav_user_pages %}

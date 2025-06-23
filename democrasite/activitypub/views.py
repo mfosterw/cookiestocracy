@@ -62,17 +62,6 @@ class UserFollowingNotesView(UserProfileMixin, ListView):
 user_following_notes_view = UserFollowingNotesView.as_view()
 
 
-class UserNotesView(UserProfileMixin, ListView):
-    model = Note
-
-    def get_queryset(self):
-        assert self.request.user.is_authenticated  # type guard
-        return self.request.user.person.notes.order_by("-created")
-
-
-user_notes_view = UserNotesView.as_view()
-
-
 class NoteDetailView(DetailView):
     model = Note
 
@@ -123,17 +112,16 @@ class NoteReplyView(UserProfileMixin, CreateView):
 note_reply_view = NoteReplyView.as_view()
 
 
-class PersonDetailView(UserProfileMixin, DetailView):
+class PersonDetailView(DetailView):
     model = Person
 
     slug_field = "user__username"
     slug_url_kwarg = "username"
 
-    def get_object(self, queryset=None):
-        """Get the Person object by username."""
-        person = super().get_object(queryset)
-        person.ordered_notes = person.notes.order_by("-created").all()
-        return person
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["note_list"] = self.object.notes.order_by("-created").all()
+        return context
 
 
 person_detail_view = PersonDetailView.as_view()
@@ -158,12 +146,8 @@ class PersonCreateView(UserPassesTestMixin, CreateView):
             if self.request.user.person:
                 return False
         except Person.DoesNotExist:
-            return True
-
-    def get_success_url(self):
-        """Redirect to the note list after creating a Person profile."""
-        messages.success(self.request, "Your ActivityPub profile has been created.")
-        return reverse("activitypub:note-list")
+            pass
+        return True
 
 
 person_create_view = PersonCreateView.as_view()
@@ -174,6 +158,7 @@ class PersonForm(forms.ModelForm):
 
     bio = forms.CharField(
         max_length=500,
+        required=False,
         widget=forms.Textarea(attrs={"rows": 3, "placeholder": "Describe yourself"}),
         help_text="Your bio content (max 500 characters).",
     )
