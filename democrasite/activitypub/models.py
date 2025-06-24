@@ -97,18 +97,3 @@ class Note(TimeStampedModel, MPTTModel):  # type: ignore[django-manager-missing]
             str: URL for the note detail.
         """
         return reverse("activitypub:note-detail", kwargs={"pk": self.pk})
-
-    def get_display_replies(self, max_depth=5) -> models.QuerySet:
-        """Get direct replies and their leftmost descendant up to a specified depth.
-
-        Args:
-            max_depth (int, optional): The maximum depth to retrieve replies to children
-            for, including the child level. Defaults to 5.
-
-        Returns:
-            models.QuerySet: A queryset of the relevant replies.
-        """
-        q = models.Q(level__lt=self.level + max_depth) & (
-            models.Q(in_reply_to=self) | models.Q(lft__isnull=True)
-        )
-        return self.get_descendants().filter(q)

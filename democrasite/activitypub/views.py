@@ -15,7 +15,7 @@ from .models import Note
 from .models import Person
 
 if TYPE_CHECKING:
-    from django.forms import ModelForm
+    from django.forms import ModelForm  # pragma: no cover
 
 
 class NoteListView(ListView):
