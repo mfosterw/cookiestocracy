@@ -1,0 +1,18 @@
+<div class="note">
+  <p class="mb-1">{{ note.content }}</p>
+  <small>Posted by: <a href="{% url 'activitypub:person-detail' username=note.author.display_name %}">{{ note.author.display_name }}</a> on {{ note.created|date:"Y-m-d H:i" }}</small>
+  {% if note.in_reply_to %}
+    <br />
+    <small>In reply to: <a href="{% url 'activitypub:note-detail' note.in_reply_to.id %}">{{ note.in_reply_to.content|truncatewords:10 }}</a></small>
+  {% endif %}
+  {% if user.person %}
+    <a class="float-right text-secondary raised-link"
+       href="{% url 'activitypub:note-reply' note.id %}">
+      <small>Reply</small>
+    </a>
+  {% endif %}
+  {% if not detail %}
+    <a href="{% url 'activitypub:note-detail' note.id %}"
+       class="stretched-link"></a>
+  {% endif %}
+</div>
