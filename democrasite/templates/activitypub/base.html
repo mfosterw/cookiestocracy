@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 
+{% load static %}
+
 {% block title %}
   {% block sub_title %}
   {% endblock sub_title %}
@@ -39,3 +41,9 @@
     </div>
   {% endif %}
 {% endblock content %}
+
+{% if user.person %}
+  {% block inline_javascript %}
+    <script type="text/javascript" src="{% static 'js/note_interact.js' %}"></script>
+  {% endblock inline_javascript %}
+{% endif %}

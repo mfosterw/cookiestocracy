@@ -55,3 +55,9 @@ body {
   z-index: 2;
   position: relative;
 }
+
+/* TODO: remove when upgrading to Bootstrap 5 */
+.note-interaction:hover {
+  opacity: 75%;
+  text-decoration: none;
+}

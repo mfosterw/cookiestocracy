@@ -1,11 +1,15 @@
+from http import HTTPStatus
 from typing import TYPE_CHECKING
 
 from django import forms
+from django import http
 from django.contrib import messages
 from django.contrib.auth.mixins import UserPassesTestMixin
 from django.http import HttpRequest
 from django.http import HttpResponseRedirect
+from django.shortcuts import get_object_or_404
 from django.urls import reverse
+from django.views.decorators.http import require_POST
 from django.views.generic import CreateView
 from django.views.generic import DetailView
 from django.views.generic import ListView
@@ -20,8 +24,6 @@ if TYPE_CHECKING:
 
 class NoteListView(ListView):
     model = Note
-
-    queryset = Note.objects.all().order_by("-created")
 
 
 note_list_view = NoteListView.as_view()
@@ -54,9 +56,7 @@ class UserFollowingNotesView(UserProfileMixin, ListView):
 
     def get_queryset(self):
         assert self.request.user.is_authenticated  # type guard
-        return Note.objects.filter(
-            author__in=self.request.user.person.following.all()
-        ).order_by("-created")
+        return Note.objects.filter(author__in=self.request.user.person.following.all())
 
 
 user_following_notes_view = UserFollowingNotesView.as_view()
@@ -112,7 +112,33 @@ class NoteReplyView(UserProfileMixin, CreateView):
 note_reply_view = NoteReplyView.as_view()
 
 
-class PersonDetailView(DetailView):
+@require_POST
+def note_like_view(request: HttpRequest, pk: int) -> http.HttpResponse:
+    if not request.user.is_authenticated:
+        return http.HttpResponse("Login required", status=HTTPStatus.UNAUTHORIZED)
+    if not hasattr(request.user, "person"):
+        return http.HttpResponse("Profile required", status=HTTPStatus.FORBIDDEN)
+
+    note = get_object_or_404(Note, pk=pk)
+    note.like(request.user.person)
+
+    return http.JsonResponse({"likes": note.likes.count()})
+
+
+@require_POST
+def note_repost_view(request: HttpRequest, pk: int) -> http.HttpResponse:
+    if not request.user.is_authenticated:
+        return http.HttpResponse("Login required", status=HTTPStatus.UNAUTHORIZED)
+    if not hasattr(request.user, "person"):
+        return http.HttpResponse("Profile required", status=HTTPStatus.FORBIDDEN)
+
+    note = get_object_or_404(Note, pk=pk)
+    note.repost(request.user.person)
+
+    return http.JsonResponse({"reposts": note.reposts.count()})
+
+
+class PersonDetailView(DetailView[Person]):
     model = Person
 
     slug_field = "user__username"
@@ -120,7 +146,7 @@ class PersonDetailView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["note_list"] = self.object.notes.order_by("-created").all()
+        context["note_list"] = Note.objects.get_person_notes(self.object)
         return context
 
 

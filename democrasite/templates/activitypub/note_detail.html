@@ -15,7 +15,7 @@
   </div>
 
   <div class="row justify-content-center mb-3">
-    <div class="col-8">{% include "activitypub/snippets/note.html" %}</div>
+    <div class="col-8">{% include "activitypub/snippets/note.html" with detail=True %}</div>
   </div>
 
   {% include "activitypub/snippets/note_list.html" with note_list=note.get_children empty_message="No replies yet." %}

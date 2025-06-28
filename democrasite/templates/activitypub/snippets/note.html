@@ -1,12 +1,43 @@
 <div class="note">
   <p class="mb-1">{{ note.content }}</p>
   <small>Posted by: <a href="{% url 'activitypub:person-detail' username=note.author.display_name %}">{{ note.author.display_name }}</a> on {{ note.created|date:"Y-m-d H:i" }}</small>
+  {% if note.reposted_by %}
+    <br />
+    <small class="pt-0 ml-3">Reposted by: <a href="{% url 'activitypub:person-detail' username=note.reposted_by %}">{{ note.reposted_by }}</a> on {{ note.reposted_at|date:"Y-m-d H:i" }}</small>
+  {% endif %}
   {% if note.in_reply_to %}
     <br />
     <small>In reply to: <a href="{% url 'activitypub:note-detail' note.in_reply_to.id %}">{{ note.in_reply_to.content|truncatewords:10 }}</a></small>
   {% endif %}
   {% if user.person %}
-    <a class="float-right text-secondary raised-link"
+    <br />
+    <a href="javascript:;"
+       class="link-opacity-25-hover link-underline link-underline-opacity-0-hover note-interaction"
+       title="Like this note">
+      <i class="bi
+                {% if user.person in note.likes.all %}
+                  bi-heart-fill
+                {% else %}
+                  bi-heart
+                {% endif %}
+                text-danger note-like"
+         action="{% url 'activitypub:note-like' note.id %}"></i>
+    </a>
+    <small class="text-secondary note-like-count">{{ note.likes.count }}</small>
+    <a href="javascript:;"
+       class="link-opacity-25-hover link-underline link-underline-opacity-0-hover note-interaction"
+       title="Repost this note">
+      <i class="bi bi-repeat
+                {% if user.person in note.reposts.all %}
+                  text-success
+                {% else %}
+                  text-secondary
+                {% endif %}
+                note-repost"
+         action="{% url 'activitypub:note-repost' note.id %}"></i>
+    </a>
+    <small class="text-secondary note-repost-count">{{ note.reposts.count }}</small>
+    <a class="float-right text-secondary"
        href="{% url 'activitypub:note-reply' note.id %}">
       <small>Reply</small>
     </a>
