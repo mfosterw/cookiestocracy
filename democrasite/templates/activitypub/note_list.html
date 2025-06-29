@@ -5,11 +5,5 @@
 {% endblock sub_title %}
 
 {% block activitypub_content %}
-  <div class="row justify-content-center">
-    <div class="col-8">
-      <h1 class="text-center">ActivityPub Notes</h1>
-      <p class="text-center">Here you can find all the notes posted by users.</p>
-    </div>
-  </div>
   {% include "activitypub/snippets/note_list.html" with note_list=note_list empty_message="No notes available" %}
 {% endblock activitypub_content %}

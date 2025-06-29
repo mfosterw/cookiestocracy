@@ -10,16 +10,25 @@
 
 {% block nav_user_pages %}
   <li class="nav-item">
-    {% if user.person %}
+    <a class="nav-link" href="{% url 'activitypub:note-list' %}">Notes</a>
+  </li>
+  {% if user.person %}
+    <li class="nav-item">
+      <a class="nav-link" href="{% url 'activitypub:following-notes' %}">Following</a>
+    </li>
+    <li class="nav-item">
       <a class="nav-link"
          href="{% url 'activitypub:person-detail' username=user.username %}">Profile</a>
-    {% else %}
+    </li>
+  {% else %}
+    <li class="nav-item">
       <form action="{% url 'activitypub:person-create' %}" method="post">
         {% csrf_token %}
         <button class="btn btn-link nav-link" type="submit">Create Profile</button>
       </form>
-    {% endif %}
-  </li>
+    </li>
+  {% endif %}
+
   {# Add profile links #}
 {% endblock nav_user_pages %}
 

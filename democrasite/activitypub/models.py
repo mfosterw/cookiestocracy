@@ -17,7 +17,7 @@ class PersonManager(models.Manager):
         return super().get_queryset().select_related("user")
 
 
-class Person(TimeStampedModel):  # type: ignore[django-manager-missing] # Issue caused by mptt
+class Person(TimeStampedModel):
     """A person in the ActivityPub network, linked to a Django User."""
 
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -41,7 +41,7 @@ class Person(TimeStampedModel):  # type: ignore[django-manager-missing] # Issue 
         verbose_name_plural = "People"
 
     def __str__(self):
-        return f"Person: {self.user.username}"
+        return self.display_name
 
     @property
     def display_name(self):
@@ -62,6 +62,30 @@ class Person(TimeStampedModel):  # type: ignore[django-manager-missing] # Issue 
             "activitypub:person-detail", kwargs={"username": self.display_name}
         )
 
+    def followed_by(self, person: "Person") -> bool:
+        """Check if a person is following this person.
+
+        Args:
+            person (Person): The person to check for a follow.
+        Returns:
+            bool: True if the person is following this person, False otherwise.
+        """
+        return self.followers.filter(id=person.id).exists()
+
+    def follow(self, person: "Person") -> bool:
+        """Toggle a follow on this person for another person.
+
+        Args:
+            person (Person): The person following or unfollowing this person.
+        Returns:
+            bool: True if the follow was added, False if it was removed.
+        """
+        if self.followed_by(person):
+            self.followers.remove(person)
+            return False
+        self.followers.add(person)
+        return True
+
 
 class Like(models.Model):
     """A model to represent a like on a Note by a Person."""
@@ -75,7 +99,7 @@ class Like(models.Model):
         ordering = ["-created"]
 
     def __str__(self):
-        return f'{self.person.display_name} liked "{self.note}"'
+        return f'{self.person} liked "{self.note}"'
 
 
 class Repost(models.Model):
@@ -90,7 +114,7 @@ class Repost(models.Model):
         ordering = ["-created"]
 
     def __str__(self):
-        return f'{self.person.display_name} reposted "{self.note}"'
+        return f'{self.person} reposted "{self.note}"'
 
 
 class NoteManager[T](TreeManager):
@@ -113,26 +137,66 @@ class NoteManager[T](TreeManager):
         Returns:
             models.QuerySet[T]: A queryset of notes and reposts ordered by time.
         """
-        reposts = (
-            person.reposts.annotate(reposted_by=models.Value(person.display_name))
-            .annotate(reposted_at=models.F("repost__created"))
-            .annotate(order_time=models.F("reposted_at"))
+        reposts = person.reposts.annotate(
+            reposted_by=models.Value(person.display_name),
+            reposted_at=models.F("repost__created"),
+            order_time=models.F("reposted_at"),
         )
 
-        return (
-            person.notes.annotate(
-                reposted_by=models.Value(None, output_field=models.TextField())
-            )
+        posts = person.notes.annotate(
+            reposted_by=models.Value(None, output_field=models.TextField()),
+            reposted_at=models.Value(None, output_field=models.DateTimeField()),
+            order_time=models.F("created"),
+        )
+        return posts.union(reposts).order_by("-order_time")
+
+    def get_person_following_notes(self, person: Person) -> models.QuerySet[T]:
+        """Get notes from people the person is following.
+
+        This method retrieves all notes authored or reposted by people that the
+        specified person is following, ordered by the creation or repost time of the
+        notes. This method removes duplicate notes.
+
+        Args:
+            person (Person): The person whose following notes are to be retrieved.
+
+        Returns:
+            models.QuerySet[T]: A queryset of notes and reposts from followed persons,
+            ordered by time.
+        """
+        following = person.following.all()
+
+        reposts = (  # Get most recent repost from followed persons for each note
+            self.model.reposts.through.objects.filter(person__in=following)
+            .order_by("note_id", "-created")
+            .values("pk")
+            .distinct()
+        )
+
+        repost_notes = self.filter(repost__in=reposts).order_by()
+
+        posts = (
+            self.filter(author__in=following)
+            # TODO: this is probably very inefficient
+            .exclude(pk__in=repost_notes.values("pk"))
             .annotate(
-                reposted_at=models.Value(None, output_field=models.DateTimeField())
+                reposted_by=models.Value(None, output_field=models.TextField()),
+                reposted_at=models.Value(None, output_field=models.DateTimeField()),
+                order_time=models.F("created"),
             )
-            .annotate(order_time=models.F("created"))
-            .union(reposts)
-            .order_by("-order_time")
+            .order_by()  # clear default ordering
         )
 
+        repost_notes = repost_notes.annotate(
+            reposted_by=models.F("repost__person__user__username"),
+            reposted_at=models.F("repost__created"),
+            order_time=models.F("reposted_at"),
+        )
 
-class Note(TimeStampedModel, MPTTModel):  # type: ignore[django-manager-missing] # Issue caused by mptt
+        return repost_notes.union(posts).order_by("-order_time")
+
+
+class Note(TimeStampedModel, MPTTModel):
     """A note in the ActivityPub network, representing a short piece of content."""
 
     author = models.ForeignKey(Person, on_delete=models.PROTECT, related_name="notes")

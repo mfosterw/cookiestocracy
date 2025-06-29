@@ -1,6 +1,6 @@
 <div class="note">
   <p class="mb-1">{{ note.content }}</p>
-  <small>Posted by: <a href="{% url 'activitypub:person-detail' username=note.author.display_name %}">{{ note.author.display_name }}</a> on {{ note.created|date:"Y-m-d H:i" }}</small>
+  <small>Posted by: <a href="{% url 'activitypub:person-detail' username=note.author.display_name %}">{{ note.author }}</a> on {{ note.created|date:"Y-m-d H:i" }}</small>
   {% if note.reposted_by %}
     <br />
     <small class="pt-0 ml-3">Reposted by: <a href="{% url 'activitypub:person-detail' username=note.reposted_by %}">{{ note.reposted_by }}</a> on {{ note.reposted_at|date:"Y-m-d H:i" }}</small>

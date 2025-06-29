@@ -7,6 +7,7 @@ from django.contrib import messages
 from django.contrib.auth.mixins import UserPassesTestMixin
 from django.http import HttpRequest
 from django.http import HttpResponseRedirect
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.views.decorators.http import require_POST
@@ -49,17 +50,6 @@ class UserProfileMixin(UserPassesTestMixin):
             self.request, "You must have an ActivityPub profile to access this page."
         )
         return HttpResponseRedirect(reverse("activitypub:note-list"))
-
-
-class UserFollowingNotesView(UserProfileMixin, ListView):
-    model = Note
-
-    def get_queryset(self):
-        assert self.request.user.is_authenticated  # type guard
-        return Note.objects.filter(author__in=self.request.user.person.following.all())
-
-
-user_following_notes_view = UserFollowingNotesView.as_view()
 
 
 class NoteDetailView(DetailView):
@@ -147,6 +137,10 @@ class PersonDetailView(DetailView[Person]):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["note_list"] = Note.objects.get_person_notes(self.object)
+        if hasattr(self.request.user, "person"):
+            context["user_following_person"] = (
+                self.request.user.person.following.filter(pk=self.object.pk).exists()
+            )
         return context
 
 
@@ -205,3 +199,28 @@ class PersonUpdateView(UserProfileMixin, UpdateView):
 
 
 person_update_view = PersonUpdateView.as_view()
+
+
+class PersonFollowingNotesView(UserProfileMixin, ListView):
+    model = Note
+
+    def get_queryset(self):
+        assert self.request.user.is_authenticated  # type guard
+        return Note.objects.get_person_following_notes(self.request.user.person)
+
+
+person_following_notes_view = PersonFollowingNotesView.as_view()
+
+
+@require_POST
+def person_follow_view(request: HttpRequest, username: str) -> http.HttpResponse:
+    """Follow a user by username."""
+    if not request.user.is_authenticated:
+        return http.HttpResponse("Login required", status=HTTPStatus.UNAUTHORIZED)
+    if not hasattr(request.user, "person"):
+        return http.HttpResponse("Profile required", status=HTTPStatus.FORBIDDEN)
+
+    person = get_object_or_404(Person, user__username=username)
+    request.user.person.following.add(person)
+
+    return JsonResponse({"followers": person.followers.count()})

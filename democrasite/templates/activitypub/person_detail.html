@@ -1,19 +1,38 @@
 {% extends "activitypub/base.html" %}
 
+{% load static %}
+
 {% block sub_title %}
-  {{ person.display_name }}
+  {{ person }}
 {% endblock sub_title %}
 
 {% block activitypub_content %}
   <div class="row justify-content-center mb-3">
     <div class="col-8">
-      <h2>{{ person.display_name }}</h2>
+      <h2>{{ person }}</h2>
       <p>
         {{ person.bio }}
         {% if user == person.user %}
           <a href="{% url 'activitypub:person-update' %}">
             <i class="bi bi-pencil-square"></i> Edit Bio
           </a>
+        {% elif user.person %}
+          <br />
+          <button class="btn
+                         {% if user_following_person %}
+                           btn-light person-unfollow
+                         {% else %}
+                           btn-dark
+                         {% endif %}
+                         person-follow mt-2"
+                  type="button"
+                  action="{% url 'activitypub:person-follow' person.display_name %}">
+            {% if user_following_person %}
+              {# content added in css #}
+            {% else %}
+              Follow
+            {% endif %}
+          </button>
         {% endif %}
       </p>
       <small>Joined on: {{ person.created|date:"Y-m-d H:i" }}</small>
@@ -23,3 +42,8 @@
   {% include "activitypub/snippets/note_list.html" with note_list=note_list empty_message="This user hasn't posted anything yet." %}
 
 {% endblock activitypub_content %}
+
+{% block inline_javascript %}
+  {{ block.super }}
+  <script type="text/javascript" src="{% static 'js/person_follow.js' %}"></script>
+{% endblock inline_javascript %}
