@@ -1,9 +1,9 @@
 <div class="note">
   <p class="mb-1">{{ note.content }}</p>
   <small>Posted by: <a href="{% url 'activitypub:person-detail' username=note.author.display_name %}">{{ note.author }}</a> on {{ note.created|date:"Y-m-d H:i" }}</small>
-  {% if note.reposted_by %}
+  {% if note.repost_person %}
     <br />
-    <small class="pt-0 ml-3">Reposted by: <a href="{% url 'activitypub:person-detail' username=note.reposted_by %}">{{ note.reposted_by }}</a> on {{ note.reposted_at|date:"Y-m-d H:i" }}</small>
+    <small class="pt-0 ml-3">Reposted by: <a href="{% url 'activitypub:person-detail' username=note.repost_person %}">{{ note.repost_person }}</a> on {{ note.repost_time|date:"Y-m-d H:i" }}</small>
   {% endif %}
   {% if note.in_reply_to %}
     <br />

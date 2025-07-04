@@ -8,6 +8,7 @@ from django.urls import reverse
 from democrasite.activitypub.models import Note
 from democrasite.activitypub.models import Person
 from democrasite.activitypub.tests.factories import NoteFactory
+from democrasite.activitypub.tests.factories import PersonFactory
 from democrasite.users.models import User
 
 
@@ -47,7 +48,7 @@ class TestNoteListTemplate:
         assert "No notes available" not in content
         assert "In reply to: " in content
 
-    def test_reply_link(self, note: Note, user: User, client: Client):
+    def test_reply_link(self, note: Note, user: User, person: Person, client: Client):
         content = client.get(reverse("activitypub:note-list")).content.decode()
 
         assert reverse("activitypub:note-reply", kwargs={"pk": note.id}) not in content
@@ -56,7 +57,26 @@ class TestNoteListTemplate:
 
         content = client.get(reverse("activitypub:note-list")).content.decode()
 
+        assert (
+            reverse("activitypub:note-reply", kwargs={"pk": note.id}) not in content
+        ), "Reply link should not be visible to users without a Person profile"
+
+        client.force_login(person.user)
+
+        content = client.get(reverse("activitypub:note-list")).content.decode()
+
         assert reverse("activitypub:note-reply", kwargs={"pk": note.id}) in content
+
+    def test_reposted(self, note: Note, person: Person, client: Client):
+        note.repost(person)
+
+        content = client.get(
+            reverse(
+                "activitypub:person-detail", kwargs={"username": person.display_name}
+            )
+        ).content.decode()
+
+        assert "Reposted by:" in content
 
 
 class TestNoteDetailTemplate:
@@ -70,8 +90,8 @@ class TestNoteDetailTemplate:
         assert note.content in response.content.decode()
         assert "No replies yet." in response.content.decode()
 
-    def test_reply_link(self, note: Note, user: User, client: Client):
-        client.force_login(user)
+    def test_reply_link(self, note: Note, person: Person, client: Client):
+        client.force_login(person.user)
 
         content = client.get(
             reverse("activitypub:note-detail", kwargs={"pk": note.id})
@@ -102,6 +122,54 @@ class TestNoteDetailTemplate:
         assert note.content in content
         assert reply.content in content
         assert reply2.content in content
+
+    def test_like(self, note: Note, person: Person, client: Client):
+        content = client.get(
+            reverse("activitypub:note-detail", kwargs={"pk": note.id})
+        ).content.decode()
+
+        assert "bi-heart" not in content
+
+        client.force_login(person.user)
+
+        content = client.get(
+            reverse("activitypub:note-detail", kwargs={"pk": note.id})
+        ).content.decode()
+
+        assert "bi-heart" in content
+        assert "bi-heart-fill" not in content
+
+        note.like(person)
+
+        content = client.get(
+            reverse("activitypub:note-detail", kwargs={"pk": note.id})
+        ).content.decode()
+
+        assert "bi-heart-fill" in content
+
+    def test_repost(self, note: Note, person: Person, client: Client):
+        content = client.get(
+            reverse("activitypub:note-detail", kwargs={"pk": note.id})
+        ).content.decode()
+
+        assert "bi-repeat" not in content
+
+        client.force_login(person.user)
+
+        content = client.get(
+            reverse("activitypub:note-detail", kwargs={"pk": note.id})
+        ).content.decode()
+
+        assert "bi-repeat" in content
+        assert "text-success" not in content
+
+        note.repost(person)
+
+        content = client.get(
+            reverse("activitypub:note-detail", kwargs={"pk": note.id})
+        ).content.decode()
+
+        assert "text-success" in content
 
 
 class TestNoteFormTemplate:
@@ -136,6 +204,9 @@ class TestPersonDetailTemplate:
         assert person.display_name in response.content.decode()
         assert person.bio in response.content.decode()
         assert "This user hasn't posted anything yet." in response.content.decode()
+        assert (  # not logged in --> no follow button
+            "Follow" not in response.content.decode()
+        )
 
     def test_person_notes(self, person: Person, client: Client):
         note = NoteFactory.create(author=person)
@@ -154,7 +225,45 @@ class TestPersonDetailTemplate:
         assert note2.content in content
         assert bad_note.content not in content
 
-    def test_logged_in(self, person: Person, client: Client):
+    def test_follow_button(self, person: Person, client: Client):
+        person2 = PersonFactory.create()
+        client.force_login(person2.user)
+
+        content = client.get(
+            reverse(
+                "activitypub:person-detail", kwargs={"username": person.display_name}
+            )
+        ).content.decode()
+
+        assert "Follow" in content  # this doesn't actually work as a check
+        assert "person-unfollow" not in content
+        assert (
+            reverse(
+                "activitypub:person-follow", kwargs={"username": person.display_name}
+            )
+            in content
+        )
+
+    def test_unfollow_button(self, person: Person, client: Client):
+        person2 = PersonFactory.create()
+        person2.follow(person)
+        client.force_login(person2.user)
+
+        content = client.get(
+            reverse(
+                "activitypub:person-detail", kwargs={"username": person.display_name}
+            )
+        ).content.decode()
+
+        assert "person-unfollow" in content
+        assert (
+            reverse(
+                "activitypub:person-follow", kwargs={"username": person.display_name}
+            )
+            in content
+        )
+
+    def test_edit_link(self, person: Person, client: Client):
         client.force_login(person.user)
 
         response = client.get(
@@ -164,7 +273,7 @@ class TestPersonDetailTemplate:
         )
 
         assert response.status_code == HTTPStatus.OK
-        assert b"svg" in response.content
+        assert reverse("activitypub:person-update") in response.content.decode()
 
 
 class TestPersonFormTemplate:

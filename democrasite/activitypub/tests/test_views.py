@@ -1,3 +1,4 @@
+import json
 from http import HTTPStatus
 
 import pytest
@@ -7,6 +8,7 @@ from django.contrib.messages.middleware import MessageMiddleware
 from django.contrib.sessions.middleware import SessionMiddleware
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponseRedirect
+from django.test import Client
 from django.test import RequestFactory
 from django.urls import reverse
 
@@ -20,11 +22,12 @@ from .factories import PersonFactory
 
 
 class TestNoteListView:
-    def test_queryset(self):
+    def test_queryset(self, client: Client):
         batch_size = 3
         NoteFactory.create_batch(batch_size)
 
-        notes = views.NoteListView.queryset
+        response = client.get(reverse("activitypub:note-list"))
+        notes = response.context["object_list"]
         assert len(notes) == batch_size
         for i in range(1, batch_size):
             assert notes[i - 1].created > notes[i].created, (
@@ -89,23 +92,33 @@ class TestUserProfileMixin:
             view.dispatch(request)
 
 
-class TestUserFollowingNotesView:
-    def test_get_queryset(self, person: Person, rf: RequestFactory):
-        person_followed = PersonFactory()
-        person.following.add(person_followed)
+class TestRequirePersonDecorator:
+    def test_no_auth(self, rf: RequestFactory):
+        view = views.require_user_profile(lambda r: "Hi there")
+        request = rf.get("/fake-url/")
+        request.user = AnonymousUser()
 
-        note_from_followed = NoteFactory(author=person_followed)
-        note_from_other = NoteFactory()
+        response = view(request)
 
+        assert response.status_code == HTTPStatus.UNAUTHORIZED
+
+    def test_no_person(self, rf: RequestFactory, user: User):
+        view = views.require_user_profile(lambda r: "Hi there")
+        request = rf.get("/fake-url/")
+        request.user = user
+
+        response = view(request)
+
+        assert response.status_code == HTTPStatus.FORBIDDEN
+
+    def test_success(self, rf: RequestFactory, person: Person):
+        view = views.require_user_profile(lambda r: "Hi there")
         request = rf.get("/fake-url/")
         request.user = person.user
-        view = views.UserFollowingNotesView()
-        view.request = request
 
-        queryset = view.get_queryset()
-        assert queryset.count() == 1
-        assert note_from_followed in queryset
-        assert note_from_other not in queryset
+        response = view(request)
+
+        assert response == "Hi there"
 
 
 class TestNoteDetailView:
@@ -136,17 +149,14 @@ class TestNoteCreateView:
 
 class TestNoteReplyView:
     def test_get(self, person: Person, note: Note, rf: RequestFactory):
-        request = rf.get(reverse("activitypub:note-reply", kwargs={"pk": note.pk}))
+        request = rf.get("/fake-url/")
         request.user = person.user
         response = views.note_reply_view(request, pk=note.pk)
         assert response.status_code == HTTPStatus.OK
 
     def test_form_valid(self, person: Person, note: Note, rf: RequestFactory):
         content = "This is a reply."
-        request = rf.post(
-            reverse("activitypub:note-reply", kwargs={"pk": note.pk}),
-            {"content": content},
-        )
+        request = rf.post("/fake-url/", {"content": content})
         request.user = person.user
         response = views.note_reply_view(request, pk=note.pk)
 
@@ -157,11 +167,35 @@ class TestNoteReplyView:
         assert response.url == reply_note.get_absolute_url()
 
 
+def test_note_like_view(note: Note, rf: RequestFactory):
+    request = rf.post("/fake-url/")
+    request.user = note.author.user
+
+    response = views.note_like_view(request, note.id)
+
+    assert note.author in note.likes.all()
+    assert json.loads(response.content)["likes"] == 1
+
+
+def test_note_repost_view(note: Note, rf: RequestFactory):
+    request = rf.post("/fake-url/")
+    request.user = note.author.user
+
+    response = views.note_repost_view(request, note.id)
+
+    assert note.author in note.reposts.all()
+    assert json.loads(response.content)["reposts"] == 1
+
+
 class TestPersonDetailView:
-    def test_get_context_data(self, person: Person):
+    def test_get_context_data(self, person: Person, rf: RequestFactory):
         batch_size = 3
         NoteFactory.create_batch(batch_size, author=person)
         view = views.PersonDetailView()
+        request = rf.get("/fake-url/")
+
+        request.user = person.user
+        view.request = request
         view.object = person
 
         context = view.get_context_data()
@@ -200,7 +234,7 @@ class TestPersonCreateView:
 
     def test_create_person(self, user: User, rf: RequestFactory):
         assert not hasattr(user, "person")
-        request = rf.post(reverse("activitypub:person-create"))
+        request = rf.post("/fake-url/")
         request.user = user
 
         response = views.person_create_view(request)
@@ -233,3 +267,33 @@ class TestPersonUpdateView:
         assert person.bio == new_bio
         assert response.status_code == HTTPStatus.FOUND
         assert response.url == person.get_absolute_url()
+
+
+class TestPersonFollowingNotesView:
+    def test_get_queryset(self, person: Person, rf: RequestFactory):
+        person_followed = PersonFactory()
+        person.follow(person_followed)
+
+        note_from_followed = NoteFactory(author=person_followed)
+        note_from_other = NoteFactory()
+
+        request = rf.get("/fake-url/")
+        request.user = person.user
+        view = views.PersonFollowingNotesView()
+        view.request = request
+
+        queryset = view.get_queryset()
+        assert queryset.count() == 1
+        assert note_from_followed in queryset
+        assert note_from_other not in queryset
+
+
+def test_person_follow_view(person: Person, rf: RequestFactory):
+    person2 = PersonFactory.create()
+    request = rf.post("/fake-url/")
+    request.user = person.user
+
+    response = views.person_follow_view(request, person2.display_name)
+
+    assert person in person2.followers.all()
+    assert json.loads(response.content)["followers"] == 1

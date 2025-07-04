@@ -1,7 +1,7 @@
+from functools import wraps
 from http import HTTPStatus
 from typing import TYPE_CHECKING
 
-from django import forms
 from django import http
 from django.contrib import messages
 from django.contrib.auth.mixins import UserPassesTestMixin
@@ -16,6 +16,8 @@ from django.views.generic import DetailView
 from django.views.generic import ListView
 from django.views.generic import UpdateView
 
+from .forms import NoteForm
+from .forms import PersonForm
 from .models import Note
 from .models import Person
 
@@ -52,27 +54,25 @@ class UserProfileMixin(UserPassesTestMixin):
         return HttpResponseRedirect(reverse("activitypub:note-list"))
 
 
+def require_user_profile(view_func):
+    """Decorator to ensure the user has a Person profile."""
+
+    @wraps(view_func)
+    def _wrapped_view(request: HttpRequest, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return http.HttpResponse("Login required", status=HTTPStatus.UNAUTHORIZED)
+        if not hasattr(request.user, "person"):
+            return http.HttpResponse("Profile required", status=HTTPStatus.FORBIDDEN)
+        return view_func(request, *args, **kwargs)
+
+    return _wrapped_view
+
+
 class NoteDetailView(DetailView):
     model = Note
 
 
 note_detail_view = NoteDetailView.as_view()
-
-
-class NoteForm(forms.ModelForm):
-    """Form for creating or replying to a note."""
-
-    content = forms.CharField(
-        max_length=500,
-        widget=forms.Textarea(
-            attrs={"rows": 3, "placeholder": "Share your thoughts..."}
-        ),
-        help_text="Your note content (max 500 characters).",
-    )
-
-    class Meta:
-        model = Note
-        fields = ["content"]
 
 
 class NoteCreateView(UserProfileMixin, CreateView):
@@ -103,12 +103,8 @@ note_reply_view = NoteReplyView.as_view()
 
 
 @require_POST
+@require_user_profile
 def note_like_view(request: HttpRequest, pk: int) -> http.HttpResponse:
-    if not request.user.is_authenticated:
-        return http.HttpResponse("Login required", status=HTTPStatus.UNAUTHORIZED)
-    if not hasattr(request.user, "person"):
-        return http.HttpResponse("Profile required", status=HTTPStatus.FORBIDDEN)
-
     note = get_object_or_404(Note, pk=pk)
     note.like(request.user.person)
 
@@ -116,19 +112,15 @@ def note_like_view(request: HttpRequest, pk: int) -> http.HttpResponse:
 
 
 @require_POST
+@require_user_profile
 def note_repost_view(request: HttpRequest, pk: int) -> http.HttpResponse:
-    if not request.user.is_authenticated:
-        return http.HttpResponse("Login required", status=HTTPStatus.UNAUTHORIZED)
-    if not hasattr(request.user, "person"):
-        return http.HttpResponse("Profile required", status=HTTPStatus.FORBIDDEN)
-
     note = get_object_or_404(Note, pk=pk)
     note.repost(request.user.person)
 
     return http.JsonResponse({"reposts": note.reposts.count()})
 
 
-class PersonDetailView(DetailView[Person]):
+class PersonDetailView(DetailView):
     model = Person
 
     slug_field = "user__username"
@@ -138,8 +130,8 @@ class PersonDetailView(DetailView[Person]):
         context = super().get_context_data(**kwargs)
         context["note_list"] = Note.objects.get_person_notes(self.object)
         if hasattr(self.request.user, "person"):
-            context["user_following_person"] = (
-                self.request.user.person.following.filter(pk=self.object.pk).exists()
+            context["user_following_person"] = self.request.user.person.is_following(
+                self.object
             )
         return context
 
@@ -173,21 +165,6 @@ class PersonCreateView(UserPassesTestMixin, CreateView):
 person_create_view = PersonCreateView.as_view()
 
 
-class PersonForm(forms.ModelForm):
-    """Form for creating or updating a person's profile."""
-
-    bio = forms.CharField(
-        max_length=500,
-        required=False,
-        widget=forms.Textarea(attrs={"rows": 3, "placeholder": "Describe yourself"}),
-        help_text="Your bio content (max 500 characters).",
-    )
-
-    class Meta:
-        model = Person
-        fields = ["bio"]
-
-
 class PersonUpdateView(UserProfileMixin, UpdateView):
     model = Person
     form_class = PersonForm
@@ -213,13 +190,9 @@ person_following_notes_view = PersonFollowingNotesView.as_view()
 
 
 @require_POST
+@require_user_profile
 def person_follow_view(request: HttpRequest, username: str) -> http.HttpResponse:
     """Follow a user by username."""
-    if not request.user.is_authenticated:
-        return http.HttpResponse("Login required", status=HTTPStatus.UNAUTHORIZED)
-    if not hasattr(request.user, "person"):
-        return http.HttpResponse("Profile required", status=HTTPStatus.FORBIDDEN)
-
     person = get_object_or_404(Person, user__username=username)
     request.user.person.following.add(person)
 

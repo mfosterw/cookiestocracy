@@ -62,7 +62,7 @@ class Person(TimeStampedModel):
             "activitypub:person-detail", kwargs={"username": self.display_name}
         )
 
-    def followed_by(self, person: "Person") -> bool:
+    def is_following(self, person: "Person") -> bool:
         """Check if a person is following this person.
 
         Args:
@@ -70,20 +70,20 @@ class Person(TimeStampedModel):
         Returns:
             bool: True if the person is following this person, False otherwise.
         """
-        return self.followers.filter(id=person.id).exists()
+        return self.following.filter(id=person.id).exists()
 
     def follow(self, person: "Person") -> bool:
-        """Toggle a follow on this person for another person.
+        """Toggle whether this person follows another person.
 
         Args:
             person (Person): The person following or unfollowing this person.
         Returns:
             bool: True if the follow was added, False if it was removed.
         """
-        if self.followed_by(person):
-            self.followers.remove(person)
+        if self.is_following(person):
+            self.following.remove(person)
             return False
-        self.followers.add(person)
+        self.following.add(person)
         return True
 
 
@@ -138,14 +138,14 @@ class NoteManager[T](TreeManager):
             models.QuerySet[T]: A queryset of notes and reposts ordered by time.
         """
         reposts = person.reposts.annotate(
-            reposted_by=models.Value(person.display_name),
-            reposted_at=models.F("repost__created"),
-            order_time=models.F("reposted_at"),
+            repost_person=models.Value(person.display_name),
+            repost_time=models.F("repost__created"),
+            order_time=models.F("repost_time"),
         )
 
         posts = person.notes.annotate(
-            reposted_by=models.Value(None, output_field=models.TextField()),
-            reposted_at=models.Value(None, output_field=models.DateTimeField()),
+            repost_person=models.Value(None, output_field=models.TextField()),
+            repost_time=models.Value(None, output_field=models.DateTimeField()),
             order_time=models.F("created"),
         )
         return posts.union(reposts).order_by("-order_time")
@@ -180,17 +180,17 @@ class NoteManager[T](TreeManager):
             # TODO: this is probably very inefficient
             .exclude(pk__in=repost_notes.values("pk"))
             .annotate(
-                reposted_by=models.Value(None, output_field=models.TextField()),
-                reposted_at=models.Value(None, output_field=models.DateTimeField()),
+                repost_person=models.Value(None, output_field=models.TextField()),
+                repost_time=models.Value(None, output_field=models.DateTimeField()),
                 order_time=models.F("created"),
             )
             .order_by()  # clear default ordering
         )
 
         repost_notes = repost_notes.annotate(
-            reposted_by=models.F("repost__person__user__username"),
-            reposted_at=models.F("repost__created"),
-            order_time=models.F("reposted_at"),
+            repost_person=models.F("repost__person__user__username"),
+            repost_time=models.F("repost__created"),
+            order_time=models.F("repost_time"),
         )
 
         return repost_notes.union(posts).order_by("-order_time")
