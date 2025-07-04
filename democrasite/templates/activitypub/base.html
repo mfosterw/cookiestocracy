@@ -21,12 +21,12 @@
          href="{% url 'activitypub:person-detail' username=user.username %}">Profile</a>
     </li>
   {% else %}
-    <li class="nav-item">
-      <form action="{% url 'activitypub:person-create' %}" method="post">
-        {% csrf_token %}
-        <button class="btn btn-link nav-link" type="submit">Create Profile</button>
-      </form>
-    </li>
+    <form class="form-inline"
+          action="{% url 'activitypub:person-create' %}"
+          method="post">
+      {% csrf_token %}
+      <button class="btn btn-link nav-link" type="submit">Create Profile</button>
+    </form>
   {% endif %}
 
   {# Add profile links #}
