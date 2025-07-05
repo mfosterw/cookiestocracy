@@ -1,4 +1,4 @@
-FROM docker.io/traefik:2.11.21
+FROM docker.io/traefik:2.11.22
 RUN mkdir -p /etc/traefik/acme \
   && touch /etc/traefik/acme/acme.json \
   && chmod 600 /etc/traefik/acme/acme.json
