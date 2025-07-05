@@ -1,0 +1,11 @@
+<div class="list-group">
+  <div class="row justify-content-center">
+    {% for note in note_list %}
+      <div class="list-group-item col-8">{% include "activitypub/snippets/note.html" %}</div>
+    {% empty %}
+      <div class="list-group-item text-center">
+        <h5 class="mb-1">{{ empty_message }}</h5>
+      </div>
+    {% endfor %}
+  </div>
+</div>

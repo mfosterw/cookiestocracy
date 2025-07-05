@@ -1,0 +1,9 @@
+{% extends "activitypub/base.html" %}
+
+{% block sub_title %}
+  Notes
+{% endblock sub_title %}
+
+{% block activitypub_content %}
+  {% include "activitypub/snippets/note_list.html" with note_list=note_list empty_message="No notes available" %}
+{% endblock activitypub_content %}

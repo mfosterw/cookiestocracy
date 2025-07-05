@@ -133,6 +133,12 @@ class TestBillVote:
         assert not bill.no_votes.filter(pk=user.id).exists()
         assert bill.yes_votes.filter(pk=user.id).exists()
 
+    def test_bill_not_open(self, user: User):
+        bill = BillFactory.create(status=Bill.Status.CLOSED)
+
+        with pytest.raises(ValueError, match="Bill is not open for voting"):
+            bill.vote(user, support=True)
+
 
 class TestBillSubmit:
     def test_bill_not_open(self):

@@ -1,11 +1,10 @@
 from http import HTTPStatus
 
 from django.conf import settings
-from django.contrib import messages
 from django.contrib.auth.models import AnonymousUser
+from django.contrib.messages import get_messages
 from django.contrib.messages.middleware import MessageMiddleware
 from django.contrib.sessions.middleware import SessionMiddleware
-from django.http import HttpRequest
 from django.http import HttpResponseRedirect
 from django.test import RequestFactory
 from django.urls import reverse
@@ -18,9 +17,6 @@ from democrasite.users.views import user_detail_view
 
 
 class TestUserUpdateView:
-    def dummy_get_response(self, request: HttpRequest):
-        return None
-
     def test_get_success_url(self, user: User, rf: RequestFactory):
         view = UserUpdateView()
         request = rf.get("/fake-url/")
@@ -44,8 +40,8 @@ class TestUserUpdateView:
         request = rf.get("/fake-url/")
 
         # Add the session/message middleware to the request
-        SessionMiddleware(self.dummy_get_response).process_request(request)
-        MessageMiddleware(self.dummy_get_response).process_request(request)
+        SessionMiddleware(lambda r: None).process_request(request)
+        MessageMiddleware(lambda r: None).process_request(request)
         request.user = user
 
         view.request = request
@@ -55,7 +51,7 @@ class TestUserUpdateView:
         form.cleaned_data = {}
         view.form_valid(form)
 
-        messages_sent = [m.message for m in messages.get_messages(request)]
+        messages_sent = [m.message for m in get_messages(request)]
         assert messages_sent == ["Information successfully updated"]
 
 

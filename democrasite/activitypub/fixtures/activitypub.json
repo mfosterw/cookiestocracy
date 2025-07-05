@@ -1,0 +1,172 @@
+[
+  {
+    "model": "users.user",
+    "pk": 1,
+    "fields": {
+      "password": "!QOegZX0EFLTPMUheUJaZHT2iBlDjTUVteO1ERFoL",
+      "last_login": "2025-07-05T16:23:01.641Z",
+      "is_superuser": false,
+      "username": "test",
+      "email": "",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2025-07-04T23:22:05.325Z",
+      "name": "",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "users.user",
+    "pk": 2,
+    "fields": {
+      "password": "!QOegZX0EFLTPMUheUJaZHT2iBlDjTUVteO1ERFoL",
+      "last_login": "2025-07-05T00:26:58.691Z",
+      "is_superuser": true,
+      "username": "test2",
+      "email": "",
+      "is_staff": true,
+      "is_active": true,
+      "date_joined": "2025-07-05T00:26:54.979Z",
+      "name": "",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "activitypub.person",
+    "pk": 1,
+    "fields": {
+      "created": "2025-07-04T23:22:11.652Z",
+      "modified": "2025-07-04T23:22:11.652Z",
+      "user": 1,
+      "private_key": "private_key_placeholder",
+      "public_key": "public_key_placeholder",
+      "bio": "",
+      "following": []
+    }
+  },
+  {
+    "model": "activitypub.person",
+    "pk": 2,
+    "fields": {
+      "created": "2025-07-05T16:15:12.547Z",
+      "modified": "2025-07-05T16:15:12.547Z",
+      "user": 2,
+      "private_key": "private_key_placeholder",
+      "public_key": "public_key_placeholder",
+      "bio": "",
+      "following": []
+    }
+  },
+  {
+    "model": "activitypub.like",
+    "pk": 1,
+    "fields": { "person": 2, "note": 1, "created": "2025-07-05T16:15:47.380Z" }
+  },
+  {
+    "model": "activitypub.like",
+    "pk": 2,
+    "fields": { "person": 2, "note": 2, "created": "2025-07-05T16:15:49.455Z" }
+  },
+  {
+    "model": "activitypub.like",
+    "pk": 3,
+    "fields": { "person": 1, "note": 2, "created": "2025-07-05T16:23:07.500Z" }
+  },
+  {
+    "model": "activitypub.repost",
+    "pk": 1,
+    "fields": { "person": 2, "note": 1, "created": "2025-07-05T16:15:30.859Z" }
+  },
+  {
+    "model": "activitypub.repost",
+    "pk": 2,
+    "fields": { "person": 2, "note": 4, "created": "2025-07-05T16:17:12.726Z" }
+  },
+  {
+    "model": "activitypub.repost",
+    "pk": 3,
+    "fields": { "person": 1, "note": 2, "created": "2025-07-05T16:23:04.907Z" }
+  },
+  {
+    "model": "activitypub.repost",
+    "pk": 4,
+    "fields": { "person": 1, "note": 5, "created": "2025-07-05T16:23:10.741Z" }
+  },
+  {
+    "model": "activitypub.note",
+    "pk": 1,
+    "fields": {
+      "created": "2025-07-04T23:22:33.271Z",
+      "modified": "2025-07-04T23:22:33.271Z",
+      "author": 1,
+      "content": "This is a note.",
+      "in_reply_to": null,
+      "lft": 1,
+      "rght": 2,
+      "tree_id": 1,
+      "level": 0
+    }
+  },
+  {
+    "model": "activitypub.note",
+    "pk": 2,
+    "fields": {
+      "created": "2025-07-04T23:22:43.126Z",
+      "modified": "2025-07-04T23:22:43.126Z",
+      "author": 1,
+      "content": "This is another note.",
+      "in_reply_to": null,
+      "lft": 1,
+      "rght": 6,
+      "tree_id": 2,
+      "level": 0
+    }
+  },
+  {
+    "model": "activitypub.note",
+    "pk": 3,
+    "fields": {
+      "created": "2025-07-04T23:23:17.547Z",
+      "modified": "2025-07-04T23:23:17.547Z",
+      "author": 1,
+      "content": "This is a reply to that other note.",
+      "in_reply_to": 2,
+      "lft": 2,
+      "rght": 5,
+      "tree_id": 2,
+      "level": 1
+    }
+  },
+  {
+    "model": "activitypub.note",
+    "pk": 4,
+    "fields": {
+      "created": "2025-07-05T16:15:43.177Z",
+      "modified": "2025-07-05T16:15:43.177Z",
+      "author": 2,
+      "content": "This is a note by a different user",
+      "in_reply_to": null,
+      "lft": 1,
+      "rght": 2,
+      "tree_id": 3,
+      "level": 0
+    }
+  },
+  {
+    "model": "activitypub.note",
+    "pk": 5,
+    "fields": {
+      "created": "2025-07-05T16:16:39.332Z",
+      "modified": "2025-07-05T16:16:39.332Z",
+      "author": 2,
+      "content": "This is a reply to a reply by a different user! (I need to improve the display of replies to replies in the note detail view)",
+      "in_reply_to": 3,
+      "lft": 3,
+      "rght": 4,
+      "tree_id": 2,
+      "level": 2
+    }
+  }
+]

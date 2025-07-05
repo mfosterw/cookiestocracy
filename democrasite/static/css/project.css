@@ -44,3 +44,37 @@ body {
   text-align: justify;
   text-align-last: center;
 }
+
+.note-create {
+  position: fixed;
+  bottom: 10px;
+  right: 5%;
+}
+
+.note a:not(.stretched-link) {
+  z-index: 2;
+  position: relative;
+}
+
+/* TODO: remove when upgrading to Bootstrap 5 */
+.note-interaction:hover {
+  opacity: 75%;
+  text-decoration: none;
+}
+
+.person-follow {
+  min-width: 6em;
+}
+
+.person-unfollow::after {
+  content: "Following";
+}
+
+.person-unfollow:hover::after {
+  content: "Unfollow";
+}
+
+.person-unfollow:hover {
+  color: var(--light);
+  background-color: var(--secondary);
+}

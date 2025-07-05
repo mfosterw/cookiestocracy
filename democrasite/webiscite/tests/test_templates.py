@@ -33,7 +33,7 @@ class TestBillDetailTemplate:
         content = self._test_get_response(client, bill.id)
 
         assert "vote.js" in content
-        assert "svg" in content
+        assert reverse("webiscite:bill-update", args=(bill.id,)) in content
         assert bill.get_status_display() not in content
 
     @pytest.mark.parametrize(

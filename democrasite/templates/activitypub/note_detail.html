@@ -1,0 +1,22 @@
+{% extends "activitypub/base.html" %}
+
+{% block sub_title %}
+  Note by {{ note.author }}
+{% endblock sub_title %}
+
+{% block activitypub_content %}
+
+  <div class="row justify-content-center">
+    <div class="justify-content-center col-10 mb-3">
+      {% if note.get_ancestors %}
+        {% include "activitypub/snippets/note_list.html" with note_list=note.get_ancestors empty_message="" %}
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="row justify-content-center mb-3">
+    <div class="col-8">{% include "activitypub/snippets/note.html" with detail=True %}</div>
+  </div>
+
+  {% include "activitypub/snippets/note_list.html" with note_list=note.get_children empty_message="No replies yet." %}
+{% endblock activitypub_content %}

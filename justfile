@@ -62,7 +62,7 @@ migrate: (manage "makemigrations") (manage "migrate")
 
 # Load initial data into the database
 [group("management")]
-loaddata +filename="initial.json": (manage "loaddata" filename)
+loaddata +filename="democrasite activitypub": (manage "loaddata" filename)
 
 # Create a superuser account
 [group("management")]

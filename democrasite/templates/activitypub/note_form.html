@@ -1,0 +1,21 @@
+{% extends "activitypub/base.html" %}
+
+{% load i18n %}
+{% load crispy_forms_tags %}
+
+{% block sub_title %}
+  {% trans 'Create Note' %}
+{% endblock sub_title %}
+
+{# content, not activitypub_content, so vote button is removed #}
+{% block content %}
+  <form method="post" class="form-horizontal">
+    {% csrf_token %}
+    {{ form|crispy }}
+    <div class="control-group">
+      <div class="controls">
+        <button type="submit" class="btn btn-primary">{% trans 'Post' %}</button>
+      </div>
+    </div>
+  </form>
+{% endblock content %}

@@ -1,12 +1,10 @@
-import contextlib
 from http import HTTPStatus
 from importlib import reload
 
 import pytest
-from django.contrib.admin.exceptions import AlreadyRegistered
 from django.test import Client
+from django.urls import clear_url_caches
 from django.urls import reverse
-from pytest_django.asserts import assertRedirects
 
 from democrasite.users.models import User
 
@@ -17,22 +15,10 @@ class TestUserAdmin:
         # Admin site is only enabled during development
         settings.DEBUG = True
 
-    @pytest.fixture
-    def _force_allauth(self, settings):
-        settings.DJANGO_ADMIN_FORCE_ALLAUTH = True
-        # Reload the admin module to apply the setting change
-        import democrasite.users.admin as users_admin
+        from config import urls
 
-        with contextlib.suppress(AlreadyRegistered):
-            reload(users_admin)
-
-    @pytest.mark.usefixtures("_force_allauth")
-    def test_allauth_login(self, client: Client, settings):
-        url = reverse("admin:login")
-        response = client.get(url)
-
-        expected_url = f"{reverse(settings.LOGIN_URL)}?next={url}"
-        assertRedirects(response, expected_url, status_code=302, target_status_code=200)
+        reload(urls)
+        clear_url_caches()
 
     def test_changelist(self, admin_client: Client):
         url = reverse("admin:users_user_changelist")

@@ -145,6 +145,8 @@ ignore = [
     "SIM102", # sometimes it's better to nest
     'COM812', # To make formatter behave correctly
     'ISC001',
+    "EM101",  # "Exception must not use string literal" I don't care
+    "TRY003", # Doesn't let you use ValueError unless you subclass it
 ]
 # Allow fix for all enabled rules (when `--fix`) is provided.
 fixable = ["ALL"]

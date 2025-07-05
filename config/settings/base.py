@@ -69,6 +69,7 @@ THIRD_PARTY_APPS = [
     "allauth.account",
     "allauth.socialaccount",
     "django_celery_beat",
+    "mptt",
     # django rest framework
     "rest_framework",
     "rest_framework.authtoken",
@@ -83,6 +84,7 @@ LOCAL_APPS = [
     # Custom apps
     "democrasite.users",
     "democrasite.webiscite",
+    "democrasite.activitypub",
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -232,12 +234,6 @@ ADMIN_URL = "admin/"
 ADMINS = [("Admin", "admin@democrasite.tech")]
 # https://docs.djangoproject.com/en/dev/ref/settings/#managers
 MANAGERS = ADMINS
-# https://cookiecutter-django.readthedocs.io/en/latest/settings.html#other-environment-settings
-# Force the `admin` sign in process to go through the `django-allauth` workflow
-# Note that this would require a social account to be marked as an admin using
-# ``user.is_staff = True``, or require being logged in to a social account before
-# being able to log in to the admin site since there is no local account login page.
-DJANGO_ADMIN_FORCE_ALLAUTH = env.bool("DJANGO_ADMIN_FORCE_ALLAUTH", default=False)
 
 # LOGGING
 # ------------------------------------------------------------------------------

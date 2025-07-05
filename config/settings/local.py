@@ -28,8 +28,6 @@ ALLOWED_HOSTS = [
     "localhost",
     "0.0.0.0",  # noqa: S104
     "127.0.0.1",
-    # For frontend
-    "django",
     # For docker (healtcheck)
     "democrasite-local-django",
 ]
@@ -73,7 +71,7 @@ DEBUG_TOOLBAR_CONFIG = {
     "SHOW_TEMPLATE_CONTEXT": True,
 }
 # https://django-debug-toolbar.readthedocs.io/en/latest/installation.html#internal-ips
-INTERNAL_IPS = ["127.0.0.1", "10.0.2.2"]
+INTERNAL_IPS = ["127.0.0.1", "10.0.2.2", "192.168.65.1"]
 if env("USE_DOCKER", default="no") == "yes":
     import socket
 

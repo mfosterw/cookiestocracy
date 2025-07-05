@@ -33,3 +33,6 @@ EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#templates
 TEMPLATES[0]["OPTIONS"]["debug"] = True  # type: ignore[index]
+# https://django-debug-toolbar.readthedocs.io/en/latest/installation.html#internal-ips
+# Required to have "debug=True" in tempalte context
+INTERNAL_IPS = ["127.0.0.1"]
