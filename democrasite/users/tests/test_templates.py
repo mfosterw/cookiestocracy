@@ -1,7 +1,9 @@
 """Render each branch on each template to ensure there are no rendering errors."""
 
 from http import HTTPStatus
+from importlib import reload
 
+import pytest
 from django.contrib import messages
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.messages.middleware import MessageMiddleware
@@ -9,6 +11,7 @@ from django.contrib.sessions.middleware import SessionMiddleware
 from django.shortcuts import render
 from django.test import Client
 from django.test import RequestFactory
+from django.urls import clear_url_caches
 from django.urls import reverse
 from django.views.defaults import page_not_found
 from django.views.defaults import permission_denied
@@ -19,12 +22,23 @@ from democrasite.users.tests.factories import UserFactory
 
 
 class TestRootTemplates:
+    @pytest.fixture
+    def _enable_admin(self, settings):
+        # Admin site is only enabled during development
+        settings.DEBUG = True
+
+        from config import urls
+
+        reload(urls)
+        clear_url_caches()
+
     # TODO: These should be somewhere else
+    @pytest.mark.usefixtures("_enable_admin")
     def test_base(self, rf: RequestFactory, user: User):
         request = rf.get("/fake-url/")
         request.user = AnonymousUser()
-        SessionMiddleware(lambda r: None).process_request(request)
-        MessageMiddleware(lambda r: None).process_request(request)
+        SessionMiddleware(lambda r: None).process_request(request)  # type: ignore[arg-type]
+        MessageMiddleware(lambda r: None).process_request(request)  # type: ignore[arg-type]
         messages.info(request, "This is a test message")
 
         response = render(request, "base.html")
@@ -47,6 +61,9 @@ class TestRootTemplates:
         )
         assert b"form-inline" in response.content, (
             "Logout should be visible to logged in users"
+        )
+        assert reverse("admin:index") in response.content.decode(), (
+            "Admin site link should be visible when debug is on"
         )
 
     def test_403_with_message(self, rf: RequestFactory):
