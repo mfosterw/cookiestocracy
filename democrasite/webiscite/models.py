@@ -1,6 +1,8 @@
 """Models for the webiscite app"""
 
 import json
+from collections.abc import Iterator
+from contextlib import contextmanager
 from logging import getLogger
 from typing import Any
 
@@ -140,27 +142,24 @@ class BillManager[T](models.Manager):
             A tuple containing the new or update pull request and new bill instance, if
             applicable
         """
-        bill = self.model(
-            name=title,
-            description=body,
-            author=author,
-            pull_request=pull_request,
-            status=Bill.Status.OPEN,
-            constitutional=bool(is_constitutional(diff_text)),
-            _submit_task=self._create_temp_submit_task(),
-        )
-        bill.full_clean()
-        bill.save()
-        logger.info("PR %s: Bill %s created", pull_request.number, bill.id)
+        with self._create_submit_task() as submit_task:
+            self._bill = self.model(
+                name=title,
+                description=body,
+                author=author,
+                pull_request=pull_request,
+                status=Bill.Status.OPEN,
+                constitutional=bool(is_constitutional(diff_text)),
+                _submit_task=submit_task,
+            )
+            self._bill.full_clean()
+            self._bill.save()
+            logger.info("PR %s: Bill %s created", pull_request.number, self._bill.id)
 
-        bill._submit_task.name = f"bill_submit:{bill.id}"  # noqa: SLF001
-        bill._submit_task.args = json.dumps([bill.id])  # noqa: SLF001
-        bill._submit_task.save()  # noqa: SLF001
-        logger.info("PR %s: Scheduled %s", pull_request.number, bill._submit_task.name)  # noqa: SLF001
+        return self._bill
 
-        return bill
-
-    def _create_temp_submit_task(self) -> PeriodicTask:
+    @contextmanager
+    def _create_submit_task(self) -> Iterator[PeriodicTask]:
         """Schedule a task to submit this bill for voting
 
         Returns:
@@ -171,7 +170,7 @@ class BillManager[T](models.Manager):
             every=settings.WEBISCITE_VOTING_PERIOD, period=IntervalSchedule.DAYS
         )
 
-        return PeriodicTask.objects.create(
+        submit_task = PeriodicTask.objects.create(
             interval=voting_ends,
             name="bill_submit:temp",
             task="democrasite.webiscite.tasks.submit_bill",
@@ -180,6 +179,20 @@ class BillManager[T](models.Manager):
             # scheduler started, not when it was created
             last_run_at=timezone.now(),
         )
+        try:
+            yield submit_task
+        finally:
+            # This might be better as a signal but I want to keep it localized
+            if not isinstance(self._bill.id, int):
+                raise TypeError("self._bill was not saved in the submit task context")
+            submit_task.name = f"bill_submit:{self._bill.id}"
+            submit_task.args = json.dumps([self._bill.id])
+            submit_task.save()
+            logger.info(
+                "PR %s: Scheduled %s",
+                self._bill.pull_request.number,
+                submit_task.name,
+            )
 
 
 class Bill(StatusModel, TimeStampedModel):
