@@ -32,10 +32,10 @@ class TestRootTemplates:
         assert response.status_code == HTTPStatus.OK
         assert b"This is a test message" in response.content
         assert b"login-dropdown" in response.content, (
-            "should be visible to logged out users"
+            "Login should be visible to logged out users"
         )
-        assert b"logout-form" not in response.content, (
-            "should not be visible to logged out users"
+        assert b"form-inline" not in response.content, (
+            "Logout should not be visible to logged out users"
         )
 
         request.user = user
@@ -43,10 +43,10 @@ class TestRootTemplates:
         response = render(request, "base.html")
 
         assert b"login-dropdown" not in response.content, (
-            "should not be visible to logged in users"
+            "Login should not be visible to logged in users"
         )
-        assert b"logout-form" in response.content, (
-            "should be visible to logged out users"
+        assert b"form-inline" in response.content, (
+            "Logout should be visible to logged in users"
         )
 
     def test_403_with_message(self, rf: RequestFactory):
