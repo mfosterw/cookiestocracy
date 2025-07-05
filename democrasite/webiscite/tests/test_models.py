@@ -17,12 +17,6 @@ from .factories import PullRequestFactory
 FAKE = faker.Faker()
 
 
-class TestVote:
-    def test_vote_str(self, bill: Bill, user: User):
-        bill.vote(user, support=True)
-        assert str(Vote.objects.get(user=user, support=True)) == f"{user} for {bill}"
-
-
 class TestPullRequestManager:
     def test_create_from_github_create(self, caplog):
         pr = GithubPullRequestFactory.create(number=FAKE.random_int())
@@ -64,6 +58,18 @@ class TestPullRequest:
             record.message == f"PR {pull_request.number}: No open bill found"
             for record in caplog.records
         )
+
+
+class TestVote:
+    def test_vote_str(self, bill: Bill, user: User):
+        bill.vote(user, support=True)
+        assert str(Vote.objects.get(user=user, support=True)) == f"{user} for {bill}"
+
+    def test_unique_user_bill_vote(self, bill: Bill, user: User):
+        bill.vote(user, support=True)
+
+        with pytest.raises(IntegrityError, match='"unique_user_bill_vote"'):
+            Vote(user=user, bill=bill, support=False).save()
 
 
 class TestBillManager:

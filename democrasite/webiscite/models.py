@@ -22,19 +22,6 @@ from .constitution import is_constitutional
 logger = getLogger(__name__)
 
 
-class Vote(models.Model):
-    """A vote for or against a bill, with a timestamp"""
-
-    bill = models.ForeignKey("Bill", on_delete=models.CASCADE)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    support = models.BooleanField()
-    created = models.DateTimeField(auto_now_add=True)
-    # Doesn't need modified time because it's always deleted and re-added
-
-    def __str__(self) -> str:
-        return f"{self.user} {'for' if self.support else 'against'} {self.bill}"
-
-
 class PullRequestManager[T](models.Manager):
     def create_from_github(self, pr: dict[str, Any]) -> T:
         """Create a :class:`~democrasite.webiscite.models.PullRequest` and optionally a
@@ -108,6 +95,28 @@ class PullRequest(StatusModel, TimeStampedModel):
         else:
             bill.close()
             return bill
+
+
+class Vote(models.Model):
+    """A vote for or against a bill, with a timestamp"""
+
+    bill = models.ForeignKey("Bill", on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    support = models.BooleanField()
+    created = models.DateTimeField(auto_now_add=True)
+    # Doesn't need modified time because it's always deleted and re-added
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=("bill", "user"),
+                name="unique_user_bill_vote",
+                violation_error_code=_("Only one vote per user per bill allowed"),
+            )  # type: ignore[call-overload]
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.user} {'for' if self.support else 'against'} {self.bill}"
 
 
 class BillManager[T](models.Manager):
