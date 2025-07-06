@@ -117,12 +117,12 @@ class Repost(models.Model):
         return f'{self.person} reposted "{self.note}"'
 
 
-class NoteManager[T](TreeManager):
-    def get_queryset(self) -> models.QuerySet[T]:
+class NoteManager(TreeManager):
+    def get_queryset(self) -> models.QuerySet:
         """Get the queryset for notes, ordered by creation date."""
         return super().get_queryset().order_by(*self.model._meta.ordering)  # noqa: SLF001
 
-    def get_person_notes(self, person: Person) -> models.QuerySet[T]:
+    def get_person_notes(self, person: Person) -> models.QuerySet:
         """Get notes for display on a person's profile page.
 
         This method returns all notes authored by the person as well as all their
@@ -150,7 +150,7 @@ class NoteManager[T](TreeManager):
         )
         return posts.union(reposts).order_by("-order_time")
 
-    def get_person_following_notes(self, person: Person) -> models.QuerySet[T]:
+    def get_person_following_notes(self, person: Person) -> models.QuerySet:
         """Get notes from people the person is following.
 
         This method retrieves all notes authored or reposted by people that the
