@@ -86,6 +86,17 @@ class TestBillManager:
         assert bill.pk is not None
         assert bill._submit_task.enabled is True  # noqa: SLF001
 
+    def test__create_submit_task(self):
+        # just hit the error branch of finally clause
+        with (
+            pytest.raises(
+                AttributeError,
+                match="self._bill was not saved in the submit task context",
+            ),
+            Bill.objects._create_submit_task(),  # noqa: SLF001
+        ):
+            pass
+
 
 class TestBill:
     def test_unique_open_pull_request(self, bill: Bill):

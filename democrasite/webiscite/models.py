@@ -155,8 +155,9 @@ class BillManager[T](models.Manager):
             self._bill.full_clean()
             self._bill.save()
             logger.info("PR %s: Bill %s created", pull_request.number, self._bill.id)
+            bill = self._bill
 
-        return self._bill
+        return bill  # noqa: RET504
 
     @contextmanager
     def _create_submit_task(self) -> Iterator[PeriodicTask]:
@@ -165,7 +166,7 @@ class BillManager[T](models.Manager):
         Returns:
             The task that was scheduled
         """
-        # This can be extracted to a signal if we want to support other creation methods
+        # This might be better as a signal but I want to keep it localized
         voting_ends, __ = IntervalSchedule.objects.get_or_create(
             every=settings.WEBISCITE_VOTING_PERIOD, period=IntervalSchedule.DAYS
         )
@@ -182,9 +183,15 @@ class BillManager[T](models.Manager):
         try:
             yield submit_task
         finally:
-            # This might be better as a signal but I want to keep it localized
-            if not isinstance(self._bill.id, int):
-                raise TypeError("self._bill was not saved in the submit task context")
+            if not (
+                hasattr(self, "_bill")
+                and hasattr(self._bill, "id")
+                and isinstance(self._bill.id, int)
+            ):
+                raise AttributeError(
+                    "self._bill was not saved in the submit task context"
+                )
+
             submit_task.name = f"bill_submit:{self._bill.id}"
             submit_task.args = json.dumps([self._bill.id])
             submit_task.save()
@@ -193,6 +200,8 @@ class BillManager[T](models.Manager):
                 self._bill.pull_request.number,
                 submit_task.name,
             )
+
+            del self._bill
 
 
 class Bill(StatusModel, TimeStampedModel):
