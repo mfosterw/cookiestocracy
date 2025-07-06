@@ -281,15 +281,21 @@ class Bill(StatusModel, TimeStampedModel):
             raise ValueError("Bill is not open for voting")
 
         try:
-            vote: Vote = self.vote_set.get(user=user)
-            if vote.support == support:
-                vote.delete()
-                return
-            vote.support = support
-            vote.save()
-
+            vote = self.vote_set.get(user=user)
+            recreate = vote.support != support
+            vote.delete()
         except Vote.DoesNotExist:
-            self.votes.add(user, through_defaults={"support": support})
+            recreate = True
+
+        if recreate:
+            self.vote_set.create(user=user, support=support)
+            logger.info(
+                "PR %s: User %s voted %s on bill %s",
+                self.pull_request.number,
+                user.username,
+                "yes" if support else "no",
+                self.id,
+            )
 
     def user_supports(self, user: User) -> bool | None:
         """
