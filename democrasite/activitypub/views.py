@@ -105,6 +105,8 @@ note_reply_view = NoteReplyView.as_view()
 @require_POST
 @require_user_profile
 def note_like_view(request: HttpRequest, pk: int) -> http.HttpResponse:
+    assert request.user.is_authenticated  # type guard
+
     note = get_object_or_404(Note, pk=pk)
     note.like(request.user.person)
 
@@ -114,6 +116,8 @@ def note_like_view(request: HttpRequest, pk: int) -> http.HttpResponse:
 @require_POST
 @require_user_profile
 def note_repost_view(request: HttpRequest, pk: int) -> http.HttpResponse:
+    assert request.user.is_authenticated  # type guard
+
     note = get_object_or_404(Note, pk=pk)
     note.repost(request.user.person)
 
@@ -193,6 +197,8 @@ person_following_notes_view = PersonFollowingNotesView.as_view()
 @require_user_profile
 def person_follow_view(request: HttpRequest, username: str) -> http.HttpResponse:
     """Follow a user by username."""
+    assert request.user.is_authenticated  # type guard
+
     person = get_object_or_404(Person, user__username=username)
     request.user.person.following.add(person)
 

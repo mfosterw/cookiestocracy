@@ -23,7 +23,7 @@
         <p>
           {{ bill.description }}
           {% if bill.author == user and bill.status == bill.Status.OPEN %}
-            <a href="{% url 'webiscite:bill-update' bill.id %}">
+            <a href="{{ bill.get_update_url }}">
               <i class="bi bi-pencil-square"></i>
             </a>
           {% endif %}
@@ -50,7 +50,7 @@
             {% if user.is_authenticated %}
               {# if logged in, add vote-enabling logic #}
               id="vote-yes-{{ bill.id }}"
-              action="{% url 'webiscite:bill-vote' bill.id %}"
+              action="{{ bill.get_vote_url }}"
               value="vote-yes"
             {% else %}
               {# otherwise, add a "log in to vote" popup #}
@@ -66,7 +66,7 @@
                   {% if user in bill.no_votes.all %}font-weight-bold{% endif %}"
            {% if bill.status == bill.Status.OPEN %}
              {% if user.is_authenticated %}
-               id="vote-no-{{ bill.id }}" action="{% url 'webiscite:bill-vote' bill.id %}" value="vote-no"
+               id="vote-no-{{ bill.id }}" action="{{ bill.get_vote_url }}" value="vote-no"
              {% else %}
                data-toggle="tooltip" data-placement="bottom" title="{% trans 'Log in to vote' %}" data-trigger="click"
              {% endif %}

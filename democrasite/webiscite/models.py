@@ -1,6 +1,8 @@
 """Models for the webiscite app"""
 
 import json
+from collections.abc import Iterator
+from contextlib import contextmanager
 from logging import getLogger
 from typing import Any
 
@@ -20,19 +22,6 @@ from democrasite.users.models import User
 from .constitution import is_constitutional
 
 logger = getLogger(__name__)
-
-
-class Vote(models.Model):
-    """A vote for or against a bill, with a timestamp"""
-
-    bill = models.ForeignKey("Bill", on_delete=models.CASCADE)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    support = models.BooleanField()
-    created = models.DateTimeField(auto_now_add=True)
-    # Doesn't need modified time because it's always deleted and re-added
-
-    def __str__(self) -> str:
-        return f"{self.user} {'for' if self.support else 'against'} {self.bill}"
 
 
 class PullRequestManager[T](models.Manager):
@@ -110,6 +99,28 @@ class PullRequest(StatusModel, TimeStampedModel):
             return bill
 
 
+class Vote(models.Model):
+    """A vote for or against a bill, with a timestamp"""
+
+    bill = models.ForeignKey("Bill", on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    support = models.BooleanField()
+    created = models.DateTimeField(auto_now_add=True)
+    # Doesn't need modified time because it's always deleted and re-added
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=("bill", "user"),
+                name="unique_user_bill_vote",
+                violation_error_code=_("Only one vote per user per bill allowed"),
+            )  # type: ignore[call-overload]
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.user} {'for' if self.support else 'against'} {self.bill}"
+
+
 class BillManager[T](models.Manager):
     def create_from_github(
         self,
@@ -131,38 +142,36 @@ class BillManager[T](models.Manager):
             A tuple containing the new or update pull request and new bill instance, if
             applicable
         """
-        bill = self.model(
-            name=title,
-            description=body,
-            author=author,
-            pull_request=pull_request,
-            status=Bill.Status.OPEN,
-            constitutional=bool(is_constitutional(diff_text)),
-            _submit_task=self._create_temp_submit_task(),
-        )
-        bill.full_clean()
-        bill.save()
-        logger.info("PR %s: Bill %s created", pull_request.number, bill.id)
+        with self._create_submit_task() as submit_task:
+            self._bill = self.model(
+                name=title,
+                description=body,
+                author=author,
+                pull_request=pull_request,
+                status=Bill.Status.OPEN,
+                constitutional=bool(is_constitutional(diff_text)),
+                _submit_task=submit_task,
+            )
+            self._bill.full_clean()
+            self._bill.save()
+            logger.info("PR %s: Bill %s created", pull_request.number, self._bill.id)
+            bill = self._bill
 
-        bill._submit_task.name = f"bill_submit:{bill.id}"  # noqa: SLF001
-        bill._submit_task.args = json.dumps([bill.id])  # noqa: SLF001
-        bill._submit_task.save()  # noqa: SLF001
-        logger.info("PR %s: Scheduled %s", pull_request.number, bill._submit_task.name)  # noqa: SLF001
+        return bill  # noqa: RET504
 
-        return bill
-
-    def _create_temp_submit_task(self) -> PeriodicTask:
+    @contextmanager
+    def _create_submit_task(self) -> Iterator[PeriodicTask]:
         """Schedule a task to submit this bill for voting
 
         Returns:
             The task that was scheduled
         """
-        # This can be extracted to a signal if we want to support other creation methods
+        # This might be better as a signal but I want to keep it localized
         voting_ends, __ = IntervalSchedule.objects.get_or_create(
             every=settings.WEBISCITE_VOTING_PERIOD, period=IntervalSchedule.DAYS
         )
 
-        return PeriodicTask.objects.create(
+        submit_task = PeriodicTask.objects.create(
             interval=voting_ends,
             name="bill_submit:temp",
             task="democrasite.webiscite.tasks.submit_bill",
@@ -171,6 +180,28 @@ class BillManager[T](models.Manager):
             # scheduler started, not when it was created
             last_run_at=timezone.now(),
         )
+        try:
+            yield submit_task
+        finally:
+            if not (
+                hasattr(self, "_bill")
+                and hasattr(self._bill, "id")
+                and isinstance(self._bill.id, int)
+            ):
+                raise AttributeError(
+                    "self._bill was not saved in the submit task context"
+                )
+
+            submit_task.name = f"bill_submit:{self._bill.id}"
+            submit_task.args = json.dumps([self._bill.id])
+            submit_task.save()
+            logger.info(
+                "PR %s: Scheduled %s",
+                self._bill.pull_request.number,
+                submit_task.name,
+            )
+
+            del self._bill
 
 
 class Bill(StatusModel, TimeStampedModel):
@@ -233,6 +264,14 @@ class Bill(StatusModel, TimeStampedModel):
         """Returns URL to view this Bill instance"""
         return reverse("webiscite:bill-detail", kwargs={"pk": self.id})
 
+    def get_update_url(self) -> str:
+        """Returns URL to update this Bill instance"""
+        return reverse("webiscite:bill-update", kwargs={"pk": self.id})
+
+    def get_vote_url(self) -> str:
+        """Returns URL for the current user to vote on this Bill instance"""
+        return reverse("webiscite:bill-vote", kwargs={"pk": self.id})
+
     @property
     def yes_votes(self) -> models.QuerySet[User]:
         return self.votes.filter(vote__support=True)
@@ -259,15 +298,21 @@ class Bill(StatusModel, TimeStampedModel):
             raise ValueError("Bill is not open for voting")
 
         try:
-            vote: Vote = self.vote_set.get(user=user)
-            if vote.support == support:
-                vote.delete()
-                return
-            vote.support = support
-            vote.save()
-
+            vote = self.vote_set.get(user=user)
+            recreate = vote.support != support
+            vote.delete()
         except Vote.DoesNotExist:
-            self.votes.add(user, through_defaults={"support": support})
+            recreate = True
+
+        if recreate:
+            self.vote_set.create(user=user, support=support)
+            logger.info(
+                "PR %s: User %s voted %s on bill %s",
+                self.pull_request.number,
+                user.username,
+                "yes" if support else "no",
+                self.id,
+            )
 
     def user_supports(self, user: User) -> bool | None:
         """

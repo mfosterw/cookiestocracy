@@ -27,6 +27,12 @@ class TestPerson:
             person.get_absolute_url() == f"/activitypub/person/{person.user.username}/"
         )
 
+    def test_get_follow_url(self, person: Person):
+        assert (
+            person.get_follow_url()
+            == f"/activitypub/person/{person.user.username}/follow/"
+        )
+
     def test_is_following(self, person: Person):
         person2 = PersonFactory.create()
         person.following.add(person2)
@@ -81,7 +87,7 @@ class TestNoteManager:
 
         repost = person_notes[1]
         assert repost.repost_person == person.display_name
-        assert repost.repost_time == note.repost_set.first().created
+        assert repost.repost_time == note.repost_set.first().created  # type: ignore[union-attr]
 
     def test_get_person_following_notes(self, person: Person):
         person2 = PersonFactory.create()
@@ -104,7 +110,7 @@ class TestNoteManager:
 
         repost = following_notes[1]
         assert repost.repost_person == person2.display_name
-        assert repost.repost_time == own_notes[0].repost_set.first().created
+        assert repost.repost_time == own_notes[0].repost_set.first().created  # type: ignore[union-attr]
 
 
 class TestNote:
@@ -118,6 +124,9 @@ class TestNote:
 
     def test_get_absolute_url(self, note: Note):
         assert note.get_absolute_url() == f"/activitypub/notes/{note.pk}/"
+
+    def test_get_like_url(self, note: Note):
+        assert note.get_like_url() == f"/activitypub/notes/{note.id}/like/"
 
     def test_liked_by(self, note: Note, person: Person):
         assert not note.liked_by(person)
@@ -134,6 +143,9 @@ class TestNote:
         note.like(person)
 
         assert person not in note.likes.all()
+
+    def test_get_repost_url(self, note: Note):
+        assert note.get_repost_url() == f"/activitypub/notes/{note.id}/repost/"
 
     def test_reposted_by(self, note: Note, person: Person):
         assert not note.reposted_by(person)

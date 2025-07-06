@@ -62,6 +62,11 @@ class Person(TimeStampedModel):
             "activitypub:person-detail", kwargs={"username": self.display_name}
         )
 
+    def get_follow_url(self):
+        return reverse(
+            "activitypub:person-follow", kwargs={"username": self.display_name}
+        )
+
     def is_following(self, person: "Person") -> bool:
         """Check if a person is following this person.
 
@@ -117,12 +122,12 @@ class Repost(models.Model):
         return f'{self.person} reposted "{self.note}"'
 
 
-class NoteManager[T](TreeManager):
-    def get_queryset(self) -> models.QuerySet[T]:
+class NoteManager(TreeManager):
+    def get_queryset(self) -> models.QuerySet:
         """Get the queryset for notes, ordered by creation date."""
         return super().get_queryset().order_by(*self.model._meta.ordering)  # noqa: SLF001
 
-    def get_person_notes(self, person: Person) -> models.QuerySet[T]:
+    def get_person_notes(self, person: Person) -> models.QuerySet:
         """Get notes for display on a person's profile page.
 
         This method returns all notes authored by the person as well as all their
@@ -150,7 +155,7 @@ class NoteManager[T](TreeManager):
         )
         return posts.union(reposts).order_by("-order_time")
 
-    def get_person_following_notes(self, person: Person) -> models.QuerySet[T]:
+    def get_person_following_notes(self, person: Person) -> models.QuerySet:
         """Get notes from people the person is following.
 
         This method retrieves all notes authored or reposted by people that the
@@ -240,6 +245,9 @@ class Note(TimeStampedModel, MPTTModel):
         """
         return reverse("activitypub:note-detail", kwargs={"pk": self.pk})
 
+    def get_like_url(self):
+        return reverse("activitypub:note-like", kwargs={"pk": self.id})
+
     def liked_by(self, person: Person) -> bool:
         """Check if a person has liked the note.
 
@@ -263,6 +271,9 @@ class Note(TimeStampedModel, MPTTModel):
             return False
         self.likes.add(person)
         return True
+
+    def get_repost_url(self):
+        return reverse("activitypub:note-repost", kwargs={"pk": self.id})
 
     def reposted_by(self, person: Person) -> bool:
         """Check if a person has reposted the note.
