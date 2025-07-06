@@ -255,6 +255,14 @@ class Bill(StatusModel, TimeStampedModel):
         """Returns URL to view this Bill instance"""
         return reverse("webiscite:bill-detail", kwargs={"pk": self.id})
 
+    def get_update_url(self) -> str:
+        """Returns URL to update this Bill instance"""
+        return reverse("webiscite:bill-update", kwargs={"pk": self.id})
+
+    def get_vote_url(self) -> str:
+        """Returns URL for the current user to vote on this Bill instance"""
+        return reverse("webiscite:bill-vote", kwargs={"pk": self.id})
+
     @property
     def yes_votes(self) -> models.QuerySet[User]:
         return self.votes.filter(vote__support=True)

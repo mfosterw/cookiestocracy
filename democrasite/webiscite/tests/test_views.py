@@ -106,7 +106,7 @@ class TestBillUpdateView:
         client.force_login(bill.author)
 
         response = client.post(
-            reverse("webiscite:bill-update", kwargs={"pk": bill.id}),
+            bill.get_update_url(),
             data={"name": "test", "description": "testing"},
             follow=True,
         )

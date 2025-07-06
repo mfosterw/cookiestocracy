@@ -46,7 +46,7 @@
                       {% if user in bill.yes_votes.all %}font-weight-bold{% endif %}"
                {% if bill.status == bill.Status.OPEN %}
                  {% if user.is_authenticated %}
-                   id="vote-yes-{{ bill.id }}" action="{% url 'webiscite:bill-vote' bill.id %}" value="vote-yes"
+                   id="vote-yes-{{ bill.id }}" action="{{ bill.get_vote_url }}" value="vote-yes"
                  {% else %}
                    data-toggle="tooltip" data-placement="bottom" title="Log in to vote" data-trigger="click"
                  {% endif %}
@@ -58,7 +58,7 @@
                       {% if user in bill.no_votes.all %}font-weight-bold{% endif %}"
                {% if bill.status == bill.Status.OPEN %}
                  {% if user.is_authenticated %}
-                   id="vote-no-{{ bill.id }}" action="{% url 'webiscite:bill-vote' bill.id %}" value="vote-no"
+                   id="vote-no-{{ bill.id }}" action="{{ bill.get_vote_url }}" value="vote-no"
                  {% else %}
                    data-toggle="tooltip" data-placement="bottom" title="{% trans 'Log in to vote' %}" data-trigger="click"
                  {% endif %}

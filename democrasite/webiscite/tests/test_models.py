@@ -97,12 +97,18 @@ class TestBill:
         with pytest.raises(IntegrityError, match='"unique_open_pull_request"'):
             BillFactory.create(pull_request=bill.pull_request)
 
-    def test_bill_str(self):
+    def test_str(self):
         bill = BillFactory.create(name="The Test Act", pk=1, pull_request__number="-2")
         assert str(bill) == "Bill 1: The Test Act (PR #-2)"
 
-    def test_bill_get_absolute_url(self, bill: Bill):
+    def test_get_absolute_url(self, bill: Bill):
         assert bill.get_absolute_url() == f"/bills/{bill.id}/"
+
+    def test_get_update_url(self, bill: Bill):
+        assert bill.get_update_url() == f"/bills/{bill.id}/update/"
+
+    def test_get_vote_url(self, bill: Bill):
+        assert bill.get_vote_url() == f"/bills/{bill.id}/vote/"
 
     def test_close(self, bill: Bill):
         assert bill._submit_task.enabled is True  # noqa: SLF001

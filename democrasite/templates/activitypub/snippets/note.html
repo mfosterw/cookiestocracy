@@ -21,7 +21,7 @@
                   bi-heart
                 {% endif %}
                 text-danger note-like"
-         action="{% url 'activitypub:note-like' note.id %}"></i>
+         action="{{ note.get_like_url }}"></i>
     </a>
     <small class="text-secondary note-like-count">{{ note.likes.count }}</small>
     <a href="javascript:;"
@@ -34,7 +34,7 @@
                   text-secondary
                 {% endif %}
                 note-repost"
-         action="{% url 'activitypub:note-repost' note.id %}"></i>
+         action="{{ note.get_repost_url }}"></i>
     </a>
     <small class="text-secondary note-repost-count">{{ note.reposts.count }}</small>
     <a class="float-right text-secondary"
