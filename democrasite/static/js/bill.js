@@ -13,6 +13,5 @@ function update_progress(_, pbar) {
 }
 
 $(document).ready(function () {
-  $(".progress").each(update_progress);
   $('[data-toggle="tooltip"]').tooltip();
 });

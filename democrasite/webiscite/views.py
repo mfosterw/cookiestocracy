@@ -21,7 +21,7 @@ class BillListView(ListView):
     """View listing all open bills. Used for webiscite:index."""
 
     model = Bill
-    queryset = Bill.open.all()  # comes from django_model_utils
+    queryset = Bill.objects.filter(status=Bill.Status.OPEN)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

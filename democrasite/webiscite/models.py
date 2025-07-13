@@ -122,6 +122,33 @@ class Vote(models.Model):
 
 
 class BillManager[T](models.Manager):
+    def get_queryset(self):
+        return (
+            super()
+            .get_queryset()
+            .annotate(
+                total_votes=models.Count("vote"),
+                yes_percent=models.Case(
+                    models.When(
+                        models.Q(total_votes__gt=0),
+                        100
+                        * models.Count("vote", filter=models.Q(vote__support=True))
+                        / models.F("total_votes"),
+                    ),
+                    default=models.Value(0),
+                ),
+                no_percent=models.Case(
+                    models.When(
+                        models.Q(total_votes__gt=0),
+                        100
+                        * models.Count("vote", filter=models.Q(vote__support=False))
+                        / models.F("total_votes"),
+                    ),
+                    default=models.Value(0),
+                ),
+            )
+        )
+
     def create_from_github(
         self,
         title: str,

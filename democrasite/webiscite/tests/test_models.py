@@ -73,6 +73,31 @@ class TestVote:
 
 
 class TestBillManager:
+    def test_get_queryset(self, bill, user: User):
+        bill = Bill.objects.first()
+
+        assert bill.yes_percent == 0
+        assert bill.no_percent == 0
+
+        bill.vote(user, support=True)
+        bill = Bill.objects.first()
+
+        assert bill.yes_percent == 100  # noqa: PLR2004
+        assert bill.no_percent == 0
+
+        bill.vote(user, support=False)
+        bill = Bill.objects.first()
+
+        assert bill.yes_percent == 0
+        assert bill.no_percent == 100  # noqa: PLR2004
+
+        user2 = UserFactory.create()
+        bill.vote(user2, support=True)
+        bill = Bill.objects.first()
+
+        assert bill.yes_percent == 50  # noqa: PLR2004
+        assert bill.no_percent == 50  # noqa: PLR2004
+
     def test_create_from_github(self, user: User):
         pr = PullRequestFactory.create()
         bill = Bill.objects.create_from_github(
