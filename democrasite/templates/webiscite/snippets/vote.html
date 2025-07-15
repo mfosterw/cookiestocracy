@@ -10,8 +10,8 @@
 </div>
 {# If the user is logged in then add vote-enabling logic, otherwise add a "log in to vote" popup #}
 <a href="javascript:;"
-   class="float-left text-success mt-2 vote
-          {% if user in bill.yes_votes.all %}font-weight-bold{% endif %}"
+   class="float-start mt-2 link-success link-underline link-underline-opacity-0 link-underline-opacity-75-hover vote
+          {% if user in bill.yes_votes.all %}fw-bold{% endif %}"
    {% if bill.status == bill.Status.OPEN %}
      {% if user.is_authenticated %}
        id="vote-yes-{{ bill.id }}" action="{{ bill.get_vote_url }}" value="vote-yes"
@@ -21,9 +21,10 @@
    {% endif %}>
   ✓ {% trans 'Yes' %}: <span class="num-yes-votes" id="num-vote-yes-{{ bill.id }}">{{ bill.yes_votes.count }}</span>
 </a>
+
 <a href="javascript:;"
-   class="float-right text-danger mt-2 vote
-          {% if user in bill.no_votes.all %}font-weight-bold{% endif %}"
+   class="float-end mt-2 link-danger link-underline link-underline-opacity-0 link-underline-opacity-75-hover  vote
+          {% if user in bill.no_votes.all %}fw-bold{% endif %}"
    {% if bill.status == bill.Status.OPEN %}
      {% if user.is_authenticated %}
        id="vote-no-{{ bill.id }}" action="{{ bill.get_vote_url }}" value="vote-no"

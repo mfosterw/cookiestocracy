@@ -13,7 +13,8 @@
                     {% if bill.constitutional %}bg-light{% endif %}">
           <div class="card-body
                       {% if bill.status != bill.Status.OPEN %}inactive{% endif %}">
-            <a class="card-link" href="{{ bill.get_absolute_url }}">
+            <a class="card-link link-underline link-underline-opacity-0"
+               href="{{ bill.get_absolute_url }}">
               <h5 class="card-title">{{ bill }}</h5>
               {% if bill.constitutional %}
                 <p class="text-info">{% trans 'Amendment to the Constitution' %}</p>
@@ -28,7 +29,7 @@
             {% endif %}
             <hr />
             <div data-nosnippet class="card-text">{{ bill.description|truncatechars:80 }}</div>
-            <div class="card-text text-right">
+            <div class="card-text text-start">
               <a class="card-link git-pull-link"
                  href="{{ bill.pull_request.diff_url }}"
                  target="_blank">
