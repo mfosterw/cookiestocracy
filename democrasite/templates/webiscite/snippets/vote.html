@@ -4,10 +4,11 @@
   <div class="progress-bar bg-success"
        role="progressbar"
        style="width: {{ bill.yes_percent }}%"></div>
-  <div class="progress-bar bg-danger"
+  <div class="progress-bar bg-danger ms-auto"
        role="progressbar"
        style="width: {{ bill.no_percent }}%"></div>
 </div>
+
 {# If the user is logged in then add vote-enabling logic, otherwise add a "log in to vote" popup #}
 <a href="javascript:;"
    class="float-start mt-2 link-success link-underline link-underline-opacity-0 link-underline-opacity-75-hover vote

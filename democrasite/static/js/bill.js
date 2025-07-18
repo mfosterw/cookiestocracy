@@ -5,10 +5,13 @@ function update_progress(_, pbar) {
   let yes_votes = parseInt(votes.children(".num-yes-votes").text());
   let no_votes = parseInt(votes.children(".num-no-votes").text());
   $(pbar)
-    .children(".bg-success")
+    .children()
+    .first()
     .css("width", ((100 * yes_votes) / (yes_votes + no_votes) || 0) + "%");
+
   $(pbar)
-    .children(".bg-danger")
+    .children()
+    .last()
     .css("width", ((100 * no_votes) / (yes_votes + no_votes) || 0) + "%");
 }
 

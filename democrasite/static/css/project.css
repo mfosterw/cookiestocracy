@@ -18,6 +18,10 @@ body {
   border-color: #eed3d7;
 }
 
+.icon-link > .bi {
+  box-sizing: content-box;
+}
+
 /* Prevent styling vote links on expired bills */
 .inactive a.vote {
   cursor: default;
