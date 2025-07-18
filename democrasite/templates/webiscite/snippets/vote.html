@@ -17,7 +17,7 @@
      {% if user.is_authenticated %}
        id="vote-yes-{{ bill.id }}" action="{{ bill.get_vote_url }}" value="vote-yes"
      {% else %}
-       data-toggle="tooltip" data-placement="bottom" title="Log in to vote" data-trigger="click"
+       data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-trigger="click" title="{% trans 'Log in to vote' %}"
      {% endif %}
    {% endif %}>
   ✓ {% trans 'Yes' %}: <span class="num-yes-votes" id="num-vote-yes-{{ bill.id }}">{{ bill.yes_votes.count }}</span>
@@ -30,7 +30,7 @@
      {% if user.is_authenticated %}
        id="vote-no-{{ bill.id }}" action="{{ bill.get_vote_url }}" value="vote-no"
      {% else %}
-       data-toggle="tooltip" data-placement="bottom" title="{% trans 'Log in to vote' %}" data-trigger="click"
+       data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-trigger="click" title="{% trans 'Log in to vote' %}"
      {% endif %}
    {% endif %}>
   X {% trans 'No' %}: <span class="num-no-votes" id="num-vote-no-{{ bill.id }}">{{ bill.no_votes.count }}</span>

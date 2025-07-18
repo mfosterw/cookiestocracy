@@ -46,8 +46,8 @@
     {{ empty_message }}
   {% endfor %}
 {% endblock content %}
+
 {% block inline_javascript %}
-  <script type="text/javascript" src="{% static 'js/bill.js' %}"></script>
   {% if user.is_authenticated %}
     <script type="text/javascript" src="{% static 'js/vote.js' %}"></script>
   {% endif %}

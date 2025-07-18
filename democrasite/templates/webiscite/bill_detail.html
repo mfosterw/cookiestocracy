@@ -44,8 +44,8 @@
     </div>
   </div>
 {% endblock content %}
+
 {% block inline_javascript %}
-  <script type="text/javascript" src="{% static 'js/bill.js' %}"></script>
   {% if user.is_authenticated and bill.status == bill.Status.OPEN %}
     <script type="text/javascript" src="{% static 'js/vote.js' %}"></script>
   {% endif %}
