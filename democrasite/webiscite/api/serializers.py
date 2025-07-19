@@ -1,6 +1,7 @@
 from typing import TYPE_CHECKING
 
 from rest_framework.serializers import CharField
+from rest_framework.serializers import HyperlinkedModelSerializer
 from rest_framework.serializers import IntegerField
 from rest_framework.serializers import ModelSerializer
 from rest_framework.serializers import SerializerMethodField
@@ -27,7 +28,7 @@ class PullRequestSerializer(ModelSerializer):
         read_only_fields = fields  # pull requests are read-only
 
 
-class BillSerializer(ModelSerializer):
+class BillSerializer(HyperlinkedModelSerializer):
     author = UserSerializer()
     pull_request = PullRequestSerializer(read_only=True)
     status = CharField(source="get_status_display")

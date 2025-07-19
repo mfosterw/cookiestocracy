@@ -1,9 +1,9 @@
-from rest_framework import serializers
+from rest_framework.serializers import ModelSerializer
 
 from democrasite.users.models import User
 
 
-class UserSerializer(serializers.ModelSerializer[User]):
+class UserSerializer(ModelSerializer[User]):
     class Meta:
         model = User
         fields = ["username", "name", "url"]
