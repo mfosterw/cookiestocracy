@@ -20,7 +20,6 @@
     <meta name="created" content="{% now 'jS M Y h:i' %}" />
     <meta name="description"
           content="A website which automatically incorporates changes from users based on popular approval" />
-    <meta name="author" content="Matthew Foster Walsh" />
     <meta name="google-site-verification"
           content="B7IAH2JHzzr3L40rxXcl-mITWAod6ud_1rOWTh-taHA" />
     <link rel="icon" href="{% static 'images/favicons/favicon.ico' %}" />
@@ -35,6 +34,8 @@
       <!-- Third-party CSS libraries go here -->
       <!-- This file stores project-specific CSS -->
       <link href="{% static 'css/project.css' %}" rel="stylesheet" />
+      {% block extra_css %}
+      {% endblock extra_css %}
     {% endblock css %}
     <!-- javascript ================================================== -->
     {# Placed at the top of the document so pages load faster with defer #}
@@ -69,24 +70,10 @@
             {% get_providers as socialaccount_providers %}
             <div class="collapse navbar-collapse" id="navbar-supported-content">
               <ul class="navbar-nav me-auto">
+                {% block nav_app_pages %}
+                {% endblock nav_app_pages %}
                 {% if request.user.is_authenticated %}
                   {% block nav_user_pages %}
-                    <li class="nav-item">
-                      {# URL provided by django-allauth/account/urls.py #}
-                      <a class="nav-link"
-                         href="{% url 'users:detail' request.user.username %}">{% trans 'Profile' %}</a>
-                    </li>
-                    {# lazy way to check if user is logged in with github #}
-                    {% for provider in socialaccount_providers %}
-                      {% if provider.id == 'github' %}
-                        <li class="nav-item">
-                          <a href="{% url 'webiscite:my-bills' %}" class="nav-link">{% trans 'Proposals' %}</a>
-                        </li>
-                      {% endif %}
-                    {% endfor %}
-                    <li class="nav-item">
-                      <a href="{% url 'webiscite:my-bill-votes' %}" class="nav-link">{% trans 'Votes Cast' %}</a>
-                    </li>
                   {% endblock nav_user_pages %}
                 {% endif %}
                 {% block nav_authentication %}

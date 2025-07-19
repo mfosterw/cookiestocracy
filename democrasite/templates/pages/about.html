@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% load i18n %}
+{% load i18n static %}
 
 {% block sub_title %}
   {% trans "About" %}
@@ -87,3 +87,7 @@
     </p>
   </div>
 {% endblock content %}
+
+{% block extra_css %}
+  <link href="{% static 'css/about.css' %}" rel="stylesheet" />
+{% endblock extra_css %}
