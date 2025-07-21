@@ -1,5 +1,4 @@
-from typing import Any
-
+from django.core.exceptions import ValidationError
 from drf_spectacular.utils import extend_schema
 from drf_spectacular.utils import extend_schema_view
 from drf_spectacular.utils import inline_serializer
@@ -13,6 +12,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.serializers import BooleanField
 from rest_framework.serializers import IntegerField
+from rest_framework.serializers import ValidationError as RestValidationError
 from rest_framework.viewsets import GenericViewSet
 
 from democrasite.webiscite.models import Bill
@@ -38,7 +38,6 @@ class IsAuthorOrReadOnly(BasePermission):
         if request.resolver_match.view_name == "bill-vote":
             return True
 
-        # Instance must have an attribute named `owner`.
         return obj.author == request.user
 
 
@@ -58,7 +57,7 @@ class BillViewSet(RetrieveModelMixin, ListModelMixin, UpdateModelMixin, GenericV
     queryset = Bill.objects.select_related("author", "pull_request")
     permission_classes = [IsAuthorOrReadOnly]
 
-    def get_serializer_context(self) -> dict[str, Any]:
+    def get_serializer_context(self):
         context = super().get_serializer_context()
         context["user"] = self.request.user
         return context
@@ -66,8 +65,19 @@ class BillViewSet(RetrieveModelMixin, ListModelMixin, UpdateModelMixin, GenericV
     @action(detail=True, methods=("post",))
     def vote(self, request: Request, pk):
         bill: Bill = self.get_object()
-        assert request.user.is_authenticated  # type guard
-        bill.vote(request.user, support=request.data["support"])
+        assert request.user.is_authenticated  # type guard, get_object checks login
+
+        try:
+            support = request.data["support"].title()
+            bill.vote(request.user, support=support)
+        except (ValidationError, KeyError) as err:
+            if isinstance(err, ValidationError):
+                raise RestValidationError(
+                    f'Invalid "support" value: {err}', err.code
+                ) from err
+
+            raise RestValidationError('"support" parameter required') from err
+
         return Response(
             {"yes_votes": bill.yes_votes.count(), "no_votes": bill.no_votes.count()}
         )
