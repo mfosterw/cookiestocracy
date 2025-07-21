@@ -123,7 +123,7 @@ class TestBillViewSet:
         response = api_client.post(url)
 
         assert response.status_code == HTTPStatus.BAD_REQUEST
-        assert response.data[0].code == "invalid"
+        assert response.data["support"].code == "invalid"
         assert not bill.yes_votes.filter(pk=bill.author.pk).exists()
 
     def test_vote_bad_data(self, bill: Bill, api_client: APIClient):
@@ -133,5 +133,5 @@ class TestBillViewSet:
         response = api_client.post(url, {"support": "banana"})
 
         assert response.status_code == HTTPStatus.BAD_REQUEST
-        assert response.data[0].code == "invalid"
+        assert response.data["support"].code == "invalid"
         assert not bill.yes_votes.filter(pk=bill.author.pk).exists()

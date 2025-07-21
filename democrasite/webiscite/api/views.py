@@ -70,13 +70,11 @@ class BillViewSet(RetrieveModelMixin, ListModelMixin, UpdateModelMixin, GenericV
         try:
             support = request.data["support"].title()
             bill.vote(request.user, support=support)
-        except (ValidationError, KeyError) as err:
-            if isinstance(err, ValidationError):
-                raise RestValidationError(
-                    f'Invalid "support" value: {err}', err.code
-                ) from err
+        except (ValidationError, KeyError) as e:
+            if isinstance(e, ValidationError):
+                raise RestValidationError({"support": e.messages[0]}, e.code) from e
 
-            raise RestValidationError('"support" parameter required') from err
+            raise RestValidationError({"support": "This field is required."}) from e
 
         return Response(
             {"yes_votes": bill.yes_votes.count(), "no_votes": bill.no_votes.count()}
