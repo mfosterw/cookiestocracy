@@ -29,9 +29,9 @@ class PullRequestSerializer(ModelSerializer):
 
 
 class BillSerializer(HyperlinkedModelSerializer):
-    author = UserSerializer()
+    author = UserSerializer(read_only=True)
     pull_request = PullRequestSerializer(read_only=True)
-    status = CharField(source="get_status_display")
+    status = CharField(read_only=True, source="get_status_display")
 
     yes_votes = IntegerField(read_only=True, source="yes_votes.count")
     no_votes = IntegerField(read_only=True, source="no_votes.count")
@@ -39,7 +39,7 @@ class BillSerializer(HyperlinkedModelSerializer):
 
     class Meta:
         model = Bill
-        exclude = ["votes", "modified", "_submit_task"]
+        exclude = ["votes", "modified", "status_changed", "_submit_task"]
         read_only_fields = [
             "author",
             "pull_request",
