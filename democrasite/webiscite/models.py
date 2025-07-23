@@ -149,6 +149,17 @@ class BillManager[T](models.Manager):
             )
         )
 
+    def get_user_queryset(self, user: User):
+        bills = self.get_queryset()
+        return bills.annotate(
+            user_vote=models.Subquery(
+                bills.filter(
+                    vote__bill=models.OuterRef("pk"),
+                    vote__user=user,
+                ).values("vote__support")
+            )
+        )
+
     def create_from_github(
         self,
         title: str,

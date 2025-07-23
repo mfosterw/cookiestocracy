@@ -6,6 +6,7 @@ from django import http
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.mixins import UserPassesTestMixin
 from django.contrib.messages.views import SuccessMessageMixin
+from django.http import Http404
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_POST
 from django.views.generic import DetailView
@@ -14,14 +15,18 @@ from django.views.generic import UpdateView
 
 from .models import Bill
 
-# Bill-related views
-
 
 class BillListView(ListView):
     """View listing all open bills. Used for webiscite:index."""
 
     model = Bill
-    queryset = Bill.objects.filter(status=Bill.Status.OPEN)
+
+    def get_queryset(self):
+        if self.request.user.is_authenticated:
+            return Bill.objects.get_user_queryset(self.request.user).filter(
+                status=Bill.Status.OPEN
+            )
+        return Bill.objects.filter(status=Bill.Status.OPEN)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -80,6 +85,17 @@ class BillDetailView(DetailView):
     """View for one bill on its own page."""
 
     model = Bill
+
+    def get_object(self, queryset=None):
+        pk = self.kwargs.get("pk")
+
+        try:
+            if self.request.user.is_authenticated:
+                return Bill.objects.get_user_queryset(self.request.user).get(pk=pk)
+            return Bill.objects.get(pk=pk)
+
+        except Bill.DoesNotExist as err:
+            raise Http404(_("No Bills found matching query")) from err
 
 
 bill_detail_view = BillDetailView.as_view()
