@@ -5,6 +5,7 @@ import pytest
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
 from django.core.exceptions import PermissionDenied
+from django.http import Http404
 from django.http import HttpResponseRedirect
 from django.test import Client
 from django.test import RequestFactory
@@ -113,6 +114,13 @@ class TestBillDetailView:
         request.user = AnonymousUser()
         response = views.bill_detail_view(request, pk=bill.id)
         assert response.status_code == HTTPStatus.OK
+
+    def test_404(self, rf: RequestFactory):
+        request = rf.get("/fake-url/")
+        request.user = AnonymousUser()
+
+        with pytest.raises(Http404):
+            views.bill_detail_view(request, pk=1)
 
 
 class TestBillUpdateView:
