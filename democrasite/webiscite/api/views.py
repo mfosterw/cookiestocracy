@@ -8,6 +8,7 @@ from rest_framework.mixins import RetrieveModelMixin
 from rest_framework.mixins import UpdateModelMixin
 from rest_framework.permissions import SAFE_METHODS
 from rest_framework.permissions import BasePermission
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.serializers import BooleanField
@@ -31,12 +32,9 @@ class IsAuthorOrReadOnly(BasePermission):
         # so we'll always allow GET, HEAD or OPTIONS requests.
         if request.method in SAFE_METHODS:
             return True
-        # IsAuthOrReadOnly
+        # IsAuthenticatedOrReadOnly
         if not request.user.is_authenticated:
             return False
-        # All authenticated users can vote
-        if request.resolver_match.view_name == "bill-vote":
-            return True
 
         return obj.author == request.user
 
@@ -62,7 +60,7 @@ class BillViewSet(RetrieveModelMixin, ListModelMixin, UpdateModelMixin, GenericV
         context["user"] = self.request.user
         return context
 
-    @action(detail=True, methods=("post",))
+    @action(detail=True, methods=("post",), permission_classes=(IsAuthenticated,))
     def vote(self, request: Request, pk):
         bill: Bill = self.get_object()
         assert request.user.is_authenticated  # type guard, get_object checks login
