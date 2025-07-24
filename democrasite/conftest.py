@@ -1,6 +1,7 @@
 """Global test fixtures for the project."""
 
 import pytest
+from rest_framework.test import APIClient
 from rest_framework.test import APIRequestFactory
 
 from democrasite.users.models import User
@@ -28,3 +29,9 @@ def user() -> User:
 def api_rf():
     """Return a RequestFactory for use in API tests."""
     return APIRequestFactory()
+
+
+@pytest.fixture
+def api_client():
+    """Return a RequestFactory for use in API tests."""
+    return APIClient()

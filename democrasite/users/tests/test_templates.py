@@ -27,8 +27,10 @@ class TestRootTemplates:
         # Admin site is only enabled during development
         settings.DEBUG = True
 
+        from config import api_router
         from config import urls
 
+        reload(api_router)
         reload(urls)
         clear_url_caches()
 

@@ -6,6 +6,7 @@ from django import http
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.mixins import UserPassesTestMixin
 from django.contrib.messages.views import SuccessMessageMixin
+from django.http import Http404
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_POST
 from django.views.generic import DetailView
@@ -13,15 +14,20 @@ from django.views.generic import ListView
 from django.views.generic import UpdateView
 
 from .models import Bill
-
-# Bill-related views
+from .models import ClosedBillVoteError
 
 
 class BillListView(ListView):
     """View listing all open bills. Used for webiscite:index."""
 
     model = Bill
-    queryset = Bill.open.all()  # comes from django_model_utils
+
+    def get_queryset(self):
+        if self.request.user.is_authenticated:
+            return Bill.objects.annotate_user_vote(self.request.user).filter(
+                status=Bill.Status.OPEN
+            )
+        return Bill.objects.filter(status=Bill.Status.OPEN)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -41,8 +47,11 @@ class BillProposalsView(LoginRequiredMixin, ListView):
         """
         Return the list of items for this view - bills proposed by the current user.
         """
-        assert self.request.user.is_authenticated  # type guard
-        return self.request.user.bill_set.all()
+        user = self.request.user
+        assert user.is_authenticated  # type guard
+
+        bill_set = user.bill_set.all()
+        return Bill.objects.annotate_user_vote(user, bill_set)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -63,8 +72,11 @@ class BillVotesView(LoginRequiredMixin, ListView):
         """
         Return the list of items for this view - bills voted on by the current user.
         """
-        assert self.request.user.is_authenticated  # type guard
-        return self.request.user.votes.all()
+        user = self.request.user
+        assert user.is_authenticated  # type guard
+
+        bills = user.votes.all()
+        return Bill.objects.annotate_user_vote(user, bills)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -80,6 +92,17 @@ class BillDetailView(DetailView):
     """View for one bill on its own page."""
 
     model = Bill
+
+    def get_object(self, queryset=None):
+        pk = self.kwargs.get("pk")
+
+        try:
+            if self.request.user.is_authenticated:
+                return Bill.objects.annotate_user_vote(self.request.user).get(pk=pk)
+            return Bill.objects.get(pk=pk)
+
+        except Bill.DoesNotExist as err:
+            raise Http404(_("No Bills found matching query")) from err
 
 
 bill_detail_view = BillDetailView.as_view()
@@ -122,20 +145,23 @@ def vote_view(request: http.HttpRequest, pk: int) -> http.HttpResponse:
 
     vote_val = request.POST.get("vote")
     if not vote_val:
-        return http.HttpResponseBadRequest('"vote" data expected')
-    if vote_val not in {"vote-yes", "vote-no"}:
+        return http.HttpResponseBadRequest('"vote" field is required.')
+
+    vote = vote_val.lower()
+    if vote == "vote-yes":
+        support = True
+    elif vote == "vote-no":
+        support = False
+    else:
         return http.HttpResponseBadRequest(
-            '"vote" must be one of ("vote-yes", "vote-no")'
+            '"vote" must be one of ("vote-yes", "vote-no").'
         )
 
     bill = Bill.objects.get(pk=pk)
-    if bill.status != Bill.Status.OPEN:
-        return http.HttpResponseForbidden("Bill may not be voted on")
-
-    if vote_val == "vote-yes":
-        bill.vote(request.user, support=True)
-    elif vote_val == "vote-no":
-        bill.vote(request.user, support=False)
+    try:
+        bill.vote(request.user, support=support)
+    except ClosedBillVoteError as err:
+        return http.HttpResponseForbidden(str(err))
 
     return http.JsonResponse(
         {

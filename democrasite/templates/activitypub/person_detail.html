@@ -13,8 +13,9 @@
       <p>
         {{ person.bio }}
         {% if user == person.user %}
-          <a href="{% url 'activitypub:person-update' %}">
-            <i class="bi bi-pencil-square"></i> Edit Bio
+          <a class="icon-link ms-2 position-relative"
+             href="{% url 'activitypub:person-update' %}">
+            <i class="bi bi-pencil-square pb-2"></i> Edit Bio
           </a>
         {% elif user.person %}
           <br />

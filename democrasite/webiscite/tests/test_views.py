@@ -5,6 +5,7 @@ import pytest
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
 from django.core.exceptions import PermissionDenied
+from django.http import Http404
 from django.http import HttpResponseRedirect
 from django.test import Client
 from django.test import RequestFactory
@@ -18,12 +19,36 @@ from .factories import BillFactory
 
 
 class TestBillListView:
-    def test_queryset(self):
+    def test_get_queryset_noauth(self, rf: RequestFactory):
         open_bill = BillFactory.create(status=Bill.Status.OPEN)
         closed_bill = BillFactory.create(status=Bill.Status.CLOSED)
 
-        assert open_bill in views.BillListView.queryset
-        assert closed_bill not in views.BillListView.queryset
+        request = rf.get("/fake-url/")
+        request.user = AnonymousUser()
+        view = views.BillListView()
+        view.request = request
+
+        queryset = view.get_queryset()
+
+        assert open_bill in queryset
+        assert closed_bill not in queryset
+        with pytest.raises(AttributeError):
+            assert queryset.first().user_vote
+
+    def test_get_queryset_auth(self, user: User, rf: RequestFactory):
+        open_bill = BillFactory.create(status=Bill.Status.OPEN)
+        closed_bill = BillFactory.create(status=Bill.Status.CLOSED)
+
+        request = rf.get("/fake-url/")
+        request.user = user
+        view = views.BillListView()
+        view.request = request
+
+        queryset = view.get_queryset()
+
+        assert open_bill in queryset
+        assert closed_bill not in queryset
+        assert queryset.first().user_vote is None
 
 
 class TestBillProposalsView:
@@ -32,7 +57,6 @@ class TestBillProposalsView:
 
         view = views.BillProposalsView()
         request = rf.get("/fake-url/")
-
         request.user = bill.author
         view.request = request
 
@@ -67,11 +91,36 @@ class TestBillVotesView:
 
 
 class TestBillDetailView:
-    def test_view_response(self, bill: Bill, rf: RequestFactory):
-        # Basically just test the view exists, just to have a test for it
+    def test_get_object_noath(self, bill: Bill, user: User, rf: RequestFactory):
         request = rf.get("/fake-url/")
+        request.user = AnonymousUser()
+        view = views.BillDetailView(kwargs={"pk": bill.id})
+        view.request = request
+
+        view_bill = view.get_object()
+
+        with pytest.raises(AttributeError):
+            assert view_bill.user_vote
+
+        view.request.user = user
+
+        view_bill = view.get_object()
+
+        assert view_bill.user_vote is None
+
+    def test_view_response(self, bill: Bill, rf: RequestFactory):
+        # Basically just test the view exists
+        request = rf.get("/fake-url/")
+        request.user = AnonymousUser()
         response = views.bill_detail_view(request, pk=bill.id)
         assert response.status_code == HTTPStatus.OK
+
+    def test_404(self, rf: RequestFactory):
+        request = rf.get("/fake-url/")
+        request.user = AnonymousUser()
+
+        with pytest.raises(Http404):
+            views.bill_detail_view(request, pk=1)
 
 
 class TestBillUpdateView:
@@ -128,7 +177,11 @@ class TestVoteView:
 
     @pytest.mark.parametrize(
         ("data", "status"),
-        [(None, 400), ({"vote": "idk"}, 400), ({"vote": "vote-yes"}, 403)],
+        [
+            (None, HTTPStatus.BAD_REQUEST),
+            ({"vote": "idk"}, HTTPStatus.BAD_REQUEST),
+            ({"vote": "vote-yes"}, HTTPStatus.FORBIDDEN),
+        ],
     )
     def test_not_open(self, user: User, rf: RequestFactory, data, status):
         request = rf.post("/fake-url/", data=data)
@@ -139,11 +192,11 @@ class TestVoteView:
 
         assert response.status_code == status
         if data is None:
-            assert response.content == b'"vote" data expected'
+            assert response.content == b'"vote" field is required.'
         elif data["vote"] == "idk":
-            assert response.content == b'"vote" must be one of ("vote-yes", "vote-no")'
+            assert response.content == b'"vote" must be one of ("vote-yes", "vote-no").'
         else:
-            assert response.content == b"Bill may not be voted on"
+            assert response.content == b"Bill is not open for voting"
 
     @pytest.mark.parametrize("vote", ["vote-yes", "vote-no"])
     def test_vote(self, rf: RequestFactory, user: User, bill: Bill, vote):

@@ -1,0 +1,37 @@
+{% load i18n %}
+
+<div class="progress">
+  <div class="progress-bar bg-success"
+       role="progressbar"
+       style="width: {{ bill.yes_percent }}%"></div>
+  <div class="progress-bar bg-danger ms-auto"
+       role="progressbar"
+       style="width: {{ bill.no_percent }}%"></div>
+</div>
+
+{# If the user is logged in then add vote-enabling logic, otherwise add a "log in to vote" popup #}
+<a href="javascript:;"
+   class="float-start mt-2 link-success link-underline link-underline-opacity-0 link-underline-opacity-75-hover vote
+          {% if bill.user_vote is True %}fw-bold{% endif %}"
+   {% if bill.status == bill.Status.OPEN %}
+     {% if user.is_authenticated %}
+       id="vote-yes-{{ bill.id }}" action="{{ bill.get_vote_url }}" value="vote-yes"
+     {% else %}
+       data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-trigger="click" title="{% trans 'Log in to vote' %}"
+     {% endif %}
+   {% endif %}>
+  ✓ {% trans 'Yes' %}: <span class="num-yes-votes" id="num-vote-yes-{{ bill.id }}">{{ bill.yes_votes.count }}</span>
+</a>
+
+<a href="javascript:;"
+   class="float-end mt-2 link-danger link-underline link-underline-opacity-0 link-underline-opacity-75-hover  vote
+          {% if bill.user_vote is False %}fw-bold{% endif %}"
+   {% if bill.status == bill.Status.OPEN %}
+     {% if user.is_authenticated %}
+       id="vote-no-{{ bill.id }}" action="{{ bill.get_vote_url }}" value="vote-no"
+     {% else %}
+       data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-trigger="click" title="{% trans 'Log in to vote' %}"
+     {% endif %}
+   {% endif %}>
+  X {% trans 'No' %}: <span class="num-no-votes" id="num-vote-no-{{ bill.id }}">{{ bill.no_votes.count }}</span>
+</a>

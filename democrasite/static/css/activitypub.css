@@ -1,0 +1,36 @@
+
+.note-create {
+  position: fixed;
+  bottom: 10px;
+  right: 5%;
+}
+
+.note a:not(.stretched-link) {
+  z-index: 2;
+  position: relative;
+}
+
+.note-interaction-wrapper {
+  width: 2em;
+}
+
+.note-interaction:hover {
+  opacity: 75%;
+}
+
+.person-follow {
+  min-width: 6em;
+}
+
+.person-unfollow::after {
+  content: "Following";
+}
+
+.person-unfollow:hover::after {
+  content: "Unfollow";
+}
+
+.person-unfollow:hover {
+  color: var(--light);
+  background-color: var(--secondary);
+}

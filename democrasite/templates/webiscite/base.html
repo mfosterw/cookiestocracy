@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% load i18n static %}
+
+{% block nav_user_pages %}
+  <li class="nav-item">
+    {# URL provided by django-allauth/account/urls.py #}
+    <a class="nav-link"
+       href="{% url 'users:detail' request.user.username %}">{% trans 'Profile' %}</a>
+  </li>
+  {# lazy way to check if user is logged in with github #}
+  {% for provider in socialaccount_providers %}
+    {% if provider.id == 'github' %}
+      <li class="nav-item">
+        <a href="{% url 'webiscite:my-bills' %}" class="nav-link">{% trans 'Proposals' %}</a>
+      </li>
+    {% endif %}
+  {% endfor %}
+  <li class="nav-item">
+    <a href="{% url 'webiscite:my-bill-votes' %}" class="nav-link">{% trans 'Votes Cast' %}</a>
+  </li>
+{% endblock nav_user_pages %}
+
+{% block extra_css %}
+  <link href="{% static 'css/webiscite.css' %}" rel="stylesheet" />
+{% endblock extra_css %}

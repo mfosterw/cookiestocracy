@@ -1,6 +1,7 @@
 from typing import TYPE_CHECKING
 
 from rest_framework.serializers import CharField
+from rest_framework.serializers import HyperlinkedModelSerializer
 from rest_framework.serializers import IntegerField
 from rest_framework.serializers import ModelSerializer
 from rest_framework.serializers import SerializerMethodField
@@ -27,10 +28,10 @@ class PullRequestSerializer(ModelSerializer):
         read_only_fields = fields  # pull requests are read-only
 
 
-class BillSerializer(ModelSerializer):
-    author = UserSerializer()
+class BillSerializer(HyperlinkedModelSerializer):
+    author = UserSerializer(read_only=True)
     pull_request = PullRequestSerializer(read_only=True)
-    status = CharField(source="get_status_display")
+    status = CharField(read_only=True, source="get_status_display")
 
     yes_votes = IntegerField(read_only=True, source="yes_votes.count")
     no_votes = IntegerField(read_only=True, source="no_votes.count")
@@ -38,7 +39,7 @@ class BillSerializer(ModelSerializer):
 
     class Meta:
         model = Bill
-        exclude = ["votes", "modified", "_submit_task"]
+        exclude = ["votes", "modified", "status_changed", "_submit_task"]
         read_only_fields = [
             "author",
             "pull_request",

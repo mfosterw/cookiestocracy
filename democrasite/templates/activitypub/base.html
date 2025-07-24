@@ -51,6 +51,10 @@
   {% endif %}
 {% endblock content %}
 
+{% block extra_css %}
+  <link href="{% static 'css/activitypub.css' %}" rel="stylesheet" />
+{% endblock extra_css %}
+
 {% if user.person %}
   {% block inline_javascript %}
     <script type="text/javascript" src="{% static 'js/note_interact.js' %}"></script>

@@ -6,6 +6,7 @@ from factory.faker import faker
 from democrasite.users.models import User
 from democrasite.users.tests.factories import UserFactory
 from democrasite.webiscite.models import Bill
+from democrasite.webiscite.models import ClosedBillVoteError
 from democrasite.webiscite.models import PullRequest
 from democrasite.webiscite.models import Vote
 
@@ -73,6 +74,41 @@ class TestVote:
 
 
 class TestBillManager:
+    def test_get_queryset(self, bill, user: User):
+        bill = Bill.objects.first()
+
+        assert bill.yes_percent == 0
+        assert bill.no_percent == 0
+
+        bill.vote(user, support=True)
+        bill = Bill.objects.first()
+
+        assert bill.yes_percent == 100  # noqa: PLR2004
+        assert bill.no_percent == 0
+
+        bill.vote(user, support=False)
+        bill = Bill.objects.first()
+
+        assert bill.yes_percent == 0
+        assert bill.no_percent == 100  # noqa: PLR2004
+
+        user2 = UserFactory.create()
+        bill.vote(user2, support=True)
+        bill = Bill.objects.first()
+
+        assert bill.yes_percent == 50  # noqa: PLR2004
+        assert bill.no_percent == 50  # noqa: PLR2004
+
+    def test_annotate_user_vote(self, bill: Bill, user: User):
+        bill.vote(user, support=True)
+        assert Bill.objects.annotate_user_vote(user).first().user_vote is True
+
+        bill.vote(user, support=False)
+        assert Bill.objects.annotate_user_vote(user).first().user_vote is False
+
+        bill.vote(user, support=False)
+        assert Bill.objects.annotate_user_vote(user).first().user_vote is None
+
     def test_create_from_github(self, user: User):
         pr = PullRequestFactory.create()
         bill = Bill.objects.create_from_github(
@@ -159,7 +195,7 @@ class TestBillVote:
     def test_bill_not_open(self, user: User):
         bill = BillFactory.create(status=Bill.Status.CLOSED)
 
-        with pytest.raises(ValueError, match="Bill is not open for voting"):
+        with pytest.raises(ClosedBillVoteError, match="Bill is not open for voting"):
             bill.vote(user, support=True)
 
 

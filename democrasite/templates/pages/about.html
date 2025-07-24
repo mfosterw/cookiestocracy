@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% load i18n %}
+{% load i18n static %}
 
 {% block sub_title %}
   {% trans "About" %}
@@ -45,7 +45,8 @@
     <div class="col-sm-11 col-md-9 col-lg-8 col-xl-7">
       <div class="card text-center mb-4 bg-light">
         <div class="card-body inactive">
-          <a class="card-link" href="javascript:;">
+          <a class="card-link link-underline link-underline-opacity-0"
+             href="javascript:;">
             <h5 class="card-title">{% blocktrans %}This is an example of a bill{% endblocktrans %}</h5>
             <p class="text-info">
               {% blocktrans %}If a bill is an amendment to the constitution, it will say so here.{% endblocktrans %}
@@ -59,7 +60,7 @@
             {% url 'webiscite:index' as index %}
             {% blocktrans %}This area is where the description of the bill goes. The information about bills is taken directly from Github when a pull request is opened. The title and number of the pull request will replace the title text at the top of this card. If you want to edit the title or description of a bill you proposed, click on the title to see the detaile view, and then click on the pencil next to the description on that page. Only a bill's creator can edit its title and description. Below this on the right, the red and green numbers signify the "diff size" of the bill, or how many lines were <span class="text-success">+added&nbsp;(green)</span> and <span class="text-danger">-removed&nbsp;(red)</span> in the edits this bill represents. Click on the diff to be redirected to the details of the changes that bill implements on Github. Under that is a bar which shows the proportion of votes in favor and against the bill. Underneath that, the "yes" and "no" links are where you click to vote for or against a bill, respectively. You need to log in before you can vote on real bills, and expired bills cannot be voted on. The numbers next to the bills are how many people have cast that vote for a particular bill. If you already voted on a bill, your choice will be in <strong>bold</strong>, and you can click it again to retract your vote. Visit the <a href="{{ index }}">homepage</a> to see some real bills (if any exist right now), log in, and cast some votes!{% endblocktrans %}
           </div>
-          <div class="card-text text-right">
+          <div class="card-text text-start">
             <a class="card-link git-pull-link" href="javascript:;">
               <span class="text-success">+0</span>
               <span class="text-danger">-0</span>
@@ -69,10 +70,10 @@
             <div class="progress-bar bg-success" role="progressbar"></div>
             <div class="progress-bar bg-danger" role="progressbar"></div>
           </div>
-          <a href="javascript:;" class="float-left text-success mt-2 vote">
+          <a href="javascript:;" class="float-start link-success mt-2 vote">
             ✓ {% trans "Yes" %}: <span class="num-yes-votes">0</span>
           </a>
-          <a href="javascript:;" class="float-right text-danger mt-2 vote">
+          <a href="javascript:;" class="float-end link-danger mt-2 vote">
             X {% trans "No" %}: <span class="num-no-votes">0</span>
           </a>
         </div>
@@ -86,3 +87,7 @@
     </p>
   </div>
 {% endblock content %}
+
+{% block extra_css %}
+  <link href="{% static 'css/about.css' %}" rel="stylesheet" />
+{% endblock extra_css %}

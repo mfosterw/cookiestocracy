@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'webiscite/base.html' %}
 
 {% load i18n static %}
 
@@ -13,7 +13,8 @@
                     {% if bill.constitutional %}bg-light{% endif %}">
           <div class="card-body
                       {% if bill.status != bill.Status.OPEN %}inactive{% endif %}">
-            <a class="card-link" href="{{ bill.get_absolute_url }}">
+            <a class="card-link link-underline link-underline-opacity-0"
+               href="{{ bill.get_absolute_url }}">
               <h5 class="card-title">{{ bill }}</h5>
               {% if bill.constitutional %}
                 <p class="text-info">{% trans 'Amendment to the Constitution' %}</p>
@@ -28,7 +29,7 @@
             {% endif %}
             <hr />
             <div data-nosnippet class="card-text">{{ bill.description|truncatechars:80 }}</div>
-            <div class="card-text text-right">
+            <div class="card-text text-start">
               <a class="card-link git-pull-link"
                  href="{{ bill.pull_request.diff_url }}"
                  target="_blank">
@@ -36,35 +37,7 @@
                 <span class="text-danger">-{{ bill.pull_request.deletions }}</span>
               </a>
             </div>
-            <div class="progress">
-              <div class="progress-bar bg-success" role="progressbar"></div>
-              <div class="progress-bar bg-danger" role="progressbar"></div>
-            </div>
-            {# If the user is logged in then add vote-enabling logic, otherwise add a "log in to vote" popup #}
-            <a href="javascript:;"
-               class="float-left text-success mt-2 vote
-                      {% if user in bill.yes_votes.all %}font-weight-bold{% endif %}"
-               {% if bill.status == bill.Status.OPEN %}
-                 {% if user.is_authenticated %}
-                   id="vote-yes-{{ bill.id }}" action="{{ bill.get_vote_url }}" value="vote-yes"
-                 {% else %}
-                   data-toggle="tooltip" data-placement="bottom" title="Log in to vote" data-trigger="click"
-                 {% endif %}
-               {% endif %}>
-              ✓ {% trans 'Yes' %}: <span class="num-yes-votes" id="num-yes-votes-{{ bill.id }}">{{ bill.yes_votes.count }}</span>
-            </a>
-            <a href="javascript:;"
-               class="float-right text-danger mt-2 vote
-                      {% if user in bill.no_votes.all %}font-weight-bold{% endif %}"
-               {% if bill.status == bill.Status.OPEN %}
-                 {% if user.is_authenticated %}
-                   id="vote-no-{{ bill.id }}" action="{{ bill.get_vote_url }}" value="vote-no"
-                 {% else %}
-                   data-toggle="tooltip" data-placement="bottom" title="{% trans 'Log in to vote' %}" data-trigger="click"
-                 {% endif %}
-               {% endif %}>
-              X {% trans 'No' %}: <span class="num-no-votes" id="num-no-votes-{{ bill.id }}">{{ bill.no_votes.count }}</span>
-            </a>
+            {% include 'webiscite/snippets/vote.html' %}
           </div>
         </div>
       </div>
@@ -73,8 +46,8 @@
     {{ empty_message }}
   {% endfor %}
 {% endblock content %}
+
 {% block inline_javascript %}
-  <script type="text/javascript" src="{% static 'js/bill.js' %}"></script>
   {% if user.is_authenticated %}
     <script type="text/javascript" src="{% static 'js/vote.js' %}"></script>
   {% endif %}
