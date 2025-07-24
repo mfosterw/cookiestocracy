@@ -17,6 +17,30 @@ class PersonManager(models.Manager):
         return super().get_queryset().select_related("user")
 
 
+class Follow(models.Model):
+    """Timestamped record of a person following another"""
+
+    following = models.ForeignKey(
+        "Person", on_delete=models.CASCADE, related_name="following_set"
+    )
+    follower = models.ForeignKey(
+        "Person", on_delete=models.CASCADE, related_name="follower_set"
+    )
+    created = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=("following", "follower"),
+                name="unique_follow",
+                violation_error_code=_("Can't follow a person more than once"),
+            )  # type: ignore[call-overload]
+        ]
+
+    def __str__(self):
+        return f"{self.follower} followed {self.following} on {self.created}"
+
+
 class Person(TimeStampedModel):
     """A person in the ActivityPub network, linked to a Django User."""
 
@@ -38,7 +62,7 @@ class Person(TimeStampedModel):
     objects = PersonManager()
 
     class Meta:
-        verbose_name_plural = "People"
+        verbose_name_plural = _("People")
 
     def __str__(self):
         return self.display_name
