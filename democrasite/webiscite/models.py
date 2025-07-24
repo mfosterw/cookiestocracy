@@ -135,22 +135,25 @@ class BillManager[T](models.Manager):
                 yes_percent=models.Case(
                     models.When(
                         models.Q(total_votes__gt=0),
-                        100
+                        100.0
                         * models.Count("vote", filter=models.Q(vote__support=True))
                         / models.F("total_votes"),
                     ),
                     default=models.Value(0),
+                    output_field=models.FloatField(),
                 ),
                 no_percent=models.Case(
                     models.When(
                         models.Q(total_votes__gt=0),
-                        100
+                        100.0
                         * models.Count("vote", filter=models.Q(vote__support=False))
                         / models.F("total_votes"),
                     ),
                     default=models.Value(0),
+                    output_field=models.FloatField(),
                 ),
             )
+            .order_by("created")
         )
 
     def annotate_user_vote(
