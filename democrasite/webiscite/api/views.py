@@ -1,8 +1,8 @@
-from django.core.exceptions import ValidationError
 from drf_spectacular.utils import extend_schema
 from drf_spectacular.utils import extend_schema_view
 from drf_spectacular.utils import inline_serializer
 from rest_framework.decorators import action
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.mixins import ListModelMixin
 from rest_framework.mixins import RetrieveModelMixin
 from rest_framework.mixins import UpdateModelMixin
@@ -17,6 +17,7 @@ from rest_framework.serializers import ValidationError as RestValidationError
 from rest_framework.viewsets import GenericViewSet
 
 from democrasite.webiscite.models import Bill
+from democrasite.webiscite.models import ClosedBillVoteError
 
 from .serializers import BillSerializer
 
@@ -62,17 +63,26 @@ class BillViewSet(RetrieveModelMixin, ListModelMixin, UpdateModelMixin, GenericV
 
     @action(detail=True, methods=("post",), permission_classes=(IsAuthenticated,))
     def vote(self, request: Request, pk):
-        bill: Bill = self.get_object()
+        # TODO: unify with democrasite/webiscite.py::vote_view?
         assert request.user.is_authenticated  # type guard, get_object checks login
 
-        try:
-            support = request.data["support"].title()
-            bill.vote(request.user, support=support)
-        except (ValidationError, KeyError) as e:
-            if isinstance(e, ValidationError):
-                raise RestValidationError({"support": e.messages[0]}, e.code) from e
+        vote_data = request.data.get("support")
+        if not vote_data:
+            raise RestValidationError({"support": "This field is required."})
 
-            raise RestValidationError({"support": "This field is required."}) from e
+        vote = vote_data.lower()
+        if vote == "true":
+            support = True
+        elif vote == "false":
+            support = False
+        else:
+            raise RestValidationError({"support": 'support must be "true" or "false".'})
+
+        bill: Bill = self.get_object()
+        try:
+            bill.vote(request.user, support=support)
+        except ClosedBillVoteError as err:
+            raise PermissionDenied(str(err)) from err
 
         return Response(
             {"yes_votes": bill.yes_votes.count(), "no_votes": bill.no_votes.count()}

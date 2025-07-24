@@ -14,6 +14,7 @@ from django.views.generic import ListView
 from django.views.generic import UpdateView
 
 from .models import Bill
+from .models import ClosedBillVoteError
 
 
 class BillListView(ListView):
@@ -138,20 +139,23 @@ def vote_view(request: http.HttpRequest, pk: int) -> http.HttpResponse:
 
     vote_val = request.POST.get("vote")
     if not vote_val:
-        return http.HttpResponseBadRequest('"vote" data expected')
-    if vote_val not in {"vote-yes", "vote-no"}:
+        return http.HttpResponseBadRequest('"vote" field is required.')
+
+    vote = vote_val.lower()
+    if vote == "vote-yes":
+        support = True
+    elif vote == "vote-no":
+        support = False
+    else:
         return http.HttpResponseBadRequest(
-            '"vote" must be one of ("vote-yes", "vote-no")'
+            '"vote" must be one of ("vote-yes", "vote-no").'
         )
 
     bill = Bill.objects.get(pk=pk)
-    if bill.status != Bill.Status.OPEN:
-        return http.HttpResponseForbidden("Bill may not be voted on")
-
-    if vote_val == "vote-yes":
-        bill.vote(request.user, support=True)
-    elif vote_val == "vote-no":
-        bill.vote(request.user, support=False)
+    try:
+        bill.vote(request.user, support=support)
+    except ClosedBillVoteError as err:
+        return http.HttpResponseForbidden(str(err))
 
     return http.JsonResponse(
         {

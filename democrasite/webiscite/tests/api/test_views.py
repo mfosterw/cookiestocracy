@@ -1,5 +1,6 @@
 from http import HTTPStatus
 
+import pytest
 from django.urls import reverse
 from django.utils.timezone import get_current_timezone
 from rest_framework.test import APIClient
@@ -116,22 +117,30 @@ class TestBillViewSet:
         assert response.data["no_votes"] == 0
         assert bill.yes_votes.filter(pk=user.pk).exists()
 
-    def test_vote_no_data(self, bill: Bill, api_client: APIClient):
-        api_client.force_login(bill.author)
-        url = reverse("bill-vote", args=[bill.id])
+        response = api_client.post(url, {"support": False})
 
-        response = api_client.post(url)
+        assert response.status_code == HTTPStatus.OK
+        assert response.data["no_votes"] == 1
 
-        assert response.status_code == HTTPStatus.BAD_REQUEST
-        assert response.data["support"].code == "invalid"
-        assert not bill.yes_votes.filter(pk=bill.author.pk).exists()
+    @pytest.mark.parametrize(
+        ("data", "status"),
+        [
+            (None, HTTPStatus.BAD_REQUEST),
+            ({"support": "idk"}, HTTPStatus.BAD_REQUEST),
+            ({"support": "true"}, HTTPStatus.FORBIDDEN),
+        ],
+    )
+    def test_not_open(self, api_rf: APIRequestFactory, data, status):
+        request = api_rf.post("/fake-url/", data=data)
+        bill = BillFactory.create(status=Bill.Status.CLOSED)
+        request.user = bill.author
 
-    def test_vote_bad_data(self, bill: Bill, api_client: APIClient):
-        api_client.force_login(bill.author)
-        url = reverse("bill-vote", args=[bill.id])
+        view = BillViewSet.as_view(actions={"post": "vote"})
+        response = view(request, pk=bill.pk)
 
-        response = api_client.post(url, {"support": "banana"})
-
-        assert response.status_code == HTTPStatus.BAD_REQUEST
-        assert response.data["support"].code == "invalid"
-        assert not bill.yes_votes.filter(pk=bill.author.pk).exists()
+        assert response.status_code == status
+        if data and data["support"] == "true":
+            response.render()
+            assert response.data["detail"] == "Bill is not open for voting"
+        else:
+            assert response.data["support"].code == "invalid"

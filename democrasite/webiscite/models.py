@@ -24,6 +24,10 @@ from .constitution import is_constitutional
 logger = getLogger(__name__)
 
 
+class ClosedBillVoteError(Exception):
+    pass
+
+
 class PullRequestManager[T](models.Manager):
     def create_from_github(self, pr: dict[str, Any]) -> T:
         """Create a :class:`~democrasite.webiscite.models.PullRequest` and optionally a
@@ -330,10 +334,10 @@ class Bill(StatusModel, TimeStampedModel):
             support (bool): Whether the user supports the bill
 
         Raises:
-            ValueError: If the bill is not open for voting
+            ClosedBillVoteError: If the bill is not open for voting
         """
         if self.status != self.Status.OPEN:
-            raise ValueError("Bill is not open for voting")
+            raise ClosedBillVoteError("Bill is not open for voting")
 
         try:
             vote = self.vote_set.get(user=user)

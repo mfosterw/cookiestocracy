@@ -6,6 +6,7 @@ from factory.faker import faker
 from democrasite.users.models import User
 from democrasite.users.tests.factories import UserFactory
 from democrasite.webiscite.models import Bill
+from democrasite.webiscite.models import ClosedBillVoteError
 from democrasite.webiscite.models import PullRequest
 from democrasite.webiscite.models import Vote
 
@@ -194,7 +195,7 @@ class TestBillVote:
     def test_bill_not_open(self, user: User):
         bill = BillFactory.create(status=Bill.Status.CLOSED)
 
-        with pytest.raises(ValueError, match="Bill is not open for voting"):
+        with pytest.raises(ClosedBillVoteError, match="Bill is not open for voting"):
             bill.vote(user, support=True)
 
 

@@ -177,7 +177,11 @@ class TestVoteView:
 
     @pytest.mark.parametrize(
         ("data", "status"),
-        [(None, 400), ({"vote": "idk"}, 400), ({"vote": "vote-yes"}, 403)],
+        [
+            (None, HTTPStatus.BAD_REQUEST),
+            ({"vote": "idk"}, HTTPStatus.BAD_REQUEST),
+            ({"vote": "vote-yes"}, HTTPStatus.FORBIDDEN),
+        ],
     )
     def test_not_open(self, user: User, rf: RequestFactory, data, status):
         request = rf.post("/fake-url/", data=data)
@@ -188,11 +192,11 @@ class TestVoteView:
 
         assert response.status_code == status
         if data is None:
-            assert response.content == b'"vote" data expected'
+            assert response.content == b'"vote" field is required.'
         elif data["vote"] == "idk":
-            assert response.content == b'"vote" must be one of ("vote-yes", "vote-no")'
+            assert response.content == b'"vote" must be one of ("vote-yes", "vote-no").'
         else:
-            assert response.content == b"Bill may not be voted on"
+            assert response.content == b"Bill is not open for voting"
 
     @pytest.mark.parametrize("vote", ["vote-yes", "vote-no"])
     def test_vote(self, rf: RequestFactory, user: User, bill: Bill, vote):
