@@ -156,7 +156,8 @@ Running Tests Locally
 The easiest way to run tests is by running ``just test``. This will run the tests from
 the ``django`` Docker service so they have access to Postgres. To run the tests in the
 local environment, for example using the VSCode test runner, you must have PostgreSQL_
-installed on your computer. Django should automatically create a test database for you
-when you run the tests.
+installed on your computer, and you must set the environment variable
+``DATABASE_URL=postgres:///democrasite``. Django should automatically create a test
+database for you when you run the tests.
 
 .. _PostgreSQL: https://www.postgresql.org/download/

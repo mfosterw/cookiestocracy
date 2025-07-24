@@ -88,9 +88,7 @@ RUN chown -R django:django ${APP_HOME}
 
 USER django
 
-RUN DATABASE_URL="" \
-  REDIS_URL="" \
-  DJANGO_SETTINGS_MODULE="config.settings.test" \
+RUN DJANGO_SETTINGS_MODULE="config.settings.test" \
   python manage.py compilemessages
 
 ENTRYPOINT ["/entrypoint"]
