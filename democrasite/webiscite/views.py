@@ -24,7 +24,7 @@ class BillListView(ListView):
 
     def get_queryset(self):
         if self.request.user.is_authenticated:
-            return Bill.objects.get_user_queryset(self.request.user).filter(
+            return Bill.objects.annotate_user_vote(self.request.user).filter(
                 status=Bill.Status.OPEN
             )
         return Bill.objects.filter(status=Bill.Status.OPEN)
@@ -47,8 +47,11 @@ class BillProposalsView(LoginRequiredMixin, ListView):
         """
         Return the list of items for this view - bills proposed by the current user.
         """
-        assert self.request.user.is_authenticated  # type guard
-        return self.request.user.bill_set.all()
+        user = self.request.user
+        assert user.is_authenticated  # type guard
+
+        bill_set = user.bill_set.all()
+        return Bill.objects.annotate_user_vote(user, bill_set)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -69,8 +72,11 @@ class BillVotesView(LoginRequiredMixin, ListView):
         """
         Return the list of items for this view - bills voted on by the current user.
         """
-        assert self.request.user.is_authenticated  # type guard
-        return self.request.user.votes.all()
+        user = self.request.user
+        assert user.is_authenticated  # type guard
+
+        bills = user.votes.all()
+        return Bill.objects.annotate_user_vote(user, bills)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -92,7 +98,7 @@ class BillDetailView(DetailView):
 
         try:
             if self.request.user.is_authenticated:
-                return Bill.objects.get_user_queryset(self.request.user).get(pk=pk)
+                return Bill.objects.annotate_user_vote(self.request.user).get(pk=pk)
             return Bill.objects.get(pk=pk)
 
         except Bill.DoesNotExist as err:

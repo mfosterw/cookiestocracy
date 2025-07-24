@@ -153,11 +153,15 @@ class BillManager[T](models.Manager):
             )
         )
 
-    def get_user_queryset(self, user: User):
-        bills = self.get_queryset()
-        return bills.annotate(
+    def annotate_user_vote(
+        self, user: User, queryset: models.QuerySet["Bill"] | None = None
+    ):
+        if queryset is None:
+            queryset = self.get_queryset()
+
+        return queryset.annotate(
             user_vote=models.Subquery(
-                bills.filter(
+                queryset.filter(
                     vote__bill=models.OuterRef("pk"),
                     vote__user=user,
                 ).values("vote__support")

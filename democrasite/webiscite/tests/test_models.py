@@ -99,15 +99,15 @@ class TestBillManager:
         assert bill.yes_percent == 50  # noqa: PLR2004
         assert bill.no_percent == 50  # noqa: PLR2004
 
-    def test_get_user_queryset(self, bill: Bill, user: User):
+    def test_annotate_user_vote(self, bill: Bill, user: User):
         bill.vote(user, support=True)
-        assert Bill.objects.get_user_queryset(user).first().user_vote is True
+        assert Bill.objects.annotate_user_vote(user).first().user_vote is True
 
         bill.vote(user, support=False)
-        assert Bill.objects.get_user_queryset(user).first().user_vote is False
+        assert Bill.objects.annotate_user_vote(user).first().user_vote is False
 
         bill.vote(user, support=False)
-        assert Bill.objects.get_user_queryset(user).first().user_vote is None
+        assert Bill.objects.annotate_user_vote(user).first().user_vote is None
 
     def test_create_from_github(self, user: User):
         pr = PullRequestFactory.create()
