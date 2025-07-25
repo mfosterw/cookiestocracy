@@ -19,8 +19,8 @@ sphinxcontrib-django==2.5  # https://github.com/sphinx-doc/sphinxcontrib-django
 
 # Code quality
 # ------------------------------------------------------------------------------
-ruff==0.12.2  # https://github.com/astral-sh/ruff
-coverage==7.9.2  # https://github.com/nedbat/coveragepy
+ruff==0.12.5  # https://github.com/astral-sh/ruff
+coverage==7.10.0  # https://github.com/nedbat/coveragepy
 djlint==1.36.4  # https://github.com/Riverside-Healthcare/djLint
 pre-commit==4.2.0  # https://github.com/pre-commit/pre-commit
 
@@ -34,4 +34,4 @@ pytest-django==4.11.1  # https://github.com/pytest-dev/pytest-django
 
 # Containers
 # ------------------------------------------------------------------------------
-rust-just==1.41.0  # https://github.com/casey/just
+rust-just==1.42.3  # https://github.com/casey/just
