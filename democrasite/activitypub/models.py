@@ -10,21 +10,19 @@ from mptt.models import TreeManager
 User = get_user_model()
 
 
-class PersonManager(models.Manager):
-    """Manager for Person model with user prefetched."""
-
-    def get_queryset(self):
-        return super().get_queryset().select_related("user")
-
-
 class Follow(models.Model):
     """Timestamped record of a person following another"""
 
     following = models.ForeignKey(
-        "Person", on_delete=models.CASCADE, related_name="following_set"
+        "Person",
+        on_delete=models.CASCADE,
+        # "person1.follower_set" will contain all of the Follow objects of people
+        # following person1. It is confusing when defining but makes much more sense
+        # when accessing imo. See tests for an example.
+        related_name="follower_set",
     )
     follower = models.ForeignKey(
-        "Person", on_delete=models.CASCADE, related_name="follower_set"
+        "Person", on_delete=models.CASCADE, related_name="following_set"
     )
     created = models.DateTimeField(auto_now_add=True)
 
@@ -41,6 +39,13 @@ class Follow(models.Model):
         return f"{self.follower} followed {self.following} on {self.created}"
 
 
+class PersonManager(models.Manager):
+    """Manager for Person model with user prefetched."""
+
+    def get_queryset(self):
+        return super().get_queryset().select_related("user")
+
+
 class Person(TimeStampedModel):
     """A person in the ActivityPub network, linked to a Django User."""
 
@@ -51,6 +56,8 @@ class Person(TimeStampedModel):
         "self",
         related_name="followers",
         symmetrical=False,
+        through=Follow,
+        through_fields=("follower", "following"),
         blank=True,
         help_text=_("People this person is following"),
     )
