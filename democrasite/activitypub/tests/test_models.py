@@ -6,6 +6,16 @@ from .factories import NoteFactory
 from .factories import PersonFactory
 
 
+class TestFollow:
+    def test_str(self, person: Person):
+        follower = PersonFactory.create()
+        follower.follow(person)
+
+        follow = follower.following_set.first()
+        assert follow.following == person
+        assert str(follow) == f"{follower} followed {person} on {follow.created}"
+
+
 class TestPersonManager:
     def test_get_queryset(self, person: Person, django_assert_num_queries):
         # Should only be one query due to select_related("user")

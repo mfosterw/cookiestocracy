@@ -10,6 +10,35 @@ from mptt.models import TreeManager
 User = get_user_model()
 
 
+class Follow(models.Model):
+    """Timestamped record of a person following another"""
+
+    following = models.ForeignKey(
+        "Person",
+        on_delete=models.CASCADE,
+        # "person1.follower_set" will contain all of the Follow objects of people
+        # following person1. It is confusing when defining but makes much more sense
+        # when accessing imo. See tests for an example.
+        related_name="follower_set",
+    )
+    follower = models.ForeignKey(
+        "Person", on_delete=models.CASCADE, related_name="following_set"
+    )
+    created = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=("following", "follower"),
+                name="unique_follow",
+                violation_error_code=_("Can't follow a person more than once"),
+            )  # type: ignore[call-overload]
+        ]
+
+    def __str__(self):
+        return f"{self.follower} followed {self.following} on {self.created}"
+
+
 class PersonManager(models.Manager):
     """Manager for Person model with user prefetched."""
 
@@ -27,6 +56,8 @@ class Person(TimeStampedModel):
         "self",
         related_name="followers",
         symmetrical=False,
+        through=Follow,
+        through_fields=("follower", "following"),
         blank=True,
         help_text=_("People this person is following"),
     )
@@ -38,7 +69,7 @@ class Person(TimeStampedModel):
     objects = PersonManager()
 
     class Meta:
-        verbose_name_plural = "People"
+        verbose_name_plural = _("People")
 
     def __str__(self):
         return self.display_name

@@ -93,11 +93,17 @@ class TestBillManager:
         assert bill.no_percent == 100  # noqa: PLR2004
 
         user2 = UserFactory.create()
+        user3 = UserFactory.create()
         bill.vote(user2, support=True)
+        bill.vote(user3, support=False)
         bill = Bill.objects.first()
 
-        assert bill.yes_percent == 50  # noqa: PLR2004
-        assert bill.no_percent == 50  # noqa: PLR2004
+        assert bill.yes_percent == 100 / 3
+        assert bill.no_percent == 200 / 3
+
+        bill_queryset = Bill.objects.all()
+
+        assert bill_queryset.ordered
 
     def test_annotate_user_vote(self, bill: Bill, user: User):
         bill.vote(user, support=True)
