@@ -25,6 +25,9 @@
   // "remoteEnv": {"PATH": "/home/dev-user/.local/bin:${containerEnv:PATH}"},
   "remoteUser": "dev-user",
   "workspaceFolder": "/app",
+  "forwardPorts": [
+    8000 // Github codespaces cant' detect this port automatically for some reason
+  ],
   "features": {
     "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
   },
