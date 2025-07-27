@@ -1,13 +1,13 @@
 Democrasite
 ===========
 
-|Built with Cookiecutter Django| |Black code style| |Continuous integration| |Coverage report| |Documentation status|
+|Built with Cookiecutter Django| |Ruff| |Continuous integration| |Coverage report| |Documentation status|
 
 .. |Built with Cookiecutter Django| image:: https://img.shields.io/badge/built%20with-Cookiecutter%20Django-ff69b4.svg?logo=cookiecutter
      :target: https://github.com/pydanny/cookiecutter-django/
 
-.. |Black code style| image:: https://img.shields.io/badge/code%20style-black-000000.svg
-     :target: https://github.com/ambv/black
+.. |Ruff| image:: https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json
+    :target: //github.com/astral-sh/ruff
 
 .. |Continuous integration| image:: https://github.com/mfosterw/cookiestocracy/actions/workflows/ci.yml/badge.svg
      :target: https://github.com/mfosterw/cookiestocracy/actions/workflows/ci.yml
@@ -23,8 +23,8 @@ Democrasite
 
 Democrasite is a website which automatically merges changes based on popular
 approval. For more information on the nature and purpose of the project, visit
-our `about page`_. This page is meant for people who want to clone the
-repository and contribute to the project. This project is approximately in beta
+our `about page`_. This page is meant for people who want to fork the
+repository and/or contribute to the project. This project is approximately in beta
 development (hence the repository being named "cookiestocracy" - a reference
 to cookiecutter and `kakistocracy`_). The alpha version is `here`_ and the
 full version doesn't exist yet.
@@ -55,7 +55,7 @@ Getting Started
 The easiest way to explore the repository is to open it in GitHub Codespaces with the
 button above. Once you've given the container some time to set up (it should take about
 three minutes), navigate to the ports tab right above the terminal and hover over port
-3000, then click on the browser icon that appears. You should see the development
+8000, then click on the browser icon that appears. You should see the development
 version of the homepage! (With no data yet, see below).
 
 Please read the `contribution guide`_ to set up a local development environment with
@@ -63,6 +63,20 @@ Docker. See basic commands below, which can be run from within a dev container o
 following the instructions in the guide.
 
 .. _`contribution guide`: https://cookiestocracy.readthedocs.io/en/latest/CONTRIBUTING.html
+
+.. warning::
+    Firefox's "advanced tracking protection" can cause problems connecting to the
+    codespace. If you are experiencing errors, you can disable it for that page by
+    clicking on the shield icon to the left of the URL and switching off Advanced
+    Tracking Protection
+
+
+Understanding the repository
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Check out ``repo_map.txt`` in the root of the repository for a display of the
+repository layout and brief explanations for the purpose of each non-obvious file and
+directory.
 
 
 Management Commands
@@ -80,7 +94,7 @@ Loading initial data
 
 To load some initial sample data into the database, run::
 
-    $ python manage.py loaddata initial.json
+    $ python manage.py loaddata democrasite activitypub
 
 Setting up your users
 ^^^^^^^^^^^^^^^^^^^^^
