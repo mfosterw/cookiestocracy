@@ -1,0 +1,283 @@
+The documentation in this file is meant to be very brief. If you don't understand a
+word or are not familiar with a tool, google it!
+
+.
+├── .devcontainer  // devcontainer files
+│   ├── bashrc.override.sh  // bash initialization
+│   └── devcontainer.json  // devcontainer config
+├── .envs.template  // template for environment files. When creating a devcontainer,
+│   │               // this folder is copied to .envs/ to provide default configuration
+│   │               // for the container
+│   └── .local
+│       ├── .django  // django environment variables. Set auth tokens here.
+│       └── .postgres
+├── .github  // GitHub Actions configuration
+│   ├── dependabot.yml
+│   └── workflows
+│       └── ci.yml
+├── compose  // docker compose files
+│   ├── local  // local development
+│   │   └── django
+│   │       ├── celery  // scripts to start celery processes
+│   │       │   ├── beat
+│   │       │   │   └── start
+│   │       │   ├── flower
+│   │       │   │   └── start
+│   │       │   └── worker
+│   │       │       └── start
+│   │       ├── Dockerfile  // docker container definition for server and celery in
+│   │       │               // development, and docs in development and on readthedocs
+│   │       ├── start  // start test server script
+│   │       └── start-docs  // start documentation server script
+│   └── production  // production deployment
+│       ├── django
+│       │   ├── celery  // same as local
+│       │   │   ├── beat
+│       │   │   │   └── start
+│       │   │   ├── flower
+│       │   │   │   └── start
+│       │   │   └── worker
+│       │   │       └── start
+│       │   ├── Dockerfile  // container definition for server and celery in production
+│       │   ├── entrypoint  // pre-start script to ensure django container can connect
+│       │   │               // to the db. Also used in development.
+│       │   └── start  // start production server script
+│       ├── nginx  // nginx server for media files
+│       │   ├── default.conf
+│       │   └── Dockerfile
+│       ├── postgres  // database container. Also used in development.
+│       │   ├── maintenance  // utility scripts, e.g. data backup
+│       │   │   ├── _sourced
+│       │   │   │   ├── constants.sh
+│       │   │   │   ├── countdown.sh
+│       │   │   │   ├── messages.sh
+│       │   │   │   └── yes_no.sh
+│       │   │   ├── backup
+│       │   │   ├── backups
+│       │   │   ├── restore
+│       │   │   └── rmbackup
+│       │   └── Dockerfile  // container definition for database
+│       └── traefik  // reverse proxy and load balancer
+│           ├── Dockerfile
+│           └── traefik.yml
+├── config  // django configuration and app defintion
+│   ├── settings  // django settings files. See https://docs.djangoproject.com/en/dev/ref/settings/
+│   │   ├── __init__.py
+│   │   ├── base.py  // common settings shared between environments
+│   │   ├── local.py  // local development
+│   │   ├── production.py  // production deployment
+│   │   └── test.py  // running tests
+│   ├── __init__.py
+│   ├── api_router.py  // base url definitions for apis
+│   ├── celery_app.py  // celery app definition and task discovery
+│   ├── urls.py  // base url definitions for all apps
+│   └── wsgi.py  // django app definition
+├── democrasite  // main project directory. Apps live in here.
+│   ├── activitypub  // activitypub/microblog app
+│   │   ├── fixtures  // sample data for use with the "loaddata" management command
+│   │   │   └── activitypub.json
+│   │   ├── migrations  // database definitions and changes, created by django migration commands
+│   │   │   ├── __init__.py
+│   │   │   └── 0001_initial.py
+│   │   ├── tests
+│   │   │   ├── __init__.py
+│   │   │   ├── conftest.py  // test configuration and fixtures definitions
+│   │   │   ├── factories.py  // model factory definitions
+│   │   │   ├── test_models.py
+│   │   │   ├── test_templates.py
+│   │   │   ├── test_urls.py
+│   │   │   └── test_views.py
+│   │   ├── __init__.py
+│   │   ├── admin.py  // make models available in admin
+│   │   ├── apps.py  // app definition
+│   │   ├── forms.py  // web form definitions
+│   │   ├── models.py  // database and ORM object definitions
+│   │   ├── urls.py  // app url route definitions
+│   │   └── views.py  // route behavior definitions
+│   ├── contrib  // migrations to set site url in database
+│   │   ├── sites
+│   │   │   ├── migrations
+│   │   │   │   ├── __init__.py
+│   │   │   │   ├── 0001_initial.py
+│   │   │   │   ├── 0002_alter_domain_unique.py
+│   │   │   │   ├── 0003_set_site_domain_and_name.py
+│   │   │   │   └── 0004_alter_options_ordering_domain.py
+│   │   │   └── __init__.py
+│   │   └── __init__.py
+│   ├── static  // static frontend files
+│   │   ├── css  // styling. Files named after template folders are imported in that
+│   │   │   │    // folder's respective "base.html".
+│   │   │   ├── about.css
+│   │   │   ├── activitypub.css
+│   │   │   ├── project.css
+│   │   │   └── webiscite.css
+│   │   ├── images
+│   │   │   └── favicons  // site icon
+│   │   │       └── favicon.ico
+│   │   └── js  // scripts
+│   │       ├── note_interact.js  // activitypub
+│   │       ├── person_follow.js  //activitypub
+│   │       ├── project.js  // all apps
+│   │       └── vote.js  // webiscite
+│   ├── templates  // html templates to render and display. Files with the ".html"
+│   │   │          // extension are actually in django's template language
+│   │   ├── account  // from django-allauth. Mostly disabling unused pages.
+│   │   │   ├── account_inactive.html
+│   │   │   ├── base.html
+│   │   │   ├── email_confirm.html
+│   │   │   ├── email.html
+│   │   │   ├── login.html
+│   │   │   ├── logout.html
+│   │   │   ├── password_change.html
+│   │   │   ├── password_reset_done.html
+│   │   │   ├── password_reset_from_key_done.html
+│   │   │   ├── password_reset_from_key.html
+│   │   │   ├── password_reset.html
+│   │   │   ├── password_set.html
+│   │   │   ├── signup_closed.html
+│   │   │   ├── signup.html
+│   │   │   ├── verification_sent.html
+│   │   │   └── verified_email_required.html
+│   │   ├── activitypub
+│   │   │   ├── snippets  // html snippets to include in other templates
+│   │   │   │   ├── note_list.html
+│   │   │   │   └── note.html
+│   │   │   ├── base.html  // parent for all other templates in this app
+│   │   │   ├── note_detail.html
+│   │   │   ├── note_form.html
+│   │   │   ├── note_list.html
+│   │   │   ├── person_detail.html
+│   │   │   └── person_form.html
+│   │   ├── pages  // static pages
+│   │   │   ├── about.html
+│   │   │   └── privacy.html
+│   │   ├── socialaccount  // from django-allauth. Disables unused pages.
+│   │   │   ├── connections.html
+│   │   │   └── signup.html
+│   │   ├── users
+│   │   │   ├── user_detail.html
+│   │   │   └── user_form.html
+│   │   ├── webiscite
+│   │   │   ├── snippets
+│   │   │   │   └── vote.html
+│   │   │   ├── base.html  // parent for all other templates in this app
+│   │   │   ├── bill_detail.html
+│   │   │   ├── bill_form.html
+│   │   │   └── bill_list.html
+│   │   ├── 403.html
+│   │   ├── 404.html
+│   │   ├── 500.html
+│   │   ├── base.html  // parent for all templates in this project
+│   │   └── page_disabled.html  // used to indicate a view provided by a library is not used
+│   ├── users  // users and authentication
+│   │   ├── api
+│   │   │   ├── __init__.py
+│   │   │   ├── serializers.py  // classes to convert models to representable data
+│   │   │   └── views.py  // api route behavior definitions
+│   │   ├── migrations  // database definitions and changes, created by django migration commands
+│   │   │   ├── __init__.py
+│   │   │   └── 0001_initial.py
+│   │   ├── tests  // tests for this app and project-wide tests that couldn't go elsewhere
+│   │   │   ├── api
+│   │   │   │   ├── __init__.py
+│   │   │   │   ├── test_swagger.py  // test api documentation
+│   │   │   │   ├── test_urls.py
+│   │   │   │   └── test_views.py
+│   │   │   ├── __init__.py
+│   │   │   ├── factories.py  // model factory definitions
+│   │   │   ├── test_admin.py
+│   │   │   ├── test_forms.py
+│   │   │   ├── test_models.py
+│   │   │   ├── test_templates.py
+│   │   │   ├── test_urls.py
+│   │   │   └── test_views.py
+│   │   ├── __init__.py
+│   │   ├── adapters.py  // django-allauth account adapters to implement
+│   │   │                // ALLOW_REGISTRATION settings
+│   │   ├── admin.py  // make models available in admin
+│   │   ├── apps.py  // app definition
+│   │   ├── forms.py  // web form definitions
+│   │   ├── models.py  // database and ORM object definitions
+│   │   ├── urls.py  // app url route definitions
+│   │   └── views.py  // route behavior definitions
+│   ├── webiscite  // bills, voting, and source updating app
+│   │   ├── api
+│   │   │   ├── __init__.py
+│   │   │   ├── serializers.py  // classes to convert models to representable data
+│   │   │   └── views.py  // api route behavior definitions
+│   │   ├── fixtures  // sample data for use with the "loaddata" management command
+│   │   │   └── democrasite.json
+│   │   ├── migrations
+│   │   │   ├── __init__.py
+│   │   │   ├── 0001_initial.py
+│   │   │   ├── 0002_remove_bill_submit_task_bill__submit_task.py
+│   │   │   └── 0003_vote_unique_user_bill_vote.py
+│   │   ├── tests
+│   │   │   ├── api
+│   │   │   │   ├── __init__.py
+│   │   │   │   ├── test_urls.py
+│   │   │   │   └── test_views.py
+│   │   │   ├── __init__.py
+│   │   │   ├── conftest.py  // test configuration and fixtures definitions
+│   │   │   ├── factories.py  // model factory definitions
+│   │   │   ├── test_constitution.py
+│   │   │   ├── test_models.py
+│   │   │   ├── test_tasks.py
+│   │   │   ├── test_templates.py
+│   │   │   ├── test_urls.py
+│   │   │   ├── test_views.py
+│   │   │   └── test_webhooks.py
+│   │   ├── __init__.py
+│   │   ├── admin.py  // make models available in admin
+│   │   ├── apps.py  // app definition
+│   │   ├── constitution.py  // constitution parsing and processing
+│   │   ├── context_processors.py  // template context processors
+│   │   ├── models.py  // database and ORM object definitions
+│   │   ├── tasks.py  // asynchronous tasks to run with celery
+│   │   ├── urls.py  // app url route definitions
+│   │   └── views.py  // route behavior definitions
+│   │   └── webhooks.py  // webhook route behavior, e.g. github pr opened
+│   ├── __init__.py
+│   └── conftest.py  // global test configuration and fixture definitions
+├── docs  // documentation setup and files
+│   ├── api  // files automatically generated from source code by apidocs
+│   │   ├── *
+│   ├── __init__.py
+│   ├── conf.py  // sphinx configuration file
+│   ├── howto.rst  // instructions for creating docs
+│   ├── index.rst
+│   ├── make.bat  // build commands for sphinx using windows
+│   ├── Makefile  // build commands for sphinx
+│   ├── readthedocs.db  // dummy database for local development
+│   ├── users.rst
+│   └── webiscite.rst
+├── locale  // translations
+│   └── README.rst
+├── requirements  // python dependencies
+│   ├── base.txt  // base dependencies shared across enviornments
+│   ├── local.txt  // local development
+│   └── production.txt  // production deployment
+├── .dockerignore  // files not to copy into docker containers
+├── .editorconfig  // basic formatting styles for editor
+├── .gitattributes
+├── .gitignore  // files which should not be tracked by git
+├── .pre-commit-config.yaml  // configuration for linting and checks to run before each commit
+├── .readthedocs.yml  // configuration for documentation website
+├── constitution.json  // constitution definition, see about page
+├── CONTRIBUTING.rst  // contributing guide
+├── CONTRIBUTORS.txt  // list of project contributors. Be sure to add yourself!
+│   // dockerfiles for docker compose live in "compose/"
+├── docker-compose.local.yml  // docker compose configuration for local development
+├── docker-compose.production.yml  // docker compose configuration for production deployment
+├── justfile  // command shortcuts for local development NOT using devcontainer
+├── LICENSE  // Legal permissible uses of the software. MIT license is very liberal
+├── manage.py  // file for running django management commands
+├── pyproject.toml  // python tool configuration, incl. pytest, mypy, and ruff
+├── README.rst  // general info and introduction to project
+└── repository_map.txt  // documentation about the layout and purpose of the repository (this file!)
+
+63 directories, 228 files  // that's kinda a lot ngl
+
+This file was generated using:
+rg --files --hidden --ignore --glob '!.git/' "$@" | tree --fromfile --dirsfirst -a
+and annotated by hand. Other methods generally ignore too few or too many files.
