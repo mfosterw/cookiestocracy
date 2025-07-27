@@ -24,7 +24,7 @@
 </a>
 
 <a href="javascript:;"
-   class="float-end mt-2 link-danger link-underline link-underline-opacity-0 link-underline-opacity-75-hover  vote
+   class="float-end mt-2 link-danger link-underline link-underline-opacity-0 link-underline-opacity-75-hover vote
           {% if bill.user_vote is False %}fw-bold{% endif %}"
    {% if bill.status == bill.Status.OPEN %}
      {% if user.is_authenticated %}

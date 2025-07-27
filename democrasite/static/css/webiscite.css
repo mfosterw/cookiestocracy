@@ -13,10 +13,6 @@
   color: var(--red) !important;
 }
 
-.git-pull-link {
-  text-decoration: none !important;
-}
-
 .progress {
   height: 5px;
 }
