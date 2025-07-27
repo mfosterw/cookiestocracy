@@ -1,5 +1,6 @@
 """Base settings to build other settings files upon."""
 
+import warnings
 from pathlib import Path
 
 import environ
@@ -36,8 +37,11 @@ LOCALE_PATHS = [str(BASE_DIR / "locale")]
 
 # DATABASES
 # ------------------------------------------------------------------------------
+with warnings.catch_warnings():
+    warnings.simplefilter("ignore")  # environ raises an unhelpful warning here
+    db_url = env.db("DATABASE_URL", default=None)
 # https://docs.djangoproject.com/en/dev/ref/settings/#databases
-if db_url := env.db("DATABASE_URL", default=None):
+if db_url:
     DATABASES = {"default": db_url}
 else:
     DATABASES = {
