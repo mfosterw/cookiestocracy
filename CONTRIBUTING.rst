@@ -127,7 +127,7 @@ To test your webhook, follow these `instructions`_. (If you have a preferred
 tool for exposing your local server, feel free to replace smee with it.) If you
 are using smee, be sure to run::
 
-   $ smee --url WEBHOOK_PROXY_URL --path /webhooks/github --port 8000
+   $ smee --url WEBHOOK_PROXY_URL --path /hooks/github --port 8000
 
 to set the correct port and path.
 
