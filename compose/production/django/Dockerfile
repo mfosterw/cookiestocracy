@@ -1,5 +1,5 @@
 # define an alias for the specific python version used in this file.
-FROM docker.io/python:3.12.11-slim-bookworm as python
+FROM docker.io/python:3.12.11-slim-bookworm AS python
 
 # Python build stage
 FROM python AS python-build-stage
@@ -88,7 +88,8 @@ RUN chown -R django:django ${APP_HOME}
 
 USER django
 
-RUN DJANGO_SETTINGS_MODULE="config.settings.test" \
+RUN DATABASE_URL="postgres:///" \
+  DJANGO_SETTINGS_MODULE="config.settings.test" \
   python manage.py compilemessages
 
 ENTRYPOINT ["/entrypoint"]

@@ -9,7 +9,7 @@ services:
     build:
       context: .
       dockerfile: ./compose/production/django/Dockerfile
-    image: us-east4-docker.pkg.dev/democrasite/democrasite/django
+    image: democrasite_production_django
     volumes:
       - production_django_media:/app/democrasite/media
     depends_on:
@@ -19,23 +19,33 @@ services:
       - ./.envs/.production/.django
       - ./.envs/.production/.postgres
     command: /start
+    deploy:
+      resources:
+        limits:
+          cpus: "0.2"
+          memory: 500M
 
   postgres:
     build:
       context: .
       dockerfile: ./compose/production/postgres/Dockerfile
-    image: us-east4-docker.pkg.dev/democrasite/democrasite/postgres
+    image: democrasite_production_postgres
     volumes:
       - production_postgres_data:/var/lib/postgresql/data
       - production_postgres_data_backups:/backups
     env_file:
       - ./.envs/.production/.postgres
+    deploy:
+      resources:
+        limits:
+          cpus: "0.2"
+          memory: 300M
 
   traefik:
     build:
       context: .
       dockerfile: ./compose/production/traefik/Dockerfile
-    image: us-east4-docker.pkg.dev/democrasite/democrasite/traefik
+    image: democrasite_production_traefik
     depends_on:
       - django
     volumes:
@@ -44,23 +54,28 @@ services:
       - "0.0.0.0:80:80"
       - "0.0.0.0:443:443"
       - "0.0.0.0:5555:5555"
+    deploy:
+      resources:
+        limits:
+          cpus: "0.1"
+          memory: 100M
 
   redis:
     image: docker.io/redis:6
 
   celeryworker:
     <<: *django
-    image: us-east4-docker.pkg.dev/democrasite/democrasite/celeryworker
+    image: democrasite_production_celeryworker
     command: /start-celeryworker
 
   celerybeat:
     <<: *django
-    image: us-east4-docker.pkg.dev/democrasite/democrasite/celerybeat
+    image: democrasite_production_celerybeat
     command: /start-celerybeat
 
   flower:
     <<: *django
-    image: us-east4-docker.pkg.dev/democrasite/democrasite/flower
+    image: democrasite_production_flower
     command: /start-flower
 
   nginx:
@@ -72,3 +87,8 @@ services:
       - django
     volumes:
       - production_django_media:/usr/share/nginx/media:ro
+    deploy:
+      resources:
+        limits:
+          cpus: "0.1"
+          memory: 100M
