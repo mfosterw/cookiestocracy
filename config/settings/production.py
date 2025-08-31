@@ -144,5 +144,5 @@ LOGGING = {
 # -------------------------------------------------------------------------------
 # Tools that generate code samples can use SERVERS to point to the correct domain
 SPECTACULAR_SETTINGS["SERVERS"] = [
-    {"url": "https://democrasite.herokuapp.com", "description": "Production server"},
+    {"url": "https://democrasite.dev", "description": "Production server"},
 ]
