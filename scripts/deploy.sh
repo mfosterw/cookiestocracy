@@ -26,11 +26,11 @@ elif [ $LOCAL = $BASE ]; then
 
     OLD_CONTAINER=$(docker ps -aqf "name=django")
     echo "$(date --utc +%FT%TZ): Scaling server up..."
-    BUILD VERSION=$BUILD VERSION docker compose up -d --no-deps --scale django=2 --no-recreate django
+    BUILD_VERSION=$BUILD_VERSION docker compose up -d --no-deps --scale django=2 --no-recreate django
 
     sleep 30
 
-    echo "$(date --utc +&FT&TZ): Scaling old server down..." docker container rm -f $OLD_CONTAINER
+    echo "$(date --utc +%FT%TZ): Scaling old server down..." docker container rm -f $OLD_CONTAINER
     docker compose up -d --no-deps --scale django=1 --no-recreate django
 elif [ $REMOTE = $BASE ]; then
      echo "$(date --utc +%FT%TZ): Local changes detected, you may need to stash"
