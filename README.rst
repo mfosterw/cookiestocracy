@@ -30,13 +30,13 @@ to cookiecutter and `kakistocracy`_). The alpha version is `here`_ and the
 full version doesn't exist yet.
 
 * Homepage:
-  https://democrasite.herokuapp.com
+  https://democrasite.dev
 * Source code:
   https://github.com/mfosterw/cookiestocracy
 * Documentation:
   https://cookiestocracy.readthedocs.io/en/latest/
 
-.. _`about page`: https://democrasite.herokuapp.com/about/
+.. _`about page`: https://democrasite.dev/about/
 .. _`kakistocracy`: https://en.wikipedia.org/wiki/Kakistocracy
 .. _`here`: https://github.com/mfosterw/democrasite-testing
 
