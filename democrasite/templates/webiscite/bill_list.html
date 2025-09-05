@@ -16,10 +16,13 @@
             <a class="card-link link-underline link-underline-opacity-0"
                href="{{ bill.get_absolute_url }}">
               <h5 class="card-title">{{ bill }}</h5>
-              {% if bill.constitutional %}
-                <p class="text-info">{% trans 'Amendment to the Constitution' %}</p>
-              {% endif %}
             </a>
+            {% if bill.constitutional %}
+              <a class="card-link link-underline link-underline-opacity-0"
+                 href="{% url 'about' %}#constitution">
+                <span class="text-info">{% trans 'Amendment to the Constitution' %}</span>
+              </a>
+            {% endif %}
             {% if bill.status != bill.Status.OPEN %}
               <p class="{% if bill.status == bill.Status.APPROVED %}
                           text-success
