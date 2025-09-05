@@ -47,7 +47,7 @@
       "title": "The Initial Act",
       "additions": 0,
       "deletions": 0,
-      "diff_url": "https://github.com/mfosterw/cookiestocracy/pull/64/files",
+      "diff_url": "https://github.com/mfosterw/cookiestocracy/pull/64.diff",
       "author_name": "matthew",
       "sha": "123"
     }
@@ -63,7 +63,7 @@
       "title": "The Test Act",
       "additions": 1000,
       "deletions": 1000,
-      "diff_url": "https://github.com/mfosterw/cookiestocracy/pull/64/files",
+      "diff_url": "https://github.com/mfosterw/cookiestocracy/pull/64.diff",
       "author_name": "octocat",
       "sha": "1234"
     }
@@ -79,7 +79,7 @@
       "title": "The Finished Act",
       "additions": 69,
       "deletions": 420,
-      "diff_url": "https://github.com/mfosterw/cookiestocracy/pull/64/files",
+      "diff_url": "https://github.com/mfosterw/cookiestocracy/pull/64.diff",
       "author_name": "dependabot",
       "sha": "12345"
     }
