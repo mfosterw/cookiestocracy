@@ -1,6 +1,5 @@
 $(document).ready(function () {
   const csrftoken = $("[name=csrfmiddlewaretoken]")[0].value;
-  console.log(csrftoken);
   $(".person-follow").click(function () {
     $.ajax($(this).attr("action"), {
       method: "POST",

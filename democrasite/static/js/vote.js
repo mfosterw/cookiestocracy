@@ -17,7 +17,6 @@ function update_progress(_, pbar) {
 
 $(document).ready(function () {
   const csrftoken = $("[name=csrfmiddlewaretoken]")[0].value;
-  console.log(csrftoken);
   $(".vote").click(function () {
     // Don't let users vote on expired bills
     if ($(this).parent().hasClass("inactive")) {
