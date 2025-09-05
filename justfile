@@ -48,8 +48,8 @@ run +cmd:
 
 # Open a shell in the Django container
 [group("docker")]
-shell:
-    @docker compose run --rm django bash
+shell +container="django":
+    @docker compose run --rm {{ container }} bash
 
 # Executes `manage.py` command
 [group("management")]
