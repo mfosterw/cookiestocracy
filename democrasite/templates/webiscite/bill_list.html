@@ -43,7 +43,9 @@
       </div>
       {% if forloop.counter|divisibleby:4 or forloop.last %}</div>{% endif %}
   {% empty %}
-    {{ empty_message }}
+    <div class="text-center">
+      <h5 class="mb-1">{{ empty_message }}</h5>
+    </div>
   {% endfor %}
 {% endblock content %}
 
