@@ -5,10 +5,12 @@ from typing import TYPE_CHECKING
 from django import http
 from django.contrib import messages
 from django.contrib.auth.mixins import UserPassesTestMixin
+from django.core.exceptions import PermissionDenied
 from django.http import HttpRequest
 from django.http import HttpResponseRedirect
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
+from django.shortcuts import redirect
 from django.urls import reverse
 from django.views.decorators.http import require_POST
 from django.views.generic import CreateView
@@ -143,7 +145,7 @@ class PersonDetailView(DetailView):
 person_detail_view = PersonDetailView.as_view()
 
 
-class PersonCreateView(UserPassesTestMixin, CreateView):
+class PersonCreateView(CreateView):
     model = Person
     fields = []
 
@@ -154,16 +156,17 @@ class PersonCreateView(UserPassesTestMixin, CreateView):
         form.instance.public_key = "public_key_placeholder"
         return super().form_valid(form)
 
-    def test_func(self):
+    def post(self, request):
         """Ensure the user does not already have a Person profile."""
         if not self.request.user.is_authenticated:
-            return False
+            raise PermissionDenied
         try:
             if self.request.user.person:
-                return False
+                messages.info(request, "You already have an ActivityPub Profile!")
+                return redirect("activitypub:note-create")
         except Person.DoesNotExist:
             pass
-        return True
+        return super().post(request)
 
 
 person_create_view = PersonCreateView.as_view()
