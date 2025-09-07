@@ -6,6 +6,7 @@ from django import http
 from django.contrib import messages
 from django.contrib.auth.mixins import UserPassesTestMixin
 from django.contrib.auth.views import redirect_to_login
+from django.contrib.messages.views import SuccessMessageMixin
 from django.http import HttpRequest
 from django.http import HttpResponseRedirect
 from django.http import JsonResponse
@@ -145,16 +146,13 @@ class PersonDetailView(DetailView):
 person_detail_view = PersonDetailView.as_view()
 
 
-class PersonCreateView(CreateView):
+class PersonCreateView(SuccessMessageMixin, CreateView):
     model = Person
     fields = []
 
-    def form_valid(self, form: "ModelForm[Person]"):
-        assert self.request.user.is_authenticated  # type guard
-        form.instance.user = self.request.user
-        form.instance.private_key = "private_key_placeholder"
-        form.instance.public_key = "public_key_placeholder"
-        return super().form_valid(form)
+    success_message = "Profile created successfully."
+
+    http_method_names = ["post"]
 
     def post(self, request):
         """Ensure the user does not already have a Person profile."""
@@ -171,6 +169,13 @@ class PersonCreateView(CreateView):
         except Person.DoesNotExist:
             pass
         return super().post(request)
+
+    def form_valid(self, form: "ModelForm[Person]"):
+        assert self.request.user.is_authenticated  # type guard
+        form.instance.user = self.request.user
+        form.instance.private_key = "private_key_placeholder"
+        form.instance.public_key = "public_key_placeholder"
+        return super().form_valid(form)
 
 
 person_create_view = PersonCreateView.as_view()
