@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 from django import http
 from django.contrib import messages
 from django.contrib.auth.mixins import UserPassesTestMixin
-from django.core.exceptions import PermissionDenied
+from django.contrib.auth.views import redirect_to_login
 from django.http import HttpRequest
 from django.http import HttpResponseRedirect
 from django.http import JsonResponse
@@ -159,11 +159,15 @@ class PersonCreateView(CreateView):
     def post(self, request):
         """Ensure the user does not already have a Person profile."""
         if not self.request.user.is_authenticated:
-            raise PermissionDenied
+            messages.info(request, "You must be logged in to do that.")
+            return redirect_to_login(reverse("activitypub:note-list"))
         try:
             if self.request.user.person:
                 messages.info(request, "You already have an ActivityPub Profile!")
-                return redirect("activitypub:note-create")
+                return redirect(
+                    "activitypub:person-detail",
+                    username=request.user.person.display_name,
+                )
         except Person.DoesNotExist:
             pass
         return super().post(request)
