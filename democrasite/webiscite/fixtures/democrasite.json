@@ -4,13 +4,13 @@
     "pk": 1,
     "fields": {
       "password": "!QOegZX0EFLTPMUheUJaZHT2iBlDjTUVteO1ERFoL",
-      "last_login": null,
+      "last_login": "2025-07-05T16:23:01.641Z",
       "is_superuser": false,
       "username": "test",
       "email": "",
       "is_staff": false,
       "is_active": true,
-      "date_joined": "2024-03-01T20:54:23.655Z",
+      "date_joined": "2025-07-04T23:22:05.325Z",
       "name": "",
       "groups": [],
       "user_permissions": []
@@ -43,7 +43,7 @@
       "created": "2024-02-25T17:26:54.006Z",
       "modified": "2024-02-25T17:26:54.012Z",
       "status": "open",
-      "status_changed": "2024-02-25T17:26:54.022Z",
+
       "title": "The Initial Act",
       "additions": 0,
       "deletions": 0,
@@ -59,7 +59,7 @@
       "created": "2024-02-25T17:26:54.006Z",
       "modified": "2024-02-25T17:26:54.012Z",
       "status": "open",
-      "status_changed": "2024-02-25T17:26:54.022Z",
+
       "title": "The Test Act",
       "additions": 1000,
       "deletions": 1000,
@@ -75,7 +75,7 @@
       "created": "2024-02-25T17:26:54.006Z",
       "modified": "2024-02-25T17:26:54.012Z",
       "status": "open",
-      "status_changed": "2024-02-25T17:26:54.022Z",
+
       "title": "The Finished Act",
       "additions": 69,
       "deletions": 420,
@@ -85,12 +85,71 @@
     }
   },
   {
+    "model": "webiscite.historicalpullrequest",
+    "pk": 1,
+    "fields": {
+      "created": "2024-02-25T17:26:54.006Z",
+      "modified": "2024-02-25T17:26:54.012Z",
+      "number": -1,
+      "title": "The Initial Act",
+      "additions": 0,
+      "deletions": 0,
+      "diff_url": "https://github.com/mfosterw/cookiestocracy/pull/64/files",
+      "author_name": "matthew",
+      "status": "open",
+      "sha": "123",
+      "history_date": "2025-09-07T22:52:36.583Z",
+      "history_change_reason": "",
+      "history_type": "+",
+      "history_user": null
+    }
+  },
+  {
+    "model": "webiscite.historicalpullrequest",
+    "pk": 2,
+    "fields": {
+      "created": "2024-02-25T17:26:54.006Z",
+      "modified": "2024-02-25T17:26:54.012Z",
+      "number": -2,
+      "title": "The Test Act",
+      "additions": 1000,
+      "deletions": 1000,
+      "diff_url": "https://github.com/mfosterw/cookiestocracy/pull/64/files",
+      "author_name": "octocat",
+      "status": "open",
+      "sha": "1234",
+      "history_date": "2025-09-07T22:52:36.583Z",
+      "history_change_reason": "",
+      "history_type": "+",
+      "history_user": null
+    }
+  },
+  {
+    "model": "webiscite.historicalpullrequest",
+    "pk": 3,
+    "fields": {
+      "created": "2024-02-25T17:26:54.006Z",
+      "modified": "2024-02-25T17:26:54.012Z",
+      "number": -3,
+      "title": "The Finished Act",
+      "additions": 69,
+      "deletions": 420,
+      "diff_url": "https://github.com/mfosterw/cookiestocracy/pull/64/files",
+      "author_name": "dependabot",
+      "status": "open",
+      "sha": "12345",
+      "history_date": "2025-09-07T22:52:36.583Z",
+      "history_change_reason": "",
+      "history_type": "+",
+      "history_user": null
+    }
+  },
+  {
     "model": "webiscite.bill",
     "pk": 1,
     "fields": {
       "created": "2024-02-25T17:26:53.913Z",
       "modified": "2024-02-25T17:26:53.950Z",
-      "status_changed": "2024-02-25T17:26:54.002Z",
       "name": "The Old Act",
       "description": "You should not see this on the front page, because it is closed.",
       "author": 1,
@@ -106,7 +165,6 @@
     "fields": {
       "created": "2024-02-25T17:26:53.913Z",
       "modified": "2024-02-25T17:26:53.950Z",
-      "status_changed": "2024-02-25T17:26:54.002Z",
       "name": "The Failed Act",
       "description": "This bill failed because not enough people voted on it.",
       "author": 1,
@@ -122,7 +180,6 @@
     "fields": {
       "created": "2024-02-25T17:26:53.913Z",
       "modified": "2024-02-25T17:26:53.950Z",
-      "status_changed": "2024-02-25T17:26:54.002Z",
       "name": "The Test Act",
       "description": "This is a test. It is the 3rd bill, but the first two are marked as not open, so this should be the oldest bill displayed on the front page.",
       "author": 1,
@@ -138,7 +195,6 @@
     "fields": {
       "created": "2024-02-25T17:26:53.913Z",
       "modified": "2024-02-25T17:26:53.950Z",
-      "status_changed": "2024-02-25T17:26:54.002Z",
       "name": "The Rejected Act",
       "description": "This bill was rejected by the community. Since it was a constitutional amendment, it required a supermajority to pass.",
       "author": 1,
@@ -154,7 +210,6 @@
     "fields": {
       "created": "2024-02-25T17:26:53.913Z",
       "modified": "2024-02-25T17:26:53.950Z",
-      "status_changed": "2024-02-25T17:26:54.002Z",
       "name": "The Constitutional Act",
       "description": "This is a constitutional amendment. That should be noted in a subheader beneath the title.",
       "author": 1,
@@ -170,7 +225,6 @@
     "fields": {
       "created": "2024-02-25T17:26:53.913Z",
       "modified": "2024-02-25T17:26:53.950Z",
-      "status_changed": "2024-02-25T17:26:54.002Z",
       "name": "The Finished Act",
       "description": "This bill was approved and is now part of the live website.",
       "author": 1,
@@ -178,6 +232,126 @@
       "status": "approved",
       "constitutional": true,
       "_submit_task": 6
+    }
+  },
+  {
+    "model": "webiscite.historicalbill",
+    "pk": 1,
+    "fields": {
+      "id": 3,
+      "created": "2024-02-25T17:26:53.913Z",
+      "modified": "2024-02-25T17:26:53.950Z",
+      "name": "The Test Act",
+      "description": "This is a test. It is the 3rd bill, but the first two are marked as not open, so this should be the oldest bill displayed on the front page.",
+      "status": "open",
+      "constitutional": false,
+      "author": 1,
+      "pull_request": -1,
+      "_submit_task": 3,
+      "history_date": "2025-09-07T22:52:36.591Z",
+      "history_change_reason": "",
+      "history_type": "+",
+      "history_user": null
+    }
+  },
+  {
+    "model": "webiscite.historicalbill",
+    "pk": 2,
+    "fields": {
+      "id": 5,
+      "created": "2024-02-25T17:26:53.913Z",
+      "modified": "2024-02-25T17:26:53.950Z",
+      "name": "The Constitutional Act",
+      "description": "This is a constitutional amendment. That should be noted in a subheader beneath the title.",
+      "status": "open",
+      "constitutional": true,
+      "author": 1,
+      "pull_request": -2,
+      "_submit_task": 5,
+      "history_date": "2025-09-07T22:52:36.591Z",
+      "history_change_reason": "",
+      "history_type": "+",
+      "history_user": null
+    }
+  },
+  {
+    "model": "webiscite.historicalbill",
+    "pk": 3,
+    "fields": {
+      "id": 4,
+      "created": "2024-02-25T17:26:53.913Z",
+      "modified": "2024-02-25T17:26:53.950Z",
+      "name": "The Rejected Act",
+      "description": "This bill was rejected by the community. Since it was a constitutional amendment, it required a supermajority to pass.",
+      "status": "rejected",
+      "constitutional": true,
+      "author": 1,
+      "pull_request": -2,
+      "_submit_task": 4,
+      "history_date": "2025-09-07T22:52:36.591Z",
+      "history_change_reason": "",
+      "history_type": "+",
+      "history_user": null
+    }
+  },
+  {
+    "model": "webiscite.historicalbill",
+    "pk": 4,
+    "fields": {
+      "id": 6,
+      "created": "2024-02-25T17:26:53.913Z",
+      "modified": "2024-02-25T17:26:53.950Z",
+      "name": "The Finished Act",
+      "description": "This bill was approved and is now part of the live website.",
+      "status": "approved",
+      "constitutional": true,
+      "author": 1,
+      "pull_request": -3,
+      "_submit_task": 6,
+      "history_date": "2025-09-07T22:52:36.591Z",
+      "history_change_reason": "",
+      "history_type": "+",
+      "history_user": null
+    }
+  },
+  {
+    "model": "webiscite.historicalbill",
+    "pk": 5,
+    "fields": {
+      "id": 2,
+      "created": "2024-02-25T17:26:53.913Z",
+      "modified": "2024-02-25T17:26:53.950Z",
+      "name": "The Failed Act",
+      "description": "This bill failed because not enough people voted on it.",
+      "status": "failed",
+      "constitutional": false,
+      "author": 1,
+      "pull_request": -1,
+      "_submit_task": 2,
+      "history_date": "2025-09-07T22:52:36.591Z",
+      "history_change_reason": "",
+      "history_type": "+",
+      "history_user": null
+    }
+  },
+  {
+    "model": "webiscite.historicalbill",
+    "pk": 6,
+    "fields": {
+      "id": 1,
+      "created": "2024-02-25T17:26:53.913Z",
+      "modified": "2024-02-25T17:26:53.950Z",
+      "name": "The Old Act",
+      "description": "You should not see this on the front page, because it is closed.",
+      "status": "closed",
+      "constitutional": false,
+      "author": 1,
+      "pull_request": -1,
+      "_submit_task": 1,
+      "history_date": "2025-09-07T22:52:36.591Z",
+      "history_change_reason": "",
+      "history_type": "+",
+      "history_user": null
     }
   },
   {
