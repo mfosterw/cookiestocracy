@@ -355,14 +355,31 @@ class Bill(TimeStampedModel):
             raise ClosedBillVoteError("Bill is not open for voting")
 
         try:
-            vote = self.vote_set.get(user=user)
-            recreate = vote.support != support
-            vote.delete()
-        except Vote.DoesNotExist:
-            recreate = True
+            vote: Vote = self.vote_set.get(user=user)
+            if vote.support == support:
+                vote.delete()
+                logger.info(
+                    'PR %s: User %s retracted their vote "%s" on bill %s',
+                    self.pull_request.number,
+                    user.username,
+                    "yes" if support else "no",
+                    self.id,
+                )
 
-        if recreate:
-            self.vote_set.create(user=user, support=support)
+            else:
+                vote.support = support
+                vote.save(update_fields=["support", "when"])  # Ensure "when" is updated
+                logger.info(
+                    "PR %s: User %s changed their vote on bill %s from %s to %s",
+                    self.pull_request.number,
+                    user.username,
+                    self.id,
+                    not support,
+                    support,
+                )
+
+        except Vote.DoesNotExist:
+            self.votes.add(user, through_defaults={"support": support})
             logger.info(
                 "PR %s: User %s voted %s on bill %s",
                 self.pull_request.number,
