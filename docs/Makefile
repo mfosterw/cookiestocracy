@@ -14,7 +14,7 @@ APP = ../democrasite
 
 # Put it first so that "make" without argument is like "make help".
 help:
-	@$(SPHINXBUILD) help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
+	@$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 
 # Build, watch and serve docs with live reload
 livehtml:
