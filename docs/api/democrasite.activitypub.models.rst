@@ -1,7 +1,7 @@
-democrasite.webiscite.webhooks module
+democrasite.activitypub.models module
 =====================================
 
-.. automodule:: democrasite.webiscite.webhooks
+.. automodule:: democrasite.activitypub.models
    :members:
    :show-inheritance:
    :undoc-members:
