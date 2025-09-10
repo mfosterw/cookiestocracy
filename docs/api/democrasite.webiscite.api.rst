@@ -4,6 +4,7 @@ democrasite.webiscite.api package
 .. automodule:: democrasite.webiscite.api
    :members:
    :show-inheritance:
+   :undoc-members:
 
 Submodules
 ----------

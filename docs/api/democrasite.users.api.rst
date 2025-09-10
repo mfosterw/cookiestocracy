@@ -4,6 +4,7 @@ democrasite.users.api package
 .. automodule:: democrasite.users.api
    :members:
    :show-inheritance:
+   :undoc-members:
 
 Submodules
 ----------
