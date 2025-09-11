@@ -11,15 +11,23 @@
       <div class="col">
         <h2>{{ bill }}</h2>
         {% if bill.constitutional %}
-          <p class="text-info">{% trans 'Amendment to the Constitution' %}</p>
+          <p class="text-info mb-1">{% trans 'Amendment to the Constitution' %}</p>
         {% endif %}
         {% if bill.status != bill.Status.OPEN %}
           <p class="{% if bill.status == bill.Status.APPROVED %}
                       text-success
                     {% else %}
                       text-danger
-                    {% endif %}">{{ bill.get_status_display }}</p>
+                    {% endif %}
+                    my-1">{{ bill.get_status_display }}</p>
         {% endif %}
+        <p>
+          Submitted by: <a href="{% url 'users:detail' bill.author.username %}">{{ bill.author.username }}</a>
+        </p>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col">
         <p>
           {{ bill.description }}
           {% if bill.author == user and bill.status == bill.Status.OPEN %}
@@ -27,15 +35,14 @@
               <i class="bi bi-pencil-square"></i>
             </a>
           {% endif %}
-          <br />
-          <a class="link-underline link-underline-opacity-0"
-             href="{{ bill.pull_request.diff_url }}"
-             target="_blank">
-            Diff:
-            <span class="text-success">+{{ bill.pull_request.additions }}</span>
-            <span class="text-danger">-{{ bill.pull_request.deletions }}</span>
-          </a>
         </p>
+        <a class="link-underline link-underline-opacity-0"
+           href="{{ bill.pull_request.diff_url }}"
+           target="_blank">
+          Diff:
+          <span class="text-success">+{{ bill.pull_request.additions }}</span>
+          <span class="text-danger">-{{ bill.pull_request.deletions }}</span>
+        </a>
       </div>
     </div>
     <div class="row">
