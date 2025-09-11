@@ -17,7 +17,7 @@
                href="{{ bill.get_absolute_url }}">
               <h5 class="card-title">{{ bill }}</h5>
               {% if bill.constitutional %}
-                <p class="text-info">{% trans 'Amendment to the Constitution' %}</p>
+                <p class="text-info mb-1">{% trans 'Amendment to the Constitution' %}</p>
               {% endif %}
             </a>
             {% if bill.status != bill.Status.OPEN %}
@@ -25,8 +25,12 @@
                           text-success
                         {% else %}
                           text-danger
-                        {% endif %}">{{ bill.get_status_display }}</p>
+                        {% endif %}
+                        my-1">{{ bill.get_status_display }}</p>
             {% endif %}
+            <p>
+              Submitted by: <a href="{% url 'users:detail' bill.author.username %}">{{ bill.author.username }}</a>
+            </p>
             <hr />
             <div data-nosnippet class="card-text">{{ bill.description|truncatechars:80 }}</div>
             <div class="card-text text-start">
