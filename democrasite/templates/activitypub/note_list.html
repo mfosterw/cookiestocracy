@@ -5,5 +5,15 @@
 {% endblock sub_title %}
 
 {% block activitypub_content %}
-  {% include "activitypub/snippets/note_list.html" with note_list=note_list empty_message="No notes available" %}
+  <div class="list-group">
+    <div class="row justify-content-center">
+      {% for note in note_list %}
+        <div class="list-group-item col-8">{% include "activitypub/snippets/note.html" %}</div>
+      {% empty %}
+        <div class="text-center">
+          <h5 class="mb-1">{{ empty_message|default:"No notes available" }}</h5>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
 {% endblock activitypub_content %}

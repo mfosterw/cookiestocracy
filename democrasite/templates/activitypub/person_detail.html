@@ -1,4 +1,4 @@
-{% extends "activitypub/base.html" %}
+{% extends "activitypub/note_list.html" %}
 
 {% load static %}
 
@@ -10,37 +10,40 @@
   <div class="row justify-content-center mb-3">
     <div class="col-8">
       <h2>{{ person }}</h2>
-      <p>
-        {{ person.bio }}
-        {% if user == person.user %}
-          <a class="icon-link ms-2 position-relative"
-             href="{% url 'activitypub:person-update' %}">
-            <i class="bi bi-pencil-square pb-2"></i> Edit Bio
-          </a>
-        {% elif user.person %}
-          <br />
-          <button class="btn
-                         {% if user_following_person %}
-                           btn-light person-unfollow
-                         {% else %}
-                           btn-dark
-                         {% endif %}
-                         person-follow mt-2"
-                  type="button"
-                  action="{% url 'activitypub:person-follow' person.display_name %}">
-            {% if user_following_person %}
-              {# content added in css #}
-            {% else %}
-              Follow
-            {% endif %}
-          </button>
-        {% endif %}
-      </p>
+      {% if person.bio %}
+        <p class="mb-1">
+          {{ person.bio }}
+          {% if user == person.user %}
+            <a class="icon-link ms-2 position-relative"
+               href="{% url 'activitypub:person-update' %}">
+              <i class="bi bi-pencil-square pb-2"></i> Edit Bio
+            </a>
+          {% endif %}
+        </p>
+      {% endif %}
+      {% if user != person.user and user.person %}
+        <button class="btn
+                       {% if user_following_person %}
+                         btn-light person-unfollow
+                       {% else %}
+                         btn-dark
+                       {% endif %}
+                       person-follow"
+                type="button"
+                action="{% url 'activitypub:person-follow' person.display_name %}">
+          {% if user_following_person %}
+            {# content added in css #}
+          {% else %}
+            Follow
+          {% endif %}
+        </button>
+        <br />
+      {% endif %}
       <small>Joined on: {{ person.created|date:"Y-m-d H:i" }}</small>
     </div>
   </div>
 
-  {% include "activitypub/snippets/note_list.html" with note_list=note_list empty_message="This user hasn't posted anything yet." %}
+  {% with empty_message="This user hasn't posted anything yet." %}{{ block.super }}{% endwith %}
 
 {% endblock activitypub_content %}
 
