@@ -13,13 +13,19 @@
         {% if user.name %}<p>{{ user.name }}</p>{% endif %}
       </div>
     </div>
-    {% if user == request.user %}
-      <div class="row mb-4">
-        <div class="col-sm-12">
+
+    <div class="row mb-4">
+      <div class="col-sm-12">
+        {% if user == request.user %}
           <a class="btn btn-primary" href="{% url 'users:update' %}" role="button">{% trans "My Info" %}</a>
-        </div>
+        {% endif %}
+
+        {% if user.person %}
+          <a class="btn btn-success"
+             href="{% url 'activitypub:person-detail' user.username %}">{% trans "ActivityPub" %}</a>
+        {% endif %}
       </div>
-    {% endif %}
+    </div>
 
     {% with bill_list=user.bill_set.all %}{{ block.super }}{% endwith %}
   </div>
