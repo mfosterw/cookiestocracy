@@ -1,16 +1,16 @@
 from http import HTTPStatus
 
-from django.conf import settings
+from allauth.socialaccount.models import SocialAccount
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.messages import get_messages
 from django.contrib.messages.middleware import MessageMiddleware
 from django.contrib.sessions.middleware import SessionMiddleware
-from django.http import HttpResponseRedirect
 from django.test import RequestFactory
-from django.urls import reverse
+from factory.faker import faker
 
 from democrasite.users.forms import UserAdminChangeForm
 from democrasite.users.models import User
+from democrasite.users.tests.factories import UserFactory
 from democrasite.users.views import UserRedirectView
 from democrasite.users.views import UserUpdateView
 from democrasite.users.views import user_detail_view
@@ -67,21 +67,39 @@ class TestUserRedirectView:
 
 
 class TestUserDetailView:
-    def test_authenticated(self, user: User, rf: RequestFactory):
-        request = rf.get("/fake-url/")
-        request.user = user
-
-        response = user_detail_view(request, username=user.username)
-
-        assert response.status_code == HTTPStatus.OK
-
     def test_not_authenticated(self, user: User, rf: RequestFactory):
         request = rf.get("/fake-url/")
         request.user = AnonymousUser()
 
         response = user_detail_view(request, username=user.username)
-        login_url = reverse(settings.LOGIN_URL)
 
-        assert isinstance(response, HttpResponseRedirect)
-        assert response.status_code == HTTPStatus.FOUND
-        assert response.url == f"{login_url}?next=/fake-url/"
+        assert response.status_code == HTTPStatus.OK
+
+    def test_authenticated(self, user: User, rf: RequestFactory):
+        user2 = UserFactory.create()
+
+        request = rf.get("/fake-url/")
+        request.user = user
+
+        response = user_detail_view(request, username=user2.username)
+
+        assert response.status_code == HTTPStatus.OK
+
+    def test_github_authenticated(self, user: User, rf: RequestFactory):
+        request = rf.get("/fake-url/")
+        request.user = user
+        user.socialaccount_set.add(
+            SocialAccount.objects.create(
+                user=user,
+                provider="github",
+                uid=faker.Faker().random_int(),
+            )
+        )
+
+        response = user_detail_view(request, username=user.username)
+
+        assert response.status_code == HTTPStatus.OK
+        assert (
+            response.context_data["empty_message"]
+            == "You haven't proposed any bills yet."
+        )

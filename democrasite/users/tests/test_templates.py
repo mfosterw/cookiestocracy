@@ -17,6 +17,7 @@ from django.views.defaults import page_not_found
 from django.views.defaults import permission_denied
 from django.views.defaults import server_error
 
+from democrasite.activitypub.tests.factories import PersonFactory
 from democrasite.users.models import User
 from democrasite.users.tests.factories import UserFactory
 
@@ -156,3 +157,22 @@ class TestUsersTemplates:
 
         assert response.status_code == HTTPStatus.OK
         assert response.templates[0].name == "users/user_form.html"
+
+    def test_own_account(self, user: User, client: Client):
+        client.force_login(user)
+        response = client.get(
+            reverse("users:detail", kwargs={"username": user.username})
+        )
+
+        assert response.status_code == HTTPStatus.OK
+        assert "My Info" in response.content.decode()
+
+    def test_activitypub(self, user: User, client: Client):
+        PersonFactory.create(user=user)
+
+        response = client.get(
+            reverse("users:detail", kwargs={"username": user.username})
+        )
+
+        assert response.status_code == HTTPStatus.OK
+        assert "ActivityPub" in response.content.decode()
