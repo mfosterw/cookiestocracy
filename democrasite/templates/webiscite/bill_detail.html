@@ -11,7 +11,10 @@
       <div class="col">
         <h2>{{ bill }}</h2>
         {% if bill.constitutional %}
-          <p class="text-info mb-1">{% trans 'Amendment to the Constitution' %}</p>
+          <a class="card-link link-underline link-underline-opacity-0"
+             href="{% url 'about' %}#constitution">
+            <p class="text-info mb-1">{% trans 'Amendment to the Constitution' %}</p>
+          </a>
         {% endif %}
         {% if bill.status != bill.Status.OPEN %}
           <p class="{% if bill.status == bill.Status.APPROVED %}
@@ -37,7 +40,7 @@
           {% endif %}
         </p>
         <a class="link-underline link-underline-opacity-0"
-           href="{{ bill.pull_request.diff_url }}"
+           href="{{ bill.pull_request.diff_link }}"
            target="_blank">
           Diff:
           <span class="text-success">+{{ bill.pull_request.additions }}</span>

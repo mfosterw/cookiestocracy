@@ -2,7 +2,6 @@
 
 $(document).ready(function () {
   const csrftoken = $("[name=csrfmiddlewaretoken]")[0].value;
-  console.log(csrftoken);
   $(".note-like").click(function () {
     $.ajax($(this).attr("action"), {
       method: "POST",

@@ -81,6 +81,11 @@ class PullRequest(StatusModel, TimeStampedModel):
     def __str__(self) -> str:
         return f"PR #{self.number}"
 
+    @property
+    def diff_link(self) -> str:
+        """Return base url of PR by removing ".diff" extension"""
+        return self.diff_url.rsplit(".", 1)[0] + "/files"
+
     def close(self) -> "Bill | None":
         """Mark the pull request and the associated bill closed if it was open
 

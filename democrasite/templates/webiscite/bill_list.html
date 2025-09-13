@@ -16,10 +16,13 @@
             <a class="card-link link-underline link-underline-opacity-0"
                href="{{ bill.get_absolute_url }}">
               <h5 class="card-title">{{ bill }}</h5>
-              {% if bill.constitutional %}
-                <p class="text-info mb-1">{% trans 'Amendment to the Constitution' %}</p>
-              {% endif %}
             </a>
+            {% if bill.constitutional %}
+              <a class="card-link link-underline link-underline-opacity-0"
+                 href="{% url 'about' %}#constitution">
+                <span class="text-info mb-1">{% trans 'Amendment to the Constitution' %}</span>
+              </a>
+            {% endif %}
             {% if bill.status != bill.Status.OPEN %}
               <p class="{% if bill.status == bill.Status.APPROVED %}
                           text-success
@@ -32,10 +35,10 @@
               Submitted by: <a href="{% url 'users:detail' bill.author.username %}">{{ bill.author.username }}</a>
             </p>
             <hr />
-            <div data-nosnippet class="card-text">{{ bill.description|truncatechars:80 }}</div>
+            <div data-nosnippet class="card-text">{{ bill.description|truncatechars:120 }}</div>
             <div class="card-text text-start">
               <a class="card-link link-underline link-underline-opacity-0"
-                 href="{{ bill.pull_request.diff_url }}"
+                 href="{{ bill.pull_request.diff_link }}"
                  target="_blank">
                 <span class="text-success">+{{ bill.pull_request.additions }}</span>
                 <span class="text-danger">-{{ bill.pull_request.deletions }}</span>
