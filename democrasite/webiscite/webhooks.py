@@ -114,7 +114,9 @@ class PullRequestHandler:
         try:
             pull_request = PullRequest.objects.get(number=pr["number"])
         except PullRequest.DoesNotExist:
-            pull_request.log("Not closed (no pull request found)", level=WARNING)
+            logger.warning(
+                "PR #%s: Nothing changed (no pull request found)", pr["number"]
+            )
             return (None, None)
 
         bill = pull_request.close()
