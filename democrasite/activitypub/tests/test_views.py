@@ -2,11 +2,11 @@ import json
 from http import HTTPStatus
 
 import pytest
+from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.messages import get_messages
 from django.contrib.messages.middleware import MessageMiddleware
 from django.contrib.sessions.middleware import SessionMiddleware
-from django.core.exceptions import PermissionDenied
 from django.http import HttpResponseRedirect
 from django.test import Client
 from django.test import RequestFactory
@@ -208,42 +208,60 @@ class TestPersonDetailView:
 
 
 class TestPersonCreateView:
-    def test_test_func(self, rf: RequestFactory, person: Person, settings, user: User):
+    def test_unauthenticated(self, rf: RequestFactory):
         # Unauthenticated
-        noauth_request = rf.get("/fake-url/")
-        noauth_request.user = AnonymousUser()
-
-        noauth_response = views.person_create_view(noauth_request)
-
-        assert isinstance(noauth_response, HttpResponseRedirect)
-        assert noauth_response.status_code == HTTPStatus.FOUND
-        assert noauth_response.url == f"{reverse(settings.LOGIN_URL)}?next=/fake-url/"
-
-        # Authenticated, with person
-        auth_request_with_person = rf.get("/fake-url/")
-        auth_request_with_person.user = person.user
-
-        with pytest.raises(PermissionDenied):
-            views.person_create_view(auth_request_with_person)
-
-        # Authenticated, no person
-        auth_request_no_person = rf.get("/fake-url/")
-        auth_request_no_person.user = user
-        response = views.person_create_view(auth_request_no_person)
-        assert response.status_code == HTTPStatus.OK
-
-    def test_create_person(self, user: User, rf: RequestFactory):
-        assert not hasattr(user, "person")
         request = rf.post("/fake-url/")
-        request.user = user
+        SessionMiddleware(lambda r: None).process_request(request)
+        MessageMiddleware(lambda r: None).process_request(request)
+        request.user = AnonymousUser()
 
         response = views.person_create_view(request)
+
+        assert isinstance(response, HttpResponseRedirect)
+        assert response.status_code == HTTPStatus.FOUND
+        assert (
+            response.url
+            == f"{reverse(settings.LOGIN_URL)}?next={reverse('activitypub:note-list')}"
+        )
+
+        messages_sent = [m.message for m in get_messages(request)]
+        assert messages_sent == ["You must be logged in to do that."]
+
+    def test_person_exists(self, rf: RequestFactory, person: Person):
+        request = rf.post("/fake-url/")
+        SessionMiddleware(lambda r: None).process_request(request)
+        MessageMiddleware(lambda r: None).process_request(request)
+        request.user = person.user
+
+        response = views.person_create_view(request)
+
+        assert isinstance(response, HttpResponseRedirect)
+        assert response.status_code == HTTPStatus.FOUND
+        assert (
+            response.url
+            == f"{reverse('activitypub:person-detail', args=[person.display_name])}"
+        )
+
+        messages_sent = [m.message for m in get_messages(request)]
+        assert messages_sent == ["You already have an ActivityPub Profile!"]
+
+    def test_create_person(self, user: User, client: Client):
+        assert not hasattr(user, "person")
+
+        client.force_login(user)
+
+        response = client.post(reverse("activitypub:person-create"))
 
         user.refresh_from_db()
         assert hasattr(user, "person")
         assert isinstance(response, HttpResponseRedirect)
         assert response.status_code == HTTPStatus.FOUND
         assert response.url == user.person.get_absolute_url()
+
+        response = client.get(response.url)
+
+        messages_sent = [m.message for m in response.context["messages"]]
+        assert messages_sent == ["Profile created successfully."]
 
 
 class TestPersonUpdateView:

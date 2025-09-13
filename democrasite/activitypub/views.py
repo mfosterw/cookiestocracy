@@ -5,10 +5,13 @@ from typing import TYPE_CHECKING
 from django import http
 from django.contrib import messages
 from django.contrib.auth.mixins import UserPassesTestMixin
+from django.contrib.auth.views import redirect_to_login
+from django.contrib.messages.views import SuccessMessageMixin
 from django.http import HttpRequest
 from django.http import HttpResponseRedirect
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
+from django.shortcuts import redirect
 from django.urls import reverse
 from django.views.decorators.http import require_POST
 from django.views.generic import CreateView
@@ -143,9 +146,29 @@ class PersonDetailView(DetailView):
 person_detail_view = PersonDetailView.as_view()
 
 
-class PersonCreateView(UserPassesTestMixin, CreateView):
+class PersonCreateView(SuccessMessageMixin, CreateView):
     model = Person
     fields = []
+
+    success_message = "Profile created successfully."
+
+    http_method_names = ["post"]
+
+    def post(self, request):
+        """Ensure the user does not already have a Person profile."""
+        if not self.request.user.is_authenticated:
+            messages.info(request, "You must be logged in to do that.")
+            return redirect_to_login(reverse("activitypub:note-list"))
+        try:
+            if self.request.user.person:
+                messages.info(request, "You already have an ActivityPub Profile!")
+                return redirect(
+                    "activitypub:person-detail",
+                    username=request.user.person.display_name,
+                )
+        except Person.DoesNotExist:
+            pass
+        return super().post(request)
 
     def form_valid(self, form: "ModelForm[Person]"):
         assert self.request.user.is_authenticated  # type guard
@@ -153,17 +176,6 @@ class PersonCreateView(UserPassesTestMixin, CreateView):
         form.instance.private_key = "private_key_placeholder"
         form.instance.public_key = "public_key_placeholder"
         return super().form_valid(form)
-
-    def test_func(self):
-        """Ensure the user does not already have a Person profile."""
-        if not self.request.user.is_authenticated:
-            return False
-        try:
-            if self.request.user.person:
-                return False
-        except Person.DoesNotExist:
-            pass
-        return True
 
 
 person_create_view = PersonCreateView.as_view()
