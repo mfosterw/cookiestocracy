@@ -42,8 +42,7 @@
       "user": 1,
       "private_key": "private_key_placeholder",
       "public_key": "public_key_placeholder",
-      "bio": "",
-      "following": []
+      "bio": ""
     }
   },
   {
@@ -55,8 +54,42 @@
       "user": 2,
       "private_key": "private_key_placeholder",
       "public_key": "public_key_placeholder",
+      "bio": ""
+    }
+  },
+
+  {
+    "model": "activitypub.historicalperson",
+    "pk": 1,
+    "fields": {
+      "id": 1,
+      "created": "2025-07-04T23:22:11.652Z",
+      "modified": "2025-07-04T23:22:11.652Z",
+      "private_key": "private_key_placeholder",
+      "public_key": "public_key_placeholder",
       "bio": "",
-      "following": []
+      "user": 1,
+      "history_date": "2025-09-07T22:52:36.593Z",
+      "history_change_reason": "",
+      "history_type": "+",
+      "history_user": null
+    }
+  },
+  {
+    "model": "activitypub.historicalperson",
+    "pk": 2,
+    "fields": {
+      "id": 2,
+      "created": "2025-07-05T16:15:12.547Z",
+      "modified": "2025-07-05T16:15:12.547Z",
+      "private_key": "private_key_placeholder",
+      "public_key": "public_key_placeholder",
+      "bio": "",
+      "user": 2,
+      "history_date": "2025-09-07T22:52:36.593Z",
+      "history_change_reason": "",
+      "history_type": "+",
+      "history_user": null
     }
   },
   {
@@ -167,6 +200,106 @@
       "rght": 4,
       "tree_id": 2,
       "level": 2
+    }
+  },
+  {
+    "model": "activitypub.historicalnote",
+    "pk": 1,
+    "fields": {
+      "id": 5,
+      "created": "2025-07-05T16:16:39.332Z",
+      "modified": "2025-07-05T16:16:39.332Z",
+      "content": "This is a reply to a reply by a different user! (I need to improve the display of replies to replies in the note detail view)",
+      "lft": 3,
+      "rght": 4,
+      "tree_id": 2,
+      "level": 2,
+      "author": 2,
+      "in_reply_to": 3,
+      "history_date": "2025-09-07T22:52:36.586Z",
+      "history_change_reason": "",
+      "history_type": "+",
+      "history_user": null
+    }
+  },
+  {
+    "model": "activitypub.historicalnote",
+    "pk": 2,
+    "fields": {
+      "id": 4,
+      "created": "2025-07-05T16:15:43.177Z",
+      "modified": "2025-07-05T16:15:43.177Z",
+      "content": "This is a note by a different user",
+      "lft": 1,
+      "rght": 2,
+      "tree_id": 3,
+      "level": 0,
+      "author": 2,
+      "in_reply_to": null,
+      "history_date": "2025-09-07T22:52:36.587Z",
+      "history_change_reason": "",
+      "history_type": "+",
+      "history_user": null
+    }
+  },
+  {
+    "model": "activitypub.historicalnote",
+    "pk": 3,
+    "fields": {
+      "id": 3,
+      "created": "2025-07-04T23:23:17.547Z",
+      "modified": "2025-07-04T23:23:17.547Z",
+      "content": "This is a reply to that other note.",
+      "lft": 2,
+      "rght": 5,
+      "tree_id": 2,
+      "level": 1,
+      "author": 1,
+      "in_reply_to": 2,
+      "history_date": "2025-09-07T22:52:36.587Z",
+      "history_change_reason": "",
+      "history_type": "+",
+      "history_user": null
+    }
+  },
+  {
+    "model": "activitypub.historicalnote",
+    "pk": 4,
+    "fields": {
+      "id": 2,
+      "created": "2025-07-04T23:22:43.126Z",
+      "modified": "2025-07-04T23:22:43.126Z",
+      "content": "This is another note.",
+      "lft": 1,
+      "rght": 6,
+      "tree_id": 2,
+      "level": 0,
+      "author": 1,
+      "in_reply_to": null,
+      "history_date": "2025-09-07T22:52:36.587Z",
+      "history_change_reason": "",
+      "history_type": "+",
+      "history_user": null
+    }
+  },
+  {
+    "model": "activitypub.historicalnote",
+    "pk": 5,
+    "fields": {
+      "id": 1,
+      "created": "2025-07-04T23:22:33.271Z",
+      "modified": "2025-07-04T23:22:33.271Z",
+      "content": "This is a note.",
+      "lft": 1,
+      "rght": 2,
+      "tree_id": 1,
+      "level": 0,
+      "author": 1,
+      "in_reply_to": null,
+      "history_date": "2025-09-07T22:52:36.587Z",
+      "history_change_reason": "",
+      "history_type": "+",
+      "history_user": null
     }
   }
 ]

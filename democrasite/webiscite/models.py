@@ -13,9 +13,8 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django_celery_beat.models import IntervalSchedule
 from django_celery_beat.models import PeriodicTask
-from model_utils.models import StatusField
-from model_utils.models import StatusModel
 from model_utils.models import TimeStampedModel
+from simple_history.models import HistoricalRecords
 
 from democrasite.users.models import User
 
@@ -59,7 +58,7 @@ class PullRequestManager[T](models.Manager):
         return pull_request
 
 
-class PullRequest(StatusModel, TimeStampedModel):
+class PullRequest(TimeStampedModel):
     """Local representation of a pull request on Github"""
 
     number = models.IntegerField(_("Pull request number"), primary_key=True)
@@ -70,11 +69,17 @@ class PullRequest(StatusModel, TimeStampedModel):
     # Store Github username of author even if they are not a user on the site
     author_name = models.CharField(max_length=100)
     #:
-    STATUS = (("open", _("Open")), ("closed", _("Closed")))
+    status = models.CharField(
+        max_length=6,
+        choices=(("closed", _("Closed")), ("open", _("Open"))),
+        help_text=_("State of the PR on Github"),
+    )
     # Unique by defintion but added the constraint for clarity
     sha = models.CharField(
         max_length=40, unique=True, help_text=_("Unique identifier of PR commit")
     )
+
+    history = HistoricalRecords()
 
     objects = PullRequestManager()
 
@@ -114,8 +119,9 @@ class Vote(models.Model):
     bill = models.ForeignKey("Bill", on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     support = models.BooleanField()
-    created = models.DateTimeField(auto_now_add=True)
-    # Doesn't need modified time because it's always deleted and re-added
+    when = models.DateTimeField(auto_now=True)
+
+    history = HistoricalRecords()
 
     class Meta:
         constraints = [
@@ -258,7 +264,7 @@ class BillManager[T](models.Manager):
             del self._bill
 
 
-class Bill(StatusModel, TimeStampedModel):
+class Bill(TimeStampedModel):
     """Model for a proposal to merge a particular pull request into the main branch"""
 
     # Display info
@@ -280,11 +286,11 @@ class Bill(StatusModel, TimeStampedModel):
         # Translators: PR is short for "pull request"
         CLOSED = "closed", _("PR Closed")  # PR closed on Github
 
-    #:-: The possible statuses for a bill. Use ``Bill.Status.VALUE`` to access.
-    STATUS = Status.choices
-    status = StatusField(
+    #:
+    status = models.CharField(
         max_length=10,
         default=Status.OPEN,
+        choices=Status,
         help_text=_("The current status of the bill"),
     )
     constitutional = models.BooleanField(
@@ -295,6 +301,8 @@ class Bill(StatusModel, TimeStampedModel):
     # Automatic fields
     votes = models.ManyToManyField(User, through=Vote, related_name="votes", blank=True)
     _submit_task = models.OneToOneField(PeriodicTask, on_delete=models.PROTECT)
+
+    history = HistoricalRecords()
 
     objects = BillManager()
 
@@ -352,14 +360,31 @@ class Bill(StatusModel, TimeStampedModel):
             raise ClosedBillVoteError("Bill is not open for voting")
 
         try:
-            vote = self.vote_set.get(user=user)
-            recreate = vote.support != support
-            vote.delete()
-        except Vote.DoesNotExist:
-            recreate = True
+            vote: Vote = self.vote_set.get(user=user)
+            if vote.support == support:
+                vote.delete()
+                logger.info(
+                    'PR %s: User %s retracted their vote "%s" on bill %s',
+                    self.pull_request.number,
+                    user.username,
+                    "yes" if support else "no",
+                    self.id,
+                )
 
-        if recreate:
-            self.vote_set.create(user=user, support=support)
+            else:
+                vote.support = support
+                vote.save(update_fields=["support", "when"])  # Ensure "when" is updated
+                logger.info(
+                    "PR %s: User %s changed their vote on bill %s from %s to %s",
+                    self.pull_request.number,
+                    user.username,
+                    self.id,
+                    not support,
+                    support,
+                )
+
+        except Vote.DoesNotExist:
+            self.votes.add(user, through_defaults={"support": support})
             logger.info(
                 "PR %s: User %s voted %s on bill %s",
                 self.pull_request.number,

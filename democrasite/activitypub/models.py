@@ -6,6 +6,8 @@ from model_utils.models import TimeStampedModel
 from mptt.models import MPTTModel
 from mptt.models import TreeForeignKey
 from mptt.models import TreeManager
+from simple_history import register
+from simple_history.models import HistoricalRecords
 
 User = get_user_model()
 
@@ -52,6 +54,10 @@ class Person(TimeStampedModel):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     private_key = models.TextField()
     public_key = models.TextField()
+    bio = models.TextField(
+        blank=True,
+        help_text=_("A short biography or description of the person"),
+    )
     following = models.ManyToManyField(
         "self",
         related_name="followers",
@@ -61,10 +67,8 @@ class Person(TimeStampedModel):
         blank=True,
         help_text=_("People this person is following"),
     )
-    bio = models.TextField(
-        blank=True,
-        help_text=_("A short biography or description of the person"),
-    )
+
+    history = HistoricalRecords(m2m_fields=[following])
 
     objects = PersonManager()
 
@@ -329,3 +333,7 @@ class Note(TimeStampedModel, MPTTModel):
             return False
         self.reposts.add(person)
         return True
+
+
+# HistoricalRecords field doesn't work on MPTT models (see https://github.com/django-commons/django-simple-history/issues/87)
+register(Note, m2m_fields=["likes", "reposts"])

@@ -37,7 +37,9 @@ services:
       - ./.envs/.local/.postgres
 
   docs:
-    <<: *django
+    build:
+      context: .
+      dockerfile: ./compose/local/django/Dockerfile
     image: democrasite_local_docs
     container_name: democrasite-local-docs
     volumes:
@@ -45,7 +47,7 @@ services:
     ports:
       - "9000:9000"
     command: /start-docs
-    healthcheck: {}
+    entrypoint: "/bin/bash -c" # overwrite default
 
   redis:
     image: docker.io/redis:6
