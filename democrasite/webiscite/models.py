@@ -53,7 +53,7 @@ class PullRequestManager[T](models.Manager):
             },
         )
 
-        self.log("%s", "Created" if created else "Updated")
+        pull_request.log("%s", "Created" if created else "Updated")
         return pull_request
 
 
@@ -218,9 +218,10 @@ class BillManager[T](models.Manager):
             )
             self._bill.full_clean()
             self._bill.save()
-            self._bill.log("Created")
+            bill = self._bill
+            bill.log("Created")
 
-        return self._bill
+        return bill
 
     @contextmanager
     def _create_submit_task(self) -> Iterator[PeriodicTask]:
@@ -259,6 +260,9 @@ class BillManager[T](models.Manager):
             submit_task.args = json.dumps([self._bill.id])
             submit_task.save()
             self._bill.log("Scheduled %s", submit_task.name)
+
+            # Attribute could be shared between model instances
+            del self._bill
 
 
 class Bill(TimeStampedModel):
