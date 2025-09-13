@@ -35,9 +35,8 @@ def submit_bill(bill_id: int) -> None:
     bill = Bill.objects.get(pk=bill_id)
     bill.submit()
 
-    repo = Github(auth=Auth.Token(settings.WEBISCITE_GITHUB_TOKEN)).get_repo(
-        settings.WEBISCITE_REPO
-    )
+    github_auth = Auth.Token(settings.WEBISCITE_GITHUB_TOKEN)
+    repo = Github(auth=github_auth).get_repo(settings.WEBISCITE_REPO)
     pull = repo.get_pull(bill.pull_request.number)
 
     if bill.status != Bill.Status.APPROVED:
@@ -49,6 +48,7 @@ def submit_bill(bill_id: int) -> None:
         bill.log("Merged")
     else:
         logger.warning("Bill %s failed to merge", bill.id)
+        return
 
     # Automatically update constitution line numbers if necessary
     _update_constitution(bill, repo)

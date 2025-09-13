@@ -40,6 +40,23 @@ class TestSubmitBill:
             merge_method="squash", sha=bill.pull_request.sha
         )
 
+    @patch("github.Github.get_repo")
+    @patch("github.Auth.Token", spec=True)
+    def test_bill_merge_failed(self, mock_token, mock_repo):
+        bill = BillFactory.create(constitutional=True)
+        # constitutional so _update_constitution isn't called
+        voters = UserFactory.create_batch(settings.WEBISCITE_MINIMUM_QUORUM)
+        Vote.objects.bulk_create(
+            [Vote(bill=bill, user=voter, support=True) for voter in voters]
+        )
+        mock_repo().get_pull().merge.return_value = None
+
+        submit_bill(bill.id)
+
+        mock_repo().get_pull().merge.assert_called_once_with(
+            merge_method="squash", sha=bill.pull_request.sha
+        )
+
     @patch.object(constitution, "update_constitution")
     @patch("requests.get")
     @patch("github.Repository.Repository")
