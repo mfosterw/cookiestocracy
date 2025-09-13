@@ -1,9 +1,9 @@
 """Models for the webiscite app"""
 
 import json
+import logging
 from collections.abc import Iterator
 from contextlib import contextmanager
-from logging import getLogger
 from typing import Any
 
 from django.conf import settings
@@ -20,7 +20,7 @@ from democrasite.users.models import User
 
 from .constitution import is_constitutional
 
-logger = getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class ClosedBillVoteError(Exception):
@@ -53,8 +53,7 @@ class PullRequestManager[T](models.Manager):
             },
         )
 
-        action = "created" if created else "updated"
-        logger.info("PR %s: Pull request %s", pr["number"], action)
+        self.log("%s", "Created" if created else "Updated")
         return pull_request
 
 
@@ -86,6 +85,10 @@ class PullRequest(TimeStampedModel):
     def __str__(self) -> str:
         return f"PR #{self.number}"
 
+    def log(self, msg, *args, level=logging.INFO):
+        logger.info(level, f"PR #%s: {msg}", self.number, *args)
+        # f-string necessary to let string interpolation work in msg
+
     @property
     def diff_link(self) -> str:
         """Return base url of PR by removing ".diff" extension"""
@@ -106,7 +109,7 @@ class PullRequest(TimeStampedModel):
         try:
             bill: Bill = self.bill_set.get(status=Bill.Status.OPEN)
         except Bill.DoesNotExist:
-            logger.info("PR %s: No open bill found", self.number)
+            self.log("No open bill found")
             return None
         else:
             bill.close()
@@ -141,6 +144,7 @@ class BillManager[T](models.Manager):
         return (
             super()
             .get_queryset()
+            .select_related("pull_request")
             .annotate(
                 total_votes=models.Count("vote"),
                 yes_percent=models.Case(
@@ -203,7 +207,7 @@ class BillManager[T](models.Manager):
             applicable
         """
         with self._create_submit_task() as submit_task:
-            self._bill = self.model(
+            self._bill: Bill = self.model(
                 name=title,
                 description=body,
                 author=author,
@@ -214,10 +218,9 @@ class BillManager[T](models.Manager):
             )
             self._bill.full_clean()
             self._bill.save()
-            logger.info("PR %s: Bill %s created", pull_request.number, self._bill.id)
-            bill = self._bill
+            self._bill.log("Created")
 
-        return bill  # noqa: RET504
+        return self._bill
 
     @contextmanager
     def _create_submit_task(self) -> Iterator[PeriodicTask]:
@@ -255,13 +258,7 @@ class BillManager[T](models.Manager):
             submit_task.name = f"bill_submit:{self._bill.id}"
             submit_task.args = json.dumps([self._bill.id])
             submit_task.save()
-            logger.info(
-                "PR %s: Scheduled %s",
-                self._bill.pull_request.number,
-                submit_task.name,
-            )
-
-            del self._bill
+            self._bill.log("Scheduled %s", submit_task.name)
 
 
 class Bill(TimeStampedModel):
@@ -322,6 +319,10 @@ class Bill(TimeStampedModel):
     def __str__(self) -> str:
         return f"Bill {self.id}: {self.name} ({self.pull_request})"
 
+    def log(self, msg, *args):
+        logger.info(f"Bill %s (#%s): {msg}", self.id, self.pull_request.number, *args)  # noqa: G004
+        # f-string necessary to let string interpolation work in msg
+
     def get_absolute_url(self) -> str:
         """Returns URL to view this Bill instance"""
         return reverse("webiscite:bill-detail", kwargs={"pk": self.id})
@@ -359,39 +360,21 @@ class Bill(TimeStampedModel):
         if self.status != self.Status.OPEN:
             raise ClosedBillVoteError("Bill is not open for voting")
 
+        supports = "yes" if support else "no"
         try:
             vote: Vote = self.vote_set.get(user=user)
             if vote.support == support:
                 vote.delete()
-                logger.info(
-                    'PR %s: User %s retracted their vote "%s" on bill %s',
-                    self.pull_request.number,
-                    user.username,
-                    "yes" if support else "no",
-                    self.id,
-                )
+                self.info("%s retracted their %s vote", user.username, supports)
 
             else:
                 vote.support = support
                 vote.save(update_fields=["support", "when"])  # Ensure "when" is updated
-                logger.info(
-                    "PR %s: User %s changed their vote on bill %s from %s to %s",
-                    self.pull_request.number,
-                    user.username,
-                    self.id,
-                    not support,
-                    support,
-                )
+                self.log("%s changed their vote to %s", user.username, supports)
 
         except Vote.DoesNotExist:
             self.votes.add(user, through_defaults={"support": support})
-            logger.info(
-                "PR %s: User %s voted %s on bill %s",
-                self.pull_request.number,
-                user.username,
-                "yes" if support else "no",
-                self.id,
-            )
+            self.log("%s voted %s", user.username, supports)
 
     def user_supports(self, user: User) -> bool | None:
         """
@@ -415,21 +398,17 @@ class Bill(TimeStampedModel):
         """Close the bill and disable its submit task"""
         self.status = self.Status.CLOSED
         self.save()
-        logger.info("Bill %s set to closed", self.id)
+        self.log("Closed")
 
         self._submit_task.enabled = False
         self._submit_task.save()
-        logger.info("Submit task for bill %s disabled", self.id)
+        self.log("Submit task disabled")
 
     def submit(self) -> None:
         """Check if the bill has enough votes to pass and update the status"""
         # Bill was closed before voting period ended
         if self.status != Bill.Status.OPEN:
-            logger.info(
-                "PR %s: bill %s was not open when submitted",
-                self.pull_request.number,
-                self.id,
-            )
+            self.log("Bill was not open when submitted")
             return
 
         self.status = self._check_approval()
@@ -438,11 +417,7 @@ class Bill(TimeStampedModel):
     def _check_approval(self) -> "Bill.Status":
         total_votes = self.votes.count()
         if total_votes < settings.WEBISCITE_MINIMUM_QUORUM:
-            logger.info(
-                "PR %s: bill %s rejected due to insufficient votes",
-                self.pull_request.number,
-                self.id,
-            )
+            self.log("Rejected due to insufficient votes")
             return self.Status.FAILED
 
         approval = self.yes_votes.count() / total_votes
@@ -452,18 +427,8 @@ class Bill(TimeStampedModel):
             approved = approval > settings.WEBISCITE_NORMAL_MAJORITY
 
         if not approved:
-            logger.info(
-                "PR %s: bill %s rejected with %s%% approval",
-                self.pull_request.number,
-                self.id,
-                approval * 100,
-            )
+            self.log("Rejected with %s%% approval", approval * 100)
             return self.Status.REJECTED
 
-        logger.info(
-            "PR %s: bill %s approved with %s%% approval",
-            self.pull_request.number,
-            self.id,
-            approval,
-        )
+        self.log("Approved with %s%% approval", approval * 100)
         return self.Status.APPROVED
