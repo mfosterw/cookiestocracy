@@ -4,6 +4,7 @@ Each service that sends webhooks should have its own function-based view."""
 
 import hmac
 import json
+from logging import WARNING
 from logging import getLogger
 from typing import TYPE_CHECKING
 from typing import Any
@@ -49,7 +50,12 @@ class PullRequestHandler:
         )
         handler = getattr(self, payload["action"], None)
         if handler is None:
+            logger.warning(
+                "GitHub pull request webhook failed with unsupported action: %s",
+                payload["action"],
+            )
             return HttpResponseBadRequest(f"Unsupported action: {payload['action']}")
+
         pull_request, bill = handler(payload["pull_request"])
         return self.get_response(payload["action"], pull_request, bill)
 
@@ -78,7 +84,7 @@ class PullRequestHandler:
         Returns:
             A tuple containing the pull request and bill, if applicable
         """
-        pull_request = PullRequest.objects.create_from_github(pr)
+        pull_request: PullRequest = PullRequest.objects.create_from_github(pr)
 
         try:
             author = User.objects.filter(socialaccount__provider="github").get(
@@ -87,7 +93,7 @@ class PullRequestHandler:
         except User.DoesNotExist:
             # If the creator of the pull request does not have a linked account,
             # a Bill cannot be created and the pr is ignored.
-            logger.warning("PR %s: No bill created (user does not exist)", pr["number"])
+            pull_request.log("No bill created (user does not exist)", level=WARNING)
             return pull_request, None
 
         diff_text = requests.get(pr["diff_url"], timeout=10).text
@@ -108,13 +114,16 @@ class PullRequestHandler:
         try:
             pull_request = PullRequest.objects.get(number=pr["number"])
         except PullRequest.DoesNotExist:
-            logger.warning("PR %s: Not closed (no pull request found)", pr["number"])
+            logger.warning(
+                "PR #%s: Nothing changed (no pull request found)", pr["number"]
+            )
             return (None, None)
 
         bill = pull_request.close()
         return (pull_request, bill)
 
 
+# This class is largely adapted from https://github.com/fladi/django-github-webhook
 @method_decorator(csrf_exempt, name="dispatch")
 class GithubWebhookView(View):
     """View for GitHub webhook alerts
@@ -122,7 +131,8 @@ class GithubWebhookView(View):
     Verifies that the request is valid and, if so, creates a Celery task to process it
     """
 
-    # This class is largely adapted from https://github.com/fladi/django-github-webhook
+    http_method_names = ["post"]
+
     @staticmethod
     def _validate_header(headers: request.HttpHeaders) -> HttpResponseBadRequest | None:
         """Validate the headers of a request from a webhook
@@ -209,19 +219,18 @@ class GithubWebhookView(View):
     def post(self, request: HttpRequest, *args, **kwargs) -> HttpResponse:
         error = self.validate_request(request.headers, request.body)
         if error is not None:
+            logger.warning("GitHub webhook failed due to: %s", error.content)
             return error
 
         # Process the GitHub event
         # For info on the GitHub Webhook API, see
         # https://docs.github.com/en/developers/webhooks-and-events/webhook-events-and-payloads
-        event = request.headers.get(
-            "x-github-event", "ping"
-        )  # header was already validated
+        event = request.headers.get("x-github-event", "ping")
         handler = getattr(self, event, None)
         if handler is None:
-            return HttpResponseBadRequest(
-                f"Unsupported X-GITHUB-EVENT header found: {event}"
-            )
+            msg = f"Unsupported X-GITHUB-EVENT header found: {event}"
+            logger.warning("GitHub webhook failed due to: %s", msg)
+            return HttpResponseBadRequest(msg)
 
         payload = json.loads(request.body.decode("utf-8"))
         return handler(payload)
