@@ -423,7 +423,9 @@ WEBISCITE_GITHUB_TOKEN = env("GITHUB_TOKEN", default="")
 # host your own repo on my site
 WEBISCITE_REPO = "mfosterw/cookiestocracy"
 # Minimum total votes for a bill to pass
-WEBISCITE_MINIMUM_QUORUM = 5 if not DEBUG else 1  # No vote minimum for testing
+WEBISCITE_MINIMUM_QUORUM = (
+    1 if not DEBUG else 1  # noqa: RUF034
+)  # No vote minimum for testing
 # Proportion of yes votes for a normal bill to pass
 WEBISCITE_NORMAL_MAJORITY = 1 / 2
 # Proportion of yes votes for an amendment to the constitution to pass
