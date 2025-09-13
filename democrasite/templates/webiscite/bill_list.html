@@ -31,7 +31,7 @@
                         {% endif %}">{{ bill.get_status_display }}</p>
             {% endif %}
             <hr />
-            <div data-nosnippet class="card-text">{{ bill.description|truncatechars:80 }}</div>
+            <div data-nosnippet class="card-text">{{ bill.description|truncatechars:120 }}</div>
             <div class="card-text text-start">
               <a class="card-link link-underline link-underline-opacity-0"
                  href="{{ bill.pull_request.diff_link }}"
