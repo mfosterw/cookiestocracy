@@ -86,7 +86,7 @@ class PullRequest(TimeStampedModel):
         return f"PR #{self.number}"
 
     def log(self, msg, *args, level=logging.INFO):
-        logger.info(level, f"PR #%s: {msg}", self.number, *args)
+        logger.log(level, f"PR #%s: {msg}", self.number, *args)  # noqa: G004
         # f-string necessary to let string interpolation work in msg
 
     @property
@@ -369,7 +369,7 @@ class Bill(TimeStampedModel):
             vote: Vote = self.vote_set.get(user=user)
             if vote.support == support:
                 vote.delete()
-                self.info("%s retracted their %s vote", user.username, supports)
+                self.log("%s retracted their %s vote", user.username, supports)
 
             else:
                 vote.support = support

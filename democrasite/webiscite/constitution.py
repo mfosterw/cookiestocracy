@@ -1,9 +1,8 @@
 """This module handles the logic behind the constitution.
 
-This contains methods to read the constitution as a dict, check which files in
-a diff contain constitutional amendments, and automatically update the
-constitution for changes which edit files included in the constitution without
-resulting in constitutional amendments
+This contains functions to read the constitution as json, check which files in a diff
+contain constitutional amendments, and automatically update the constitution for changes
+that moved constitutionally protected sections without editing them
 """
 
 import json
