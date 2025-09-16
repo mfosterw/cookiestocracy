@@ -26,7 +26,7 @@ class PullRequest(TimeStampedModel):
     """Local representation of a pull request on Github"""
 
     number = models.IntegerField(_("Pull request number"), primary_key=True)
-    title = models.CharField(max_length=100)
+    title = models.CharField(max_length=256)
     additions = models.IntegerField(help_text=_("Lines added"))
     deletions = models.IntegerField(help_text=_("Lines removed"))
     diff_url = models.URLField(help_text=_("URL to the diff of the pull request"))
@@ -108,7 +108,7 @@ class Bill(TimeStampedModel):
     """Model for a proposal to merge a particular pull request into the main branch"""
 
     # Display info
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=256)
     description = models.TextField(blank=True)
     # Users should be anonymized, not deleted
     author = models.ForeignKey(User, on_delete=models.PROTECT)
