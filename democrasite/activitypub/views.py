@@ -212,6 +212,6 @@ def person_follow_view(request: HttpRequest, username: str) -> http.HttpResponse
     assert request.user.is_authenticated  # type guard
 
     person = get_object_or_404(Person, user__username=username)
-    request.user.person.following.add(person)
+    request.user.person.follow(person)
 
     return JsonResponse({"followers": person.followers.count()})
