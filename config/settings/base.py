@@ -85,6 +85,7 @@ THIRD_PARTY_APPS = [
     "allauth.account",
     "allauth.socialaccount",
     "django_celery_beat",
+    "simple_history",
     "mptt",
     # django rest framework
     "rest_framework",
