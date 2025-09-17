@@ -11,12 +11,27 @@ from django.views.generic import UpdateView
 from .models import User
 
 
-class UserDetailView(LoginRequiredMixin, DetailView):
+class UserDetailView(DetailView):
     """Page for viewing a user's profile."""
 
     model = User
     slug_field = "username"
     slug_url_kwarg = "username"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.get_object()
+        if user == self.request.user:
+            if user.socialaccount_set.filter(provider="github").exists():
+                context["empty_message"] = "You haven't proposed any bills yet."
+            else:
+                context["empty_message"] = (
+                    "Sign in with GitHub to start proposing bills."
+                )
+        else:
+            context["empty_message"] = "This user hasn't proposed any bills yet."
+
+        return context
 
 
 user_detail_view = UserDetailView.as_view()
