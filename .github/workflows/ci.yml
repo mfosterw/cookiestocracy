@@ -52,9 +52,7 @@ jobs:
         run: docker compose -f docker-compose.local.yml run --rm django python manage.py migrate
 
       - name: Test with Pytest and Coverage
-        run: |
-          docker compose -f docker-compose.local.yml run django coverage run -m pytest
-          docker compose -f docker-compose.local.yml run django coverage xml
+        run: docker compose -f docker-compose.local.yml run django coverage run -m pytest --cov=democrasite --cov-report=xml
 
       - name: Send Coverage report to Codecov
         uses: codecov/codecov-action@v5
