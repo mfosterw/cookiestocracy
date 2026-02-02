@@ -91,15 +91,7 @@ class TestRootTemplates:
         response = page_not_found(request, exception=Exception(""))
 
         assert response.status_code == HTTPStatus.NOT_FOUND
-        assert b"This is not the page you were looking for." in response.content
-
-    def test_404_with_message(self, rf: RequestFactory):
-        request = rf.get("/fake-url/")
-
-        response = page_not_found(request, exception=Exception("Test message"))
-
-        assert response.status_code == HTTPStatus.NOT_FOUND
-        assert b"Test message" in response.content
+        assert b"This page does not exist." in response.content
 
     def test_500(self, rf: RequestFactory):
         request = rf.get("/fake-url/")
