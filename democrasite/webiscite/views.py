@@ -56,7 +56,7 @@ class BillProposalsView(LoginRequiredMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["title"] = "My Bills"
-        context["empty_message"] = "Looks like you haven't proposed any bills yet."
+        context["empty_message"] = "You haven't proposed any bills yet."
         return context
 
 
@@ -81,7 +81,7 @@ class BillVotesView(LoginRequiredMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["title"] = "My Votes"
-        context["empty_message"] = "Looks like you haven't voted on any bills yet."
+        context["empty_message"] = "You haven't voted on any bills yet."
         return context
 
 

@@ -81,10 +81,10 @@ class TestBillListTemplate:
         assert response.status_code == HTTPStatus.OK
         assert response.templates[0].name == "webiscite/bill_list.html"
         assert ("No bills" in content) == (view == "index")
-        assert (escape("you haven't proposed any bills") in content) == (
+        assert (escape("You haven't proposed any bills") in content) == (
             view == "my-bills"
         )
-        assert (escape("you haven't voted on any bills") in content) == (
+        assert (escape("You haven't voted on any bills") in content) == (
             view == "my-bill-votes"
         )
 
