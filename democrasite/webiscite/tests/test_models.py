@@ -21,20 +21,22 @@ FAKE = faker.Faker()
 class TestPullRequestManager:
     def test_create_from_github_create(self, caplog):
         pr = GithubPullRequestFactory.create(number=FAKE.random_int())
-        pull_request = PullRequest.objects.create_from_github(pr)
-        assert any(
-            record.message == f"PR {pull_request.number}: Pull request created"
-            for record in caplog.records
-        )
+        assert not PullRequest.objects.filter(title=pr["title"]).exists()
+
+        pull_request: PullRequest = PullRequest.objects.create_from_github(pr)
+
+        assert hasattr(pull_request, "created")
+        assert PullRequest.objects.filter(title=pr["title"]).exists()
 
     def test_create_from_github_update(self, bill: Bill, caplog):
-        # PullRequest is created in the BillFactory
+        # PullRequest is created during creation of bill fixture
         pr = GithubPullRequestFactory.create(bill=bill)
-        pull_request = PullRequest.objects.create_from_github(pr)
-        assert any(
-            record.message == f"PR {pull_request.number}: Pull request updated"
-            for record in caplog.records
-        )
+        assert PullRequest.objects.filter(title=bill.pull_request.title).exists()
+        pr["title"] = "New Title"
+
+        PullRequest.objects.create_from_github(pr)
+
+        assert PullRequest.objects.filter(title="New Title").exists()
 
 
 class TestPullRequest:
@@ -51,14 +53,11 @@ class TestPullRequest:
         pull_request = PullRequestFactory.create()
         assert pull_request.status == "open"
 
-        pull_request.close()
+        bill = pull_request.close()
 
         pull_request.refresh_from_db()
         assert pull_request.status == "closed"
-        assert any(
-            record.message == f"PR {pull_request.number}: No open bill found"
-            for record in caplog.records
-        )
+        assert bill is None
 
 
 class TestVote:
@@ -133,7 +132,7 @@ class TestBillManager:
         with (
             pytest.raises(
                 AttributeError,
-                match="self._bill was not saved in the submit task context",
+                match=r"self._bill was not saved in the submit task context",
             ),
             Bill.objects._create_submit_task(),  # noqa: SLF001
         ):

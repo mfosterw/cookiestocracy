@@ -16,7 +16,6 @@ from github.Repository import Repository
 from . import constitution
 from .models import Bill
 
-# TODO (#58): Improve logging
 logger = get_task_logger(__name__)
 
 
@@ -36,19 +35,20 @@ def submit_bill(bill_id: int) -> None:
     bill = Bill.objects.get(pk=bill_id)
     bill.submit()
 
-    repo = Github(auth=Auth.Token(settings.WEBISCITE_GITHUB_TOKEN)).get_repo(
-        settings.WEBISCITE_REPO
-    )
+    github_auth = Auth.Token(settings.WEBISCITE_GITHUB_TOKEN)
+    repo = Github(auth=github_auth).get_repo(settings.WEBISCITE_REPO)
     pull = repo.get_pull(bill.pull_request.number)
 
     if bill.status != Bill.Status.APPROVED:
         pull.edit(state="closed")  # Close failed pull request
         return
 
-    merge = pull.merge(merge_method="squash", sha=bill.pull_request.sha)
-    logger.info(
-        "PR %s: bill %s merged (%s)", bill.pull_request.number, bill.id, merge.merged
-    )
+    merged = pull.merge(merge_method="squash", sha=bill.pull_request.sha)
+    if merged:
+        bill.log("Merged")
+    else:
+        logger.warning("Bill %s failed to merge", bill.id)
+        return
 
     # Automatically update constitution line numbers if necessary
     _update_constitution(bill, repo)
@@ -75,4 +75,4 @@ def _update_constitution(bill: Bill, repo: Repository) -> None:
             content=con_update,
             sha=con_sha,
         )
-        logger.info("PR %s: constitution updated", bill.pull_request.number)
+        bill.log("Constitution updated")
