@@ -1,7 +1,7 @@
 {% load static i18n socialaccount %}
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-bs-theme="light">
   <head>
     <meta charset="utf-8" />
     <meta http-equiv="x-ua-compatible" content="ie=edge" />
@@ -46,13 +46,14 @@
       <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
       <!-- place project specific Javascript in this file -->
       <script defer src="{% static 'js/project.js' %}"></script>
+      <script defer src="{% static 'js/theme-toggler.js' %}"></script>
     {% endblock javascript %}
     {% block extra_head %}
     {% endblock extra_head %}
   </head>
   <body>
     <div class="mb-1">
-      <nav class="navbar navbar-expand-md navbar-light bg-light">
+      <nav class="navbar navbar-expand-md bg-body-tertiary shadow-sm">
         <div class="container-fluid">
           {% block navbar %}
             <button class="navbar-toggler navbar-toggler-right"
@@ -123,6 +124,34 @@
                     <a href="{% url 'api-root' %}" class="nav-link">{% trans 'API' %}</a>
                   </li>
                 {% endif %}
+                <li class="nav-item dropdown">
+                  <a class="nav-link dropdown-toggle"
+                     href="#"
+                     id="themeDropdown"
+                     role="button"
+                     data-bs-toggle="dropdown"
+                     aria-expanded="false">
+                    <i class="bi bi-sun-fill"></i>
+                  </a>
+                  <ul class="dropdown-menu dropdown-menu-end"
+                      aria-labelledby="themeDropdown">
+                    <li>
+                      <button class="dropdown-item" type="button" data-bs-theme-value="light">
+                        <i class="bi bi-sun-fill me-2"></i>Light
+                      </button>
+                    </li>
+                    <li>
+                      <button class="dropdown-item" type="button" data-bs-theme-value="dark">
+                        <i class="bi bi-moon-stars-fill me-2"></i>Dark
+                      </button>
+                    </li>
+                    <li>
+                      <button class="dropdown-item" type="button" data-bs-theme-value="auto">
+                        <i class="bi bi-circle-half me-2"></i>Auto
+                      </button>
+                    </li>
+                  </ul>
+                </li>
               </ul>
             </div>
           {% endblock navbar %}
