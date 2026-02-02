@@ -105,7 +105,7 @@ class BillManager[T](models.Manager):
         body: str,
         author: User,
         diff_text: str,
-        pull_request: PullRequest,
+        pull_request: "PullRequest",
     ) -> T:
         """Validate and create a :class:`~democrasite.webiscite.models.Bill` from a
         GitHub pull request
@@ -125,7 +125,7 @@ class BillManager[T](models.Manager):
                 description=body,
                 author=author,
                 pull_request=pull_request,
-                status=Bill.Status.OPEN,
+                status=self.model.Status.OPEN,
                 constitutional=bool(is_constitutional(diff_text)),
                 _submit_task=submit_task,
             )
