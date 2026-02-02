@@ -148,6 +148,6 @@ Test coverage
 
 To run the tests, check your test coverage, and generate an HTML coverage report::
 
-    $ coverage run -m pytest
+    $ pytest --cov=democrasite
     $ coverage html
     $ open htmlcov/index.html
