@@ -5,9 +5,9 @@ volumes:
   production_grafana_data:
 
 networks:
-  cookiestocracy_metrics:
+  democrasite_metrics:
     external: true
-  cookiestocracy_frontend:
+  democrasite_frontend:
     external: true
 
 services:
@@ -19,7 +19,7 @@ services:
       - ./compose/production/grafana/prometheus.yml:/prometheus/prometheus.yml
       - production_prometheus_data:/prometheus
     networks:
-      - cookiestocracy_metrics
+      - democrasite_metrics
 
   loki:
     image: grafana/loki:3.6.4
@@ -27,7 +27,7 @@ services:
       - ./compose/production/grafana/loki.yaml:/etc/loki/loki.yaml
       - production_loki_data:/loki
     networks:
-      - cookiestocracy_metrics
+      - democrasite_metrics
 
   tempo:
     image: grafana/tempo:2.10.0
@@ -36,7 +36,7 @@ services:
       - ./compose/production/grafana/tempo.yaml:/etc/tempo/tempo.yaml
       - production_tempo_data:/var/tempo
     networks:
-      - cookiestocracy_metrics
+      - democrasite_metrics
 
   otel-collector:
     image: otel/opentelemetry-collector-contrib:0.144.0
@@ -44,7 +44,7 @@ services:
       - ./compose/production/grafana/otelcol-config.yaml:/etc/otelcol-contrib/config.yaml
       - /:/hostfs:ro
     networks:
-      - cookiestocracy_metrics
+      - democrasite_metrics
     depends_on:
       - loki
       - tempo
@@ -57,8 +57,8 @@ services:
     env_file:
       - ./.envs/.production/.grafana
     networks:
-      - cookiestocracy_metrics
-      - cookiestocracy_frontend
+      - democrasite_metrics
+      - democrasite_frontend
     depends_on:
       - loki
       - tempo
