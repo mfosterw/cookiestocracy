@@ -62,7 +62,7 @@ http:
 
     stats-secure-router:
       rule: "Host(`stats.democrasite.dev`)"
-      entryPoint:
+      entryPoints:
         - web-secure
       service: telemetry
       tls:
