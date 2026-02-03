@@ -42,6 +42,7 @@ services:
     image: otel/opentelemetry-collector-contrib:0.144.0
     volumes:
       - ./compose/production/grafana/otelcol-config.yaml:/etc/otelcol-contrib/config.yaml
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
       - /:/hostfs:ro
     networks:
       - democrasite_metrics
