@@ -1,8 +1,13 @@
 volumes:
-  production_postgres_data: {}
-  production_postgres_data_backups: {}
-  production_traefik: {}
-  production_django_media: {}
+  production_postgres_data:
+  production_postgres_data_backups:
+  production_traefik:
+  production_django_media:
+
+networks:
+  frontend:
+  backend:
+  metrics:
 
 services:
   django: &django
@@ -12,6 +17,10 @@ services:
     image: democrasite_production_django
     volumes:
       - production_django_media:/app/democrasite/media
+    networks:
+      - frontend
+      - backend
+      - metrics
     depends_on:
       - postgres
       - redis
@@ -33,6 +42,8 @@ services:
     volumes:
       - production_postgres_data:/var/lib/postgresql/data
       - production_postgres_data_backups:/backups
+    networks:
+      - backend
     env_file:
       - ./.envs/.production/.postgres
     deploy:
@@ -54,6 +65,8 @@ services:
       - "0.0.0.0:80:80"
       - "0.0.0.0:443:443"
       - "0.0.0.0:5555:5555"
+    networks:
+      - frontend
     deploy:
       resources:
         limits:
@@ -62,20 +75,29 @@ services:
 
   redis:
     image: docker.io/redis:6
+    networks:
+      - backend
 
   celeryworker:
     <<: *django
     image: democrasite_production_celeryworker
+    networks:
+      - backend
     command: /start-celeryworker
 
   celerybeat:
     <<: *django
     image: democrasite_production_celerybeat
+    networks:
+      - backend
     command: /start-celerybeat
 
   flower:
     <<: *django
     image: democrasite_production_flower
+    networks:
+      - backend
+      - frontend
     command: /start-flower
 
   nginx:
@@ -87,22 +109,10 @@ services:
       - django
     volumes:
       - production_django_media:/usr/share/nginx/media:ro
+    networks:
+      - frontend
     deploy:
       resources:
         limits:
           cpus: "0.1"
           memory: 100M
-
-  newrelic-agent:
-    image: newrelic/infrastructure:1.67.3
-    env_file:
-      - ./.envs/.production/.newrelic
-    cap_add:
-      - SYS_PTRACE
-    network_mode: host
-    pid: host
-    privileged: true
-    volumes:
-      - "/:/host:ro"
-      - "/var/run/docker.sock:/var/run/docker.sock"
-    restart: unless-stopped

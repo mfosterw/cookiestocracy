@@ -1,0 +1,78 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+
+  filelog:
+    include: [/var/lib/docker/containers/*/*-json.log]
+    poll_interval: 200ms
+    start_at: end
+    include_file_name: false
+    include_file_path: false
+    operators:
+      - id: container-parser
+        type: container
+        format: docker
+        add_metadata_from_filepath: false
+      - id: extract-service-name
+        type: regex_parser
+        parse_from: body
+        regex: 'service.name":\s*"(?P<svc>[^"]+)"'
+      - id: set-service-name
+        type: move
+        from: attributes.svc
+        to: resource["service.name"]
+        if: "attributes.svc != nil"
+
+  hostmetrics:
+    # Tell the scrapers to look at the mounted volume, not the container's /
+    root_path: /hostfs
+    scrapers:
+      cpu:
+      memory:
+      load:
+      network:
+      disk:
+      filesystem:
+
+processors:
+  batch:
+
+exporters:
+  otlp_http/loki:
+    endpoint: loki:3100/loki/api/v1/push
+    tls:
+      insecure: true
+
+  otlp_grpc/tempo:
+    endpoint: tempo:4317
+    tls:
+      insecure: true
+
+  otlp_http/prometheus:
+    # Push metrics to Prometheus's OTLP receiver
+    metrics_endpoint: prometheus:9090/api/v1/otlp/v1/metrics
+    tls:
+      insecure: true
+
+service:
+  pipelines:
+    logs:
+      receivers: [otlp, filelog]
+      processors: [batch]
+      exporters: [otlp_http/loki]
+
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlp_grpc/tempo]
+
+    metrics:
+      receivers: [hostmetrics]
+      processors: [batch]
+      exporters: [otlp_http/prometheus]
+
+  telemetry:
+    logs:
+      level: WARN

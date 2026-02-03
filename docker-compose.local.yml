@@ -1,6 +1,17 @@
 volumes:
-  democrasite_local_postgres_data: {}
-  democrasite_local_postgres_data_backups: {}
+  democrasite_local_postgres_data:
+  democrasite_local_postgres_data_backups:
+  democrasite_local_metrics_data:
+
+x-logging: &loki-logging
+  driver: loki
+  options:
+    loki-url: "http://localhost:3100/loki/api/v1/push"
+    mode: non-blocking # doesn't seem to work :(
+    # see https://grafana.com/docs/loki/latest/send-data/docker-driver/#known-issue-deadlocked-docker-daemon
+    loki-retries: 2
+    loki-max-backoff: 800ms
+    loki-timeout: 1s
 
 services:
   django: &django
@@ -23,6 +34,7 @@ services:
       test: "curl --fail --silent --write-out 'STATUS %{http_code}' --output /dev/null http://localhost:8000/"
       timeout: 5s
       start_period: 30s
+    logging: *loki-logging
 
   postgres:
     build:
@@ -35,6 +47,7 @@ services:
       - democrasite_local_postgres_data_backups:/backups
     env_file:
       - ./.envs/.local/.postgres
+    logging: *loki-logging
 
   docs:
     build:
@@ -48,10 +61,12 @@ services:
       - "9000:9000"
     command: /start-docs
     entrypoint: "/bin/bash -c" # overwrite default
+    logging: *loki-logging
 
   redis:
     image: docker.io/redis:6
     container_name: democrasite-local-redis
+    logging: *loki-logging
 
   celeryworker: &celery
     <<: *django
@@ -63,12 +78,14 @@ services:
     ports: []
     command: /start-celeryworker
     healthcheck: {}
+    logging: *loki-logging
 
   celerybeat:
     <<: *celery
     image: democrasite_local_celerybeat
     container_name: democrasite-local-celerybeat
     command: /start-celerybeat
+    logging: *loki-logging
 
   flower:
     <<: *celery
@@ -77,3 +94,18 @@ services:
     ports:
       - "5555:5555"
     command: /start-flower
+    logging: *loki-logging
+
+  metrics:
+    image: grafana/otel-lgtm:0.17.0
+    container_name: democrasite-local-metrics
+    ports:
+      - "3000:3000"
+      - "3100:3100" # loki
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+    volumes:
+      - ./compose/local/grafana/prometheus.yml:/otel-lgtm/prometheus.yaml
+      - democrasite_local_metrics_data:/data
+    logging: *loki-logging

@@ -60,6 +60,14 @@ http:
       tls:
         certResolver: letsencrypt
 
+    stats-secure-router:
+      rule: "Host(`stats.democrasite.dev`)"
+      entryPoint:
+        - web-secure
+      service: telemetry
+      tls:
+        certResolver: letsencrypt
+
   middlewares:
     csrf:
       # https://doc.traefik.io/traefik/master/middlewares/http/headers/#hostsproxyheaders
@@ -82,6 +90,11 @@ http:
       loadBalancer:
         servers:
           - url: http://nginx:80
+
+    telemetry:
+      loadBalancer:
+        servers:
+          - url: http://grafana:3000
 
 providers:
   # https://doc.traefik.io/traefik/master/providers/file/

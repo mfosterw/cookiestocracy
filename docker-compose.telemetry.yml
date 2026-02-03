@@ -1,0 +1,65 @@
+volumes:
+  production_prometheus_data:
+  production_loki_data:
+  production_tempo_data:
+  production_grafana_data:
+
+networks:
+  cookiestocracy_metrics:
+    external: true
+  cookiestocracy_frontend:
+    external: true
+
+services:
+  prometheus:
+    image: prom/prometheus:v3.9.1
+    command:
+      - --web.enable-otlp-receiver
+    volumes:
+      - ./compose/production/grafana/prometheus.yml:/prometheus/prometheus.yml
+      - production_prometheus_data:/prometheus
+    networks:
+      - cookiestocracy_metrics
+
+  loki:
+    image: grafana/loki:3.6.4
+    volumes:
+      - ./compose/production/grafana/loki.yaml:/etc/loki/loki.yaml
+      - production_loki_data:/loki
+    networks:
+      - cookiestocracy_metrics
+
+  tempo:
+    image: grafana/tempo:2.10.0
+    command: -config.file=/etc/tempo/tempo.yaml
+    volumes:
+      - ./compose/production/grafana/tempo.yaml:/etc/tempo/tempo.yaml
+      - production_tempo_data:/var/tempo
+    networks:
+      - cookiestocracy_metrics
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.144.0
+    volumes:
+      - ./compose/production/grafana/otelcol-config.yaml:/etc/otelcol-contrib/config.yaml
+      - /:/hostfs:ro
+    networks:
+      - cookiestocracy_metrics
+    depends_on:
+      - loki
+      - tempo
+
+  grafana:
+    image: grafana/grafana:12.3.2
+    volumes:
+      - ./compose/production/grafana/datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
+      - production_grafana_data:/var/lib/grafana
+    env_file:
+      - ./.envs/.production/.grafana
+    networks:
+      - cookiestocracy_metrics
+      - cookiestocracy_frontend
+    depends_on:
+      - loki
+      - tempo
+      - prometheus
