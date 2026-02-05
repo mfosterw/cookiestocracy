@@ -10,9 +10,6 @@ distributor:
         http:
           endpoint: "tempo:4318"
 
-querier:
-  query_live_store: true
-
 metrics_generator:
   storage:
     path: /var/tempo/generator/wal
