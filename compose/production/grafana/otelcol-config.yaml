@@ -11,10 +11,11 @@ receivers:
     include_file_name: false
     include_file_path: false
     operators:
-      - id: container-parser
-        type: container
-        format: docker
-        add_metadata_from_filepath: false
+      - id: parser-docker
+        type: json_parser
+        timestamp:
+          layout: "%Y-%m-%dT%H:%M:%S.%LZ"
+          parse_from: attributes.time
       - id: extract_metadata_from_docker_tag
         parse_from: attributes.attrs.tag
         regex: ^(?P<name>[^\|]+)\|(?P<image_name>[^\|]+)\|(?P<id>[^$]+)$
