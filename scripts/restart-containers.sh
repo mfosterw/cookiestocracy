@@ -1,5 +1,7 @@
 #!/usr/bin/bash
 
+docker compose -f /home/matthew/democrasite/docker-compose.telemetry.yml down
+
 COMPOSE_FILE="/home/matthew/democrasite/docker-compose.production.yml"
 OLD_CONTAINER=$(docker ps -aq)
 echo "$(date --utc +%FT%TZ): Scaling servers up..."
@@ -11,3 +13,5 @@ echo "$(date --utc +%FT%TZ): Scaling old server down..."
 docker container rm -f $OLD_CONTAINER
 docker compose up -d --no-deps traefik  # easier than excluding from delete and allows cycling traefik with <2 seconds down
 docker compose -f $COMPOSE_FILE up -d --no-deps --scale django=1 --scale postgres=1 --scale celeryworker=1 --scale celerybeat=1 --scale flower=1 --scale nginx=1 --no-recreate
+
+docker compose -f /home/matthew/democrasite/docker-compose.telemetry.yml up
