@@ -56,18 +56,18 @@ processors:
 
 exporters:
   otlp_http/loki:
-    endpoint: loki:3100/loki/api/v1/push
+    endpoint: http://loki:3100/loki/api/v1/push
     tls:
       insecure: true
 
   otlp_grpc/tempo:
-    endpoint: tempo:4317
+    endpoint: http://tempo:4317
     tls:
       insecure: true
 
   otlp_http/prometheus:
     # Push metrics to Prometheus's OTLP receiver
-    metrics_endpoint: prometheus:9090/api/v1/otlp/v1/metrics
+    metrics_endpoint: http://prometheus:9090/api/v1/otlp/v1/metrics
     tls:
       insecure: true
 
