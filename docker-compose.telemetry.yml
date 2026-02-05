@@ -10,6 +10,13 @@ networks:
   democrasite_frontend:
     external: true
 
+x-default-logging: &logging
+  driver: "json-file"
+  options:
+    max-size: "5m"
+    max-file: "2"
+    tag: "{{.Name}}|{{.ImageName}}|{{.ID}}"
+
 services:
   prometheus:
     image: prom/prometheus:v3.9.1
@@ -20,6 +27,7 @@ services:
       - production_prometheus_data:/prometheus
     networks:
       - democrasite_metrics
+    logging: *logging
 
   loki:
     image: grafana/loki:3.6.4
@@ -28,6 +36,7 @@ services:
       - production_loki_data:/loki
     networks:
       - democrasite_metrics
+    logging: *logging
 
   tempo:
     image: grafana/tempo:2.10.0
@@ -37,9 +46,11 @@ services:
       - production_tempo_data:/var/tempo
     networks:
       - democrasite_metrics
+    logging: *logging
 
   otel-collector:
     image: otel/opentelemetry-collector-contrib:0.144.0
+    user: 0:0 # for logs access
     volumes:
       - ./compose/production/grafana/otelcol-config.yaml:/etc/otelcol-contrib/config.yaml
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
@@ -49,6 +60,7 @@ services:
     depends_on:
       - loki
       - tempo
+    logging: *logging
 
   grafana:
     image: grafana/grafana:12.3.2
@@ -64,3 +76,4 @@ services:
       - loki
       - tempo
       - prometheus
+    logging: *logging

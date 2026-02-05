@@ -9,6 +9,13 @@ networks:
   backend:
   metrics:
 
+x-default-logging: &logging
+  driver: "json-file"
+  options:
+    max-size: "5m"
+    max-file: "2"
+    tag: "{{.Name}}|{{.ImageName}}|{{.ID}}"
+
 services:
   django: &django
     build:
@@ -33,6 +40,7 @@ services:
         limits:
           cpus: "0.2"
           memory: 500M
+    logging: *logging
 
   postgres:
     build:
@@ -51,6 +59,7 @@ services:
         limits:
           cpus: "0.2"
           memory: 300M
+    logging: *logging
 
   traefik:
     build:
@@ -72,11 +81,13 @@ services:
         limits:
           cpus: "0.1"
           memory: 100M
+    logging: *logging
 
   redis:
     image: docker.io/redis:6
     networks:
       - backend
+    logging: *logging
 
   celeryworker:
     <<: *django
@@ -84,6 +95,7 @@ services:
     networks:
       - backend
     command: /start-celeryworker
+    logging: *logging
 
   celerybeat:
     <<: *django
@@ -91,6 +103,7 @@ services:
     networks:
       - backend
     command: /start-celerybeat
+    logging: *logging
 
   flower:
     <<: *django
@@ -99,6 +112,7 @@ services:
       - backend
       - frontend
     command: /start-flower
+    logging: *logging
 
   nginx:
     build:
@@ -116,3 +130,4 @@ services:
         limits:
           cpus: "0.1"
           memory: 100M
+    logging: *logging

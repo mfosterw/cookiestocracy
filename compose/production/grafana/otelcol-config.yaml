@@ -7,7 +7,7 @@ receivers:
   filelog:
     include: [/var/lib/docker/containers/*/*-json.log]
     poll_interval: 200ms
-    start_at: end
+    start_at: beginning
     include_file_name: false
     include_file_path: false
     operators:
@@ -15,15 +15,29 @@ receivers:
         type: container
         format: docker
         add_metadata_from_filepath: false
-      - id: extract-service-name
+      - id: extract_metadata_from_docker_tag
+        parse_from: attributes.attrs.tag
+        regex: ^(?P<name>[^\|]+)\|(?P<image_name>[^\|]+)\|(?P<id>[^$]+)$
         type: regex_parser
-        parse_from: body
-        regex: 'service.name":\s*"(?P<svc>[^"]+)"'
-      - id: set-service-name
+        if: "attributes?.attrs?.tag != nil"
+      - from: attributes.name
+        to: resource["docker.container.name"]
         type: move
-        from: attributes.svc
-        to: resource["service.name"]
-        if: "attributes.svc != nil"
+        if: "attributes?.name != nil"
+      - from: attributes.image_name
+        to: resource["docker.image.name"]
+        type: move
+        if: "attributes?.image_name != nil"
+      - from: attributes.id
+        to: resource["docker.container.id"]
+        type: move
+        if: "attributes?.id != nil"
+      - field: attributes.attrs.tag
+        type: remove
+        if: "attributes?.attrs?.tag != nil"
+      - from: attributes.log
+        to: body
+        type: move
 
   hostmetrics:
     # Tell the scrapers to look at the mounted volume, not the container's /
