@@ -33,7 +33,7 @@ receivers:
       - from: attributes.instance
         to: resource["service.number"]
         type: move
-        if: "attributes?.name != nil"
+        if: "attributes?.instance != nil"
       - from: attributes.name
         to: resource["container.name"]
         type: move

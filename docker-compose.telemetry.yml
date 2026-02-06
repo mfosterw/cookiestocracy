@@ -48,7 +48,7 @@ services:
       - democrasite_metrics
     logging: *logging
 
-  otel-collector:
+  otelcol:
     image: otel/opentelemetry-collector-contrib:0.144.0
     user: 0:0 # for logs access
     volumes:
