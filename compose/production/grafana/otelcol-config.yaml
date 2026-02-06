@@ -18,9 +18,22 @@ receivers:
           parse_from: attributes.time
       - id: extract_metadata_from_docker_tag
         parse_from: attributes.attrs.tag
-        regex: ^(?P<name>[^\|]+)\|(?P<image_name>[^\|]+)\|(?P<id>[^$]+)$
+        regex: ^(?<name>[^\|]+)\|(?<image_name>[^\|]+)\|(?<id>[^$]+)$
         type: regex_parser
         if: "attributes?.attrs?.tag != nil"
+      - id: extract_service_from_docker_tag
+        parse_from: attributes.name
+        regex: ^democrasite-(?<service>[^-]+)-(?<instance>\d+)$
+        type: regex_parser
+        if: "attributes?.name != nil"
+      - from: attributes.service
+        to: resource["service.name"]
+        type: move
+        if: "attributes?.service != nil"
+      - from: attributes.instance
+        to: resource["service.number"]
+        type: move
+        if: "attributes?.name != nil"
       - from: attributes.name
         to: resource["container.name"]
         type: move
