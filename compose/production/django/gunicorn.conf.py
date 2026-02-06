@@ -3,6 +3,8 @@
 from opentelemetry import trace
 from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
 from opentelemetry.instrumentation.django import DjangoInstrumentor
+from opentelemetry.sdk.resources import SERVICE_NAME
+from opentelemetry.sdk.resources import Resource
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
 
@@ -11,7 +13,8 @@ def post_fork(server, worker):
     server.log.info("Worker spawned (pid: %s)", worker.pid)
 
     # Initialize OpenTelemetry
-    provider = TracerProvider()
+    resource = Resource(attributes={SERVICE_NAME: "django"})
+    provider = TracerProvider(resource=resource)
     processor = BatchSpanProcessor(OTLPSpanExporter())
     provider.add_span_processor(processor)
     trace.set_tracer_provider(provider)
