@@ -42,4 +42,4 @@ END
 >&2 echo 'PostgreSQL is available'
 
 
-newrelic-admin run-program "$@"
+exec "$@"

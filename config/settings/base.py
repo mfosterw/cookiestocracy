@@ -46,7 +46,7 @@ if db_url:
 else:
     DATABASES = {
         "default": {
-            "ENGINE": "django.db.backends.postgresql",
+            "ENGINE": "django_prometheus.db.backends.postgresql",
             "NAME": env.str("POSTGRES_DB"),
             "USER": env.str("POSTGRES_USER"),
             "PASSWORD": env.str("POSTGRES_PASSWORD"),
@@ -87,6 +87,7 @@ THIRD_PARTY_APPS = [
     "django_celery_beat",
     "simple_history",
     "mptt",
+    "django_prometheus",
     # django rest framework
     "rest_framework",
     "rest_framework.authtoken",
@@ -149,6 +150,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#middleware
 MIDDLEWARE = [
+    "django_prometheus.middleware.PrometheusBeforeMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
@@ -160,6 +162,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "allauth.account.middleware.AccountMiddleware",
+    "django_prometheus.middleware.PrometheusAfterMiddleware",
 ]
 
 # STATIC

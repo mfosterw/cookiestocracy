@@ -28,8 +28,8 @@ ALLOWED_HOSTS = [
     "localhost",
     "0.0.0.0",  # noqa: S104
     "127.0.0.1",
-    # For docker (healtcheck)
-    "democrasite-local-django",
+    # docker healtcheck/prometheus
+    "host.docker.internal",
 ]
 # Admin site is only enabled during development
 INSTALLED_APPS += ["django.contrib.admin"]

@@ -146,3 +146,7 @@ LOGGING = {
 SPECTACULAR_SETTINGS["SERVERS"] = [
     {"url": "https://democrasite.dev", "description": "Production server"},
 ]
+
+# django-prometheus
+# -------------------------------------------------------------------------------
+PROMETHEUS_METRICS_EXPORT_PORT_RANGE = range(8001, 8050)
