@@ -101,3 +101,23 @@ providers:
   file:
     filename: /etc/traefik/traefik.yml
     watch: true
+
+accessLog: {}
+
+metrics:
+  addInternals: true
+  otlp:
+    grpc:
+      endpoint: "otelcol:4317"
+      insecure: true
+    addEntryPointsLabels: true
+    addRoutersLabels: true
+    addServicesLabels: true
+
+tracing:
+  otlp:
+    grpc:
+      endpoint: "otelcol:4317"
+      insecure: true
+  sampleRate: 1.0
+  serviceName: "traefik"
