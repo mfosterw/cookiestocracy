@@ -50,6 +50,7 @@ services:
 
   otelcol:
     image: otel/opentelemetry-collector-contrib:0.144.0
+    user: "0" # to open log files
     group_add:
       - "999" # to access docker socket
     volumes:
