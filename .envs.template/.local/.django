@@ -1,6 +1,6 @@
-# Copy the .envs.template directory to .envs to provide custom configuration for
-# docker-compose.local.yml. Don't forget to set the API keys in this file and .node if
-# you want to use authentication
+# Copy the .envs.template directory to .envs to provide custom configuration
+# for docker-compose.local.yml. Don't forget to set the API keys in this file
+# if you want to use authentication
 
 # General
 # ------------------------------------------------------------------------------
@@ -29,3 +29,7 @@ GITHUB_SECRET=
 # ------------------------------------------------------------------------------
 GITHUB_WEBHOOK_SECRET=
 GITHUB_TOKEN=
+
+# OpenTelemetry
+# ------------------------------------------------------------------------------
+OTEL_EXPORTER_OTLP_ENDPOINT=metrics:4317
