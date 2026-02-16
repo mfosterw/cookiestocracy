@@ -9,7 +9,7 @@ watchfiles==1.1.1  # https://github.com/samuelcolvin/watchfiles
 django-stubs[compatible-mypy]==5.2.9  # https://github.com/typeddjango/django-stubs
 pytest==9.0.2  # https://github.com/pytest-dev/pytest
 pytest-sugar==1.1.1  # https://github.com/Frozenball/pytest-sugar
-djangorestframework-stubs[compatible-mypy]==3.16.7  # https://github.com/typeddjango/djangorestframework-stubs
+djangorestframework-stubs[compatible-mypy]==3.16.8  # https://github.com/typeddjango/djangorestframework-stubs
 
 # Documentation
 # ------------------------------------------------------------------------------
@@ -19,7 +19,7 @@ sphinxcontrib-django==2.5  # https://github.com/sphinx-doc/sphinxcontrib-django
 
 # Code quality
 # ------------------------------------------------------------------------------
-ruff==0.14.14  # https://github.com/astral-sh/ruff
+ruff==0.15.1  # https://github.com/astral-sh/ruff
 pytest-cov==7.0.0  # https://github.com/pytest-dev/pytest-cov
 djlint==1.36.4  # https://github.com/Riverside-Healthcare/djLint
 pre-commit==4.5.1  # https://github.com/pre-commit/pre-commit
@@ -30,7 +30,7 @@ factory-boy==3.3.3  # https://github.com/FactoryBoy/factory_boy
 django-debug-toolbar==6.2.0  # https://github.com/jazzband/django-debug-toolbar
 django-extensions==4.1  # https://github.com/django-extensions/django-extensions
 django-coverage-plugin==3.2.0  # https://github.com/nedbat/django_coverage_plugin
-pytest-django==4.11.1  # https://github.com/pytest-dev/pytest-django
+pytest-django==4.12.0  # https://github.com/pytest-dev/pytest-django
 
 # Containers
 # ------------------------------------------------------------------------------
