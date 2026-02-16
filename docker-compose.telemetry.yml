@@ -51,7 +51,7 @@ services:
   otelcol:
     image: otel/opentelemetry-collector-contrib:0.144.0
     group_add:
-      - "docker"
+      - "999" # to access docker socket
     volumes:
       - ./compose/production/grafana/otelcol-config.yaml:/etc/otelcol-contrib/config.yaml
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
