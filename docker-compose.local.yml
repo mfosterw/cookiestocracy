@@ -1,6 +1,19 @@
 volumes:
-  democrasite_local_postgres_data: {}
-  democrasite_local_postgres_data_backups: {}
+  democrasite_local_postgres_data:
+  democrasite_local_postgres_data_backups:
+  democrasite_local_metrics_data:
+
+## Install the Loki docker compose plugin and then uncomment this and the
+## logging settings for the services to get logs in Loki
+# x-logging: &loki-logging
+#   driver: loki
+#   options:
+#     loki-url: "http://localhost:3100/loki/api/v1/push"
+#     mode: non-blocking # doesn't seem to work :(
+#     # see https://grafana.com/docs/loki/latest/send-data/docker-driver/#known-issue-deadlocked-docker-daemon
+#     loki-retries: 2
+#     loki-max-backoff: 800ms
+#     loki-timeout: 1s
 
 services:
   django: &django
@@ -23,6 +36,7 @@ services:
       test: "curl --fail --silent --write-out 'STATUS %{http_code}' --output /dev/null http://localhost:8000/"
       timeout: 5s
       start_period: 30s
+    # logging: *loki-logging
 
   postgres:
     build:
@@ -35,6 +49,7 @@ services:
       - democrasite_local_postgres_data_backups:/backups
     env_file:
       - ./.envs/.local/.postgres
+    # logging: *loki-logging
 
   docs:
     build:
@@ -48,10 +63,12 @@ services:
       - "9000:9000"
     command: /start-docs
     entrypoint: "/bin/bash -c" # overwrite default
+    # logging: *loki-logging
 
   redis:
     image: docker.io/redis:6
     container_name: democrasite-local-redis
+    # logging: *loki-logging
 
   celeryworker: &celery
     <<: *django
@@ -77,3 +94,17 @@ services:
     ports:
       - "5555:5555"
     command: /start-flower
+
+  metrics:
+    image: grafana/otel-lgtm:0.17.0
+    container_name: democrasite-local-metrics
+    ports:
+      - "3000:3000"
+      - "3100:3100" # loki - must be exposed for docker compose plugin
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+    volumes:
+      - ./compose/local/grafana/prometheus.yml:/otel-lgtm/prometheus.yaml
+      - democrasite_local_metrics_data:/data
+    # logging: *loki-logging

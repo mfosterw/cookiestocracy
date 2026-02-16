@@ -1,0 +1,7 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: "django"
+    static_configs:
+      - targets: ["django:8001", "django:8002", "django:8003", "django:8004"]

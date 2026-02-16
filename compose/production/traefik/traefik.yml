@@ -60,6 +60,14 @@ http:
       tls:
         certResolver: letsencrypt
 
+    stats-secure-router:
+      rule: "Host(`stats.democrasite.dev`)"
+      entryPoints:
+        - web-secure
+      service: telemetry
+      tls:
+        certResolver: letsencrypt
+
   middlewares:
     csrf:
       # https://doc.traefik.io/traefik/master/middlewares/http/headers/#hostsproxyheaders
@@ -83,8 +91,32 @@ http:
         servers:
           - url: http://nginx:80
 
+    telemetry:
+      loadBalancer:
+        servers:
+          - url: http://grafana:3000
+
 providers:
   # https://doc.traefik.io/traefik/master/providers/file/
   file:
     filename: /etc/traefik/traefik.yml
     watch: true
+
+accessLog: {}
+
+metrics:
+  addInternals: true
+  otlp:
+    grpc:
+      endpoint: "otelcol:4317"
+      insecure: true
+    addEntryPointsLabels: true
+    addRoutersLabels: true
+    addServicesLabels: true
+
+tracing:
+  otlp:
+    grpc:
+      endpoint: "otelcol:4317"
+      insecure: true
+  sampleRate: 1.0

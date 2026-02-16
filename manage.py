@@ -4,8 +4,31 @@ import os
 import sys
 from pathlib import Path
 
+from opentelemetry import trace
+from opentelemetry.instrumentation.django import DjangoInstrumentor
+from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+from opentelemetry.sdk.resources import SERVICE_NAME
+from opentelemetry.sdk.resources import Resource
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
+
 if __name__ == "__main__":
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.local")
+
+    ############# OpenTelemetry ##############
+    # Create resource with service information
+    resource = Resource(attributes={SERVICE_NAME: "django"})
+
+    # Create and configure the tracer provider
+    provider = TracerProvider(resource=resource)
+    processor = BatchSpanProcessor(OTLPSpanExporter())
+    provider.add_span_processor(processor)
+
+    # Set the global default tracer provider
+    trace.set_tracer_provider(provider)
+
+    # Initialize Django instrumentation
+    DjangoInstrumentor().instrument()
 
     try:
         from django.core.management import execute_from_command_line

@@ -12,10 +12,11 @@ updates:
 
   # Enable version updates for Docker
   - package-ecosystem: "docker"
-    # Look for `Dockerfiles` in the `compose/local/django` directory
-    # and in the compose/production subdirectories
+    # Look for `Dockerfiles` in the `compose/` directories and `docker-compose`
+    # files in the repository root
     directories:
       - "compose/*/*/"
+      - "/"
     # Every Monday
     schedule:
       interval: "weekly"
@@ -28,7 +29,7 @@ updates:
     groups:
       docker:
         patterns:
-          - '*'
+          - "*"
 
   # Enable version updates for Python/Pip - Production
   - package-ecosystem: "pip"
@@ -41,4 +42,8 @@ updates:
     groups:
       python:
         patterns:
-          - '*'
+          - "*"
+    ignore:
+      - dependency-name: "django" # django 6 is not yet widely compatible
+        versions:
+          - ">=6"

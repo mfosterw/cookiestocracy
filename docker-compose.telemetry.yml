@@ -1,0 +1,82 @@
+volumes:
+  production_prometheus_data:
+  production_loki_data:
+  production_tempo_data:
+  production_grafana_data:
+
+networks:
+  democrasite_metrics:
+    external: true
+  democrasite_frontend:
+    external: true
+
+x-default-logging: &logging
+  driver: "json-file"
+  options:
+    max-size: "5m"
+    max-file: "2"
+    tag: "{{.Name}}|{{.ImageName}}|{{.ID}}"
+
+services:
+  prometheus:
+    image: prom/prometheus:v3.9.1
+    command:
+      - --web.enable-otlp-receiver
+    volumes:
+      - ./compose/production/grafana/prometheus.yml:/prometheus/prometheus.yml
+      - production_prometheus_data:/prometheus
+    networks:
+      - democrasite_metrics
+    logging: *logging
+
+  loki:
+    image: grafana/loki:3.6.4
+    volumes:
+      - ./compose/production/grafana/loki.yaml:/etc/loki/loki.yaml
+      - production_loki_data:/loki
+    networks:
+      - democrasite_metrics
+    logging: *logging
+
+  tempo:
+    image: grafana/tempo:2.10.0
+    command: -config.file=/etc/tempo/tempo.yaml
+    volumes:
+      - ./compose/production/grafana/tempo.yaml:/etc/tempo/tempo.yaml
+      - production_tempo_data:/var/tempo
+    networks:
+      - democrasite_metrics
+    logging: *logging
+
+  otelcol:
+    image: otel/opentelemetry-collector-contrib:0.144.0
+    user: "0" # to open log files
+    group_add:
+      - "999" # to access docker socket
+    volumes:
+      - ./compose/production/grafana/otelcol-config.yaml:/etc/otelcol-contrib/config.yaml
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /:/hostfs:ro
+    networks:
+      - democrasite_metrics
+    depends_on:
+      - loki
+      - tempo
+    logging: *logging
+
+  grafana:
+    image: grafana/grafana:12.3.2
+    volumes:
+      - ./compose/production/grafana/datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
+      - production_grafana_data:/var/lib/grafana
+    env_file:
+      - ./.envs/.production/.grafana
+    networks:
+      - democrasite_metrics
+      - democrasite_frontend
+    depends_on:
+      - loki
+      - tempo
+      - prometheus
+    logging: *logging

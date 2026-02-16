@@ -1,0 +1,110 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+
+  filelog:
+    include: [/var/lib/docker/containers/*/*-json.log]
+    poll_interval: 200ms
+    start_at: beginning
+    include_file_name: false
+    include_file_path: false
+    operators:
+      - id: parser-docker
+        type: json_parser
+        timestamp:
+          layout: "%Y-%m-%dT%H:%M:%S.%LZ"
+          parse_from: attributes.time
+      - id: extract_metadata_from_docker_tag
+        parse_from: attributes.attrs.tag
+        regex: ^(?<name>[^\|]+)\|(?<image_name>[^\|]+)\|(?<id>[^$]+)$
+        type: regex_parser
+        if: "attributes?.attrs?.tag != nil"
+      - id: extract_service_from_docker_tag
+        parse_from: attributes.name
+        regex: ^democrasite-(?<service>[^-]+)-(?<instance>\d+)$
+        type: regex_parser
+        if: "attributes?.name != nil"
+      - from: attributes.service
+        to: resource["service.name"]
+        type: move
+        if: "attributes?.service != nil"
+      - from: attributes.instance
+        to: resource["service.number"]
+        type: move
+        if: "attributes?.instance != nil"
+      - from: attributes.name
+        to: resource["container.name"]
+        type: move
+        if: "attributes?.name != nil"
+      - from: attributes.image_name
+        to: resource["image.name"]
+        type: move
+        if: "attributes?.image_name != nil"
+      - from: attributes.id
+        to: resource["container.id"]
+        type: move
+        if: "attributes?.id != nil"
+      - field: attributes.attrs.tag
+        type: remove
+        if: "attributes?.attrs?.tag != nil"
+      - from: attributes.log
+        to: body
+        type: move
+
+  hostmetrics:
+    # Tell the scrapers to look at the mounted volume, not the container's
+    root_path: /hostfs
+    scrapers:
+      cpu:
+      memory:
+      load:
+      network:
+      disk:
+      filesystem:
+
+processors:
+  batch:
+  resourcedetection/docker:
+    detectors: [env, docker]
+    timeout: 2s
+    override: false
+
+exporters:
+  otlp_http/loki:
+    endpoint: http://loki:3100/otlp
+    tls:
+      insecure: true
+
+  otlp_grpc/tempo:
+    endpoint: http://tempo:4317
+    tls:
+      insecure: true
+
+  otlp_http/prometheus:
+    # Push metrics to Prometheus's OTLP receiver
+    metrics_endpoint: http://prometheus:9090/api/v1/otlp/v1/metrics
+    tls:
+      insecure: true
+
+service:
+  pipelines:
+    logs:
+      receivers: [otlp, filelog]
+      processors: [batch]
+      exporters: [otlp_http/loki]
+
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlp_grpc/tempo]
+
+    metrics:
+      receivers: [otlp, hostmetrics]
+      processors: [batch, resourcedetection/docker]
+      exporters: [otlp_http/prometheus]
+
+  telemetry:
+    logs:
+      level: WARN

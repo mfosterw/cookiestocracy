@@ -31,6 +31,7 @@ urlpatterns = [
     path("", include("democrasite.webiscite.urls", namespace="webiscite")),
     # Media files
     *static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT),
+    path("", include("django_prometheus.urls")),
 ]
 
 # API URLS
