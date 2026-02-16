@@ -50,10 +50,12 @@ services:
 
   otelcol:
     image: otel/opentelemetry-collector-contrib:0.144.0
-    user: 0:0 # for logs access
+    group_add:
+      - "docker"
     volumes:
       - ./compose/production/grafana/otelcol-config.yaml:/etc/otelcol-contrib/config.yaml
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock
       - /:/hostfs:ro
     networks:
       - democrasite_metrics

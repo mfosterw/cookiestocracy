@@ -120,4 +120,3 @@ tracing:
       endpoint: "otelcol:4317"
       insecure: true
   sampleRate: 1.0
-  serviceName: "traefik"

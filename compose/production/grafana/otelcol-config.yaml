@@ -54,7 +54,7 @@ receivers:
         type: move
 
   hostmetrics:
-    # Tell the scrapers to look at the mounted volume, not the container's /
+    # Tell the scrapers to look at the mounted volume, not the container's
     root_path: /hostfs
     scrapers:
       cpu:
@@ -66,6 +66,10 @@ receivers:
 
 processors:
   batch:
+  resourcedetection/docker:
+    detectors: [env, docker]
+    timeout: 2s
+    override: false
 
 exporters:
   otlp_http/loki:
@@ -97,8 +101,8 @@ service:
       exporters: [otlp_grpc/tempo]
 
     metrics:
-      receivers: [hostmetrics]
-      processors: [batch]
+      receivers: [otlp, hostmetrics]
+      processors: [batch, resourcedetection/docker]
       exporters: [otlp_http/prometheus]
 
   telemetry:
