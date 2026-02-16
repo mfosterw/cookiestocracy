@@ -92,6 +92,8 @@ services:
   celeryworker:
     <<: *django
     image: democrasite_production_celeryworker
+    depends_on:
+      - redis
     networks:
       - backend
     command: /start-celeryworker
