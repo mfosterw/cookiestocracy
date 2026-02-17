@@ -26,6 +26,8 @@
             {% if bill.status != bill.Status.OPEN %}
               <p class="{% if bill.status == bill.Status.APPROVED %}
                           text-success
+                        {% elif bill.status == bill.Status.DRAFT %}
+                          text-secondary
                         {% else %}
                           text-danger
                         {% endif %}

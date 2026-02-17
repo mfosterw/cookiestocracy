@@ -5,6 +5,7 @@ import logging
 from django.conf import settings
 from django.db import models
 from django.urls import reverse
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django_celery_beat.models import PeriodicTask
 from model_utils.models import TimeStampedModel
@@ -32,6 +33,9 @@ class PullRequest(TimeStampedModel):
     diff_url = models.URLField(help_text=_("URL to the diff of the pull request"))
     # Store Github username of author even if they are not a user on the site
     author_name = models.CharField(max_length=100)
+    draft = models.BooleanField(
+        default=False, help_text=_("Whether the pull request is a draft on GitHub")
+    )
     #:
     status = models.CharField(
         max_length=6,
@@ -72,7 +76,9 @@ class PullRequest(TimeStampedModel):
         self.save()
 
         try:
-            bill: Bill = self.bill_set.get(status=Bill.Status.OPEN)
+            bill: Bill = self.bill_set.get(
+                status__in=[Bill.Status.OPEN, Bill.Status.DRAFT]
+            )
         except Bill.DoesNotExist:
             self.log("No open bill found")
             return None
@@ -119,6 +125,7 @@ class Bill(TimeStampedModel):
 
         :meta private:"""
 
+        DRAFT = "draft", _("Draft")
         OPEN = "open", _("Open")
         APPROVED = "approved", _("Approved")
         REJECTED = "rejected", _("Rejected")
@@ -151,10 +158,10 @@ class Bill(TimeStampedModel):
             models.UniqueConstraint(
                 fields=("pull_request",),
                 # Can't reference Bill.Status because Bill isn't defined yet
-                condition=models.Q(status="open"),
-                name="unique_open_pull_request",
+                condition=models.Q(status__in=["open", "draft"]),
+                name="unique_active_pull_request",
                 violation_error_message=_(
-                    "A Bill for this pull request is already open"
+                    "A Bill for this pull request is already active"
                 ),
             ),
         ]
@@ -246,6 +253,19 @@ class Bill(TimeStampedModel):
         self._submit_task.enabled = False
         self._submit_task.save()
         self.log("Submit task disabled")
+
+    def publish(self) -> None:
+        """Transition a draft bill to open, enabling voting and scheduling submission"""
+        if self.status != self.Status.DRAFT:
+            raise ValueError("Only draft bills can be published")
+
+        self.status = self.Status.OPEN
+        self.save()
+
+        self._submit_task.enabled = True
+        self._submit_task.last_run_at = timezone.now()
+        self._submit_task.save()
+        self.log("Published")
 
     def submit(self) -> None:
         """Check if the bill has enough votes to pass and update the status"""

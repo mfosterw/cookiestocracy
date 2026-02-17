@@ -49,6 +49,17 @@ class TestPullRequest:
         assert pull_request.status == "closed"
         assert not pull_request.bill_set.filter(status=Bill.Status.OPEN).exists()
 
+    def test_close_draft_bill(self):
+        bill = BillFactory.create(status=Bill.Status.DRAFT)
+        pull_request = bill.pull_request
+
+        pull_request.close()
+
+        pull_request.refresh_from_db()
+        bill.refresh_from_db()
+        assert pull_request.status == "closed"
+        assert bill.status == Bill.Status.CLOSED
+
     def test_close_no_bill(self, caplog):
         pull_request = PullRequestFactory.create()
         assert pull_request.status == "open"
@@ -127,6 +138,20 @@ class TestBillManager:
         assert bill.pk is not None
         assert bill._submit_task.enabled is True  # noqa: SLF001
 
+    def test_create_from_github_draft(self, user: User):
+        pr = PullRequestFactory.create(draft=True)
+        bill = Bill.objects.create_from_github(
+            pr.title,
+            FAKE.text(),
+            user,
+            FAKE.text(),
+            pr,
+        )
+
+        assert bill.pk is not None
+        assert bill.status == Bill.Status.DRAFT
+        assert bill._submit_task.enabled is False  # noqa: SLF001
+
     def test__create_submit_task(self):
         # just hit the error branch of finally clause
         with (
@@ -140,14 +165,20 @@ class TestBillManager:
 
 
 class TestBill:
-    def test_unique_open_pull_request(self, bill: Bill):
+    def test_unique_active_pull_request(self, bill: Bill):
         bill.status = "closed"
         bill.save()
 
         BillFactory.create(pull_request=bill.pull_request)
 
-        with pytest.raises(IntegrityError, match='"unique_open_pull_request"'):
+        with pytest.raises(IntegrityError, match='"unique_active_pull_request"'):
             BillFactory.create(pull_request=bill.pull_request)
+
+    def test_unique_active_pull_request_draft(self):
+        bill = BillFactory.create(status=Bill.Status.DRAFT)
+
+        with pytest.raises(IntegrityError, match='"unique_active_pull_request"'):
+            BillFactory.create(pull_request=bill.pull_request, status=Bill.Status.DRAFT)
 
     def test_str(self):
         bill = BillFactory.create(name="The Test Act", pk=1, pull_request__number="-2")
@@ -170,6 +201,24 @@ class TestBill:
         bill.refresh_from_db()
         assert bill.status == Bill.Status.CLOSED
         assert bill._submit_task.enabled is False  # noqa: SLF001
+
+
+class TestBillPublish:
+    def test_publish(self):
+        bill = BillFactory.create(status=Bill.Status.DRAFT)
+        bill._submit_task.enabled = False  # noqa: SLF001
+        bill._submit_task.save()  # noqa: SLF001
+
+        bill.publish()
+
+        bill.refresh_from_db()
+        assert bill.status == Bill.Status.OPEN
+        assert bill._submit_task.enabled is True  # noqa: SLF001
+        assert bill._submit_task.last_run_at is not None  # noqa: SLF001
+
+    def test_publish_not_draft(self, bill: Bill):
+        with pytest.raises(ValueError, match="Only draft bills can be published"):
+            bill.publish()
 
 
 class TestBillVote:
@@ -203,8 +252,21 @@ class TestBillVote:
         with pytest.raises(ClosedBillVoteError, match="Bill is not open for voting"):
             bill.vote(user, support=True)
 
+    def test_draft_bill_not_votable(self, user: User):
+        bill = BillFactory.create(status=Bill.Status.DRAFT)
+
+        with pytest.raises(ClosedBillVoteError, match="Bill is not open for voting"):
+            bill.vote(user, support=True)
+
 
 class TestBillSubmit:
+    def test_draft_bill_not_submitted(self):
+        bill: Bill = BillFactory.create(status=Bill.Status.DRAFT)
+
+        bill.submit()
+
+        assert bill.status == Bill.Status.DRAFT
+
     def test_bill_not_open(self):
         bill: Bill = BillFactory.create(status=Bill.Status.CLOSED)
 

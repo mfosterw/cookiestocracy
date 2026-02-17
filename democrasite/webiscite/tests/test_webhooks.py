@@ -16,6 +16,7 @@ from factory.faker import faker
 from democrasite.users.models import User
 from democrasite.webiscite.models import Bill
 from democrasite.webiscite.models import PullRequest
+from democrasite.webiscite.tests.factories import BillFactory
 from democrasite.webiscite.tests.factories import GithubPullRequestFactory
 from democrasite.webiscite.webhooks import GithubWebhookView
 from democrasite.webiscite.webhooks import PullRequestHandler
@@ -170,6 +171,54 @@ class TestPullRequestHandler:
         assert bill is not None
         assert bill.author == user
         assert bill.constitutional is False
+
+    @patch("requests.get")
+    def test_opened_draft(self, mock_get, user: User, pr_handler: PullRequestHandler):
+        pr = GithubPullRequestFactory.create(draft=True)
+        pr["user"]["id"] = SocialAccount.objects.create(
+            user=user,
+            provider="github",
+            uid=faker.Faker().random_int(),
+        ).uid
+
+        pull_request, bill = pr_handler.opened(pr)
+
+        assert pull_request is not None
+        assert pull_request.draft is True
+        assert bill is not None
+        assert bill.status == Bill.Status.DRAFT
+        assert bill._submit_task.enabled is False  # noqa: SLF001
+
+    def test_ready_for_review(self, pr_handler: PullRequestHandler):
+        bill = BillFactory.create(status=Bill.Status.DRAFT)
+        bill._submit_task.enabled = False  # noqa: SLF001
+        bill._submit_task.save()  # noqa: SLF001
+        bill.pull_request.draft = True
+        bill.pull_request.save()
+
+        pull_request, published_bill = pr_handler.ready_for_review(
+            {"number": bill.pull_request.number}
+        )
+
+        assert pull_request is not None
+        assert pull_request.draft is False
+        published_bill.refresh_from_db()
+        assert published_bill.status == Bill.Status.OPEN
+        assert published_bill._submit_task.enabled is True  # noqa: SLF001
+
+    def test_ready_for_review_no_pr(self, pr_handler: PullRequestHandler):
+        result = pr_handler.ready_for_review({"number": 99999})
+        assert result == (None, None)
+
+    def test_ready_for_review_no_draft_bill(
+        self, pr_handler: PullRequestHandler, bill: Bill
+    ):
+        pull_request, result_bill = pr_handler.ready_for_review(
+            {"number": bill.pull_request.number}
+        )
+
+        assert pull_request is not None
+        assert result_bill is None
 
     @patch.object(PullRequestHandler, "opened")
     def test_reopened(self, mock_opened, pr_handler: PullRequestHandler):
