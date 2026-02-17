@@ -38,7 +38,11 @@ class TestBillDetailTemplate:
 
     @pytest.mark.parametrize(
         ("status", "constitutional"),
-        [(Bill.Status.FAILED, True), (Bill.Status.APPROVED, False)],
+        [
+            (Bill.Status.FAILED, True),
+            (Bill.Status.APPROVED, False),
+            (Bill.Status.DRAFT, False),
+        ],
     )
     def test_bill_closed(
         self,
@@ -107,6 +111,7 @@ class TestBillListTemplate:
             ("index", Bill.Status.OPEN),
             ("my-bills", Bill.Status.APPROVED),
             ("my-bills", Bill.Status.REJECTED),
+            ("my-bills", Bill.Status.DRAFT),
             ("my-bill-votes", Bill.Status.OPEN),
             ("my-bill-votes", Bill.Status.FAILED),
         ],
