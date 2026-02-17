@@ -43,6 +43,7 @@
       "created": "2024-02-25T17:26:54.006Z",
       "modified": "2024-02-25T17:26:54.012Z",
       "status": "open",
+      "draft": false,
 
       "title": "The Initial Act",
       "additions": 0,
@@ -59,6 +60,7 @@
       "created": "2024-02-25T17:26:54.006Z",
       "modified": "2024-02-25T17:26:54.012Z",
       "status": "open",
+      "draft": false,
 
       "title": "The Test Act",
       "additions": 1000,
@@ -75,6 +77,7 @@
       "created": "2024-02-25T17:26:54.006Z",
       "modified": "2024-02-25T17:26:54.012Z",
       "status": "open",
+      "draft": false,
 
       "title": "The Finished Act",
       "additions": 69,
@@ -97,6 +100,7 @@
       "diff_url": "https://github.com/mfosterw/cookiestocracy/pull/64/files",
       "author_name": "matthew",
       "status": "open",
+      "draft": false,
       "sha": "123",
       "history_date": "2025-09-07T22:52:36.583Z",
       "history_change_reason": "",
@@ -117,6 +121,7 @@
       "diff_url": "https://github.com/mfosterw/cookiestocracy/pull/64/files",
       "author_name": "octocat",
       "status": "open",
+      "draft": false,
       "sha": "1234",
       "history_date": "2025-09-07T22:52:36.583Z",
       "history_change_reason": "",
@@ -137,6 +142,7 @@
       "diff_url": "https://github.com/mfosterw/cookiestocracy/pull/64/files",
       "author_name": "dependabot",
       "status": "open",
+      "draft": false,
       "sha": "12345",
       "history_date": "2025-09-07T22:52:36.583Z",
       "history_change_reason": "",
@@ -429,6 +435,91 @@
       "args": "[6]",
       "enabled": false,
       "date_changed": "2024-02-20T12:00:22.856Z"
+    }
+  },
+  {
+    "model": "webiscite.pullrequest",
+    "pk": -4,
+    "fields": {
+      "created": "2026-02-16T12:00:00.000Z",
+      "modified": "2026-02-16T12:00:00.000Z",
+      "status": "open",
+      "draft": true,
+
+      "title": "The Draft Act",
+      "additions": 42,
+      "deletions": 7,
+      "diff_url": "https://github.com/mfosterw/cookiestocracy/pull/64.diff",
+      "author_name": "matthew",
+      "sha": "abc123"
+    }
+  },
+  {
+    "model": "webiscite.historicalpullrequest",
+    "pk": 4,
+    "fields": {
+      "created": "2026-02-16T12:00:00.000Z",
+      "modified": "2026-02-16T12:00:00.000Z",
+      "number": -4,
+      "title": "The Draft Act",
+      "additions": 42,
+      "deletions": 7,
+      "diff_url": "https://github.com/mfosterw/cookiestocracy/pull/64.diff",
+      "author_name": "matthew",
+      "status": "open",
+      "draft": true,
+      "sha": "abc123",
+      "history_date": "2026-02-16T12:00:00.000Z",
+      "history_change_reason": "",
+      "history_type": "+",
+      "history_user": null
+    }
+  },
+  {
+    "model": "webiscite.bill",
+    "pk": 7,
+    "fields": {
+      "created": "2026-02-16T12:00:00.000Z",
+      "modified": "2026-02-16T12:00:00.000Z",
+      "name": "The Draft Act",
+      "description": "This bill is a draft. It was created from a draft pull request and cannot be voted on until the PR is marked ready for review.",
+      "author": 1,
+      "pull_request": -4,
+      "status": "draft",
+      "constitutional": false,
+      "_submit_task": 7
+    }
+  },
+  {
+    "model": "webiscite.historicalbill",
+    "pk": 7,
+    "fields": {
+      "id": 7,
+      "created": "2026-02-16T12:00:00.000Z",
+      "modified": "2026-02-16T12:00:00.000Z",
+      "name": "The Draft Act",
+      "description": "This bill is a draft. It was created from a draft pull request and cannot be voted on until the PR is marked ready for review.",
+      "status": "draft",
+      "constitutional": false,
+      "author": 1,
+      "pull_request": -4,
+      "_submit_task": 7,
+      "history_date": "2026-02-16T12:00:00.000Z",
+      "history_change_reason": "",
+      "history_type": "+",
+      "history_user": null
+    }
+  },
+  {
+    "model": "django_celery_beat.periodictask",
+    "pk": 7,
+    "fields": {
+      "name": "bill_submit:7",
+      "task": "democrasite.webiscite.tasks.submit_bill",
+      "interval": 1,
+      "args": "[7]",
+      "enabled": false,
+      "date_changed": "2026-02-16T12:00:00.000Z"
     }
   }
 ]
