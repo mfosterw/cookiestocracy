@@ -15,23 +15,27 @@ Pull Requests
 Pull Request Processing Pipeline
 --------------------------------
 
-When a pull request is created on `GitHub`_, a `webhook`_ makes a request to
-the GitHub :func:`webhook view <democrasite.webiscite.webhooks.github_hook>`.
+When a pull request is created on `GitHub`_, a `webhook`_ makes a POST request
+to the :class:`~democrasite.webiscite.webhooks.GithubWebhookView`, which
+validates the request signature and dispatches to the appropriate handler.
 
-This method parses the data from the request and calls
-:func:`~democrasite.webiscite.tasks.process_pull`
-to handle the request. In the event a pull request was opened or reopened,
-:func:`~democrasite.webiscite.tasks.pr_opened` is called.
+For pull request events, the request is handled by
+:class:`~democrasite.webiscite.webhooks.PullRequestHandler`. When a pull
+request is opened or reopened, its
+:meth:`~democrasite.webiscite.webhooks.PullRequestHandler.opened` method
+creates a :class:`~democrasite.webiscite.models.PullRequest` instance.
 
 If the user who created the pull request has a democrasite account, a new
 :class:`~democrasite.webiscite.models.Bill`
 is created with the information from the pull request and made visible on the
-homepage immediately.
+homepage immediately. A :class:`~django_celery_beat.models.PeriodicTask` is
+also scheduled to execute :func:`~democrasite.webiscite.tasks.submit_bill`
+once the voting period ends.
 
-A task to execute :func:`~democrasite.webiscite.tasks.submit_bill`
-is also put in the celery queue to execute once the voting period ends. The
-function verifies that the pull request is open and unedited and then counts
-the votes for and against that Bill.
+:func:`~democrasite.webiscite.tasks.submit_bill` verifies that the pull
+request is still open and that its SHA has not changed since the bill was
+created (i.e. the pull request has not been edited), then counts the votes for
+and against that Bill.
 
 If the votes for the Bill pass the threshold, the pull request is merged into
 the master branch on Github and automatically deployed, officially making it
