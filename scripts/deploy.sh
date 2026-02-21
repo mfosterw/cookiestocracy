@@ -16,7 +16,7 @@ OLD_CONTAINER=$(docker ps -aqf "name=django")
 echo "$(date --utc +%FT%TZ): Scaling server up..."
 BUILD_VERSION=$BUILD_VERSION docker compose -f $COMPOSE_FILE up -d --no-deps --scale django=2 --no-recreate django
 
-sleep 30
+sleep 60
 
 echo "$(date --utc +%FT%TZ): Scaling old server down..."
 docker container rm -f $OLD_CONTAINER
