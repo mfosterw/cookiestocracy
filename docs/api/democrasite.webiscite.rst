@@ -24,6 +24,7 @@ Submodules
    democrasite.webiscite.apps
    democrasite.webiscite.constitution
    democrasite.webiscite.context_processors
+   democrasite.webiscite.managers
    democrasite.webiscite.models
    democrasite.webiscite.tasks
    democrasite.webiscite.urls
