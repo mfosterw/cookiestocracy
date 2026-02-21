@@ -1,6 +1,6 @@
 """Views for processing webhooks.
 
-Each service that sends webhooks should have its own function-based view."""
+Each service that sends webhooks should have its own class-based view."""
 
 import hmac
 import json
@@ -151,10 +151,10 @@ class GithubWebhookView(View):
         """Validate the headers of a request from a webhook
 
         Args:
-            headers (dict): The headers from the request to validate
+            headers: The headers from the request to validate
 
         Returns:
-            str: Error message if the headers are invalid, otherwise an empty string
+            A bad request response if required headers are missing, otherwise ``None``
         """
         header_signature = headers.get("x-hub-signature-256")
         if header_signature is None:
@@ -177,11 +177,12 @@ class GithubWebhookView(View):
         """Validate the signature of a request from a webhook
 
         Args:
-            header_signature (str): The signature from the request to validate
-            request_body (bytes): The body of the request to validate
+            header_signature: The HMAC signature from the request headers
+            request_body: The raw body of the request to validate
 
         Returns:
-            str: Error message if the signature is invalid, otherwise an empty string
+            An error response if the signature is invalid or uses an unsupported
+            digest, otherwise ``None``
         """
         digest_name, signature = header_signature.split("=")
         if digest_name != "sha256":
