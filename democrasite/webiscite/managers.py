@@ -1,15 +1,8 @@
-import json
-from collections.abc import Iterator
-from contextlib import contextmanager
 from logging import getLogger
 from typing import TYPE_CHECKING
 from typing import Any
 
-from django.conf import settings
 from django.db import models
-from django.utils import timezone
-from django_celery_beat.models import IntervalSchedule
-from django_celery_beat.models import PeriodicTask
 
 from democrasite.users.models import User
 
@@ -121,66 +114,22 @@ class BillManager[T](models.Manager):
         Returns:
             The new bill instance
         """
-        draft = pull_request.draft
-        with self._create_submit_task(enabled=not draft) as submit_task:
-            self._bill: Bill = self.model(
-                name=title,
-                description=body,
-                author=author,
-                pull_request=pull_request,
-                status=self.model.Status.DRAFT if draft else self.model.Status.OPEN,
-                constitutional=bool(is_constitutional(diff_text)),
-                _submit_task=submit_task,
-            )
-            self._bill.full_clean()
-            self._bill.save()
-            bill = self._bill
-            bill.log("Created")
+
+        status = (
+            self.model.Status.DRAFT if pull_request.draft else self.model.Status.OPEN
+        )
+
+        bill = self.model(
+            name=title,
+            description=body,
+            author=author,
+            pull_request=pull_request,
+            status=status,
+            constitutional=bool(is_constitutional(diff_text)),
+        )
+
+        bill.full_clean()
+        bill.save()
+        bill.log("Created")
 
         return bill
-
-    @contextmanager
-    def _create_submit_task(self, *, enabled: bool = True) -> Iterator[PeriodicTask]:
-        """Schedule a task to submit this bill for voting
-
-        Args:
-            enabled: Whether the task should be enabled immediately. Set to False
-                for draft bills whose voting period hasn't started yet.
-
-        Returns:
-            The task that was scheduled
-        """
-        # This might be better as a signal but I want to keep it localized
-        voting_ends, __ = IntervalSchedule.objects.get_or_create(
-            every=settings.WEBISCITE_VOTING_PERIOD, period=IntervalSchedule.DAYS
-        )
-
-        submit_task = PeriodicTask.objects.create(
-            interval=voting_ends,
-            name="bill_submit:temp",
-            task="democrasite.webiscite.tasks.submit_bill",
-            one_off=True,
-            enabled=enabled,
-            # If last_run_at is not set, the task will run relative to when the
-            # scheduler started, not when it was created
-            last_run_at=timezone.now(),
-        )
-        try:
-            yield submit_task
-        finally:
-            if not (
-                hasattr(self, "_bill")
-                and hasattr(self._bill, "id")
-                and isinstance(self._bill.id, int)
-            ):
-                raise AttributeError(
-                    "self._bill was not saved in the submit task context"
-                )
-
-            submit_task.name = f"bill_submit:{self._bill.id}"
-            submit_task.args = json.dumps([self._bill.id])
-            submit_task.save()
-            self._bill.log("Scheduled %s", submit_task.name)
-
-            # Attribute could be shared between model instances
-            del self._bill

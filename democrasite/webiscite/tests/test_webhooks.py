@@ -187,12 +187,10 @@ class TestPullRequestHandler:
         assert pull_request.draft is True
         assert bill is not None
         assert bill.status == Bill.Status.DRAFT
-        assert bill._submit_task.enabled is False  # noqa: SLF001
+        assert bill._submit_task is None  # noqa: SLF001
 
     def test_ready_for_review(self, pr_handler: PullRequestHandler):
         bill = BillFactory.create(status=Bill.Status.DRAFT)
-        bill._submit_task.enabled = False  # noqa: SLF001
-        bill._submit_task.save()  # noqa: SLF001
         bill.pull_request.draft = True
         bill.pull_request.save()
 
@@ -202,8 +200,10 @@ class TestPullRequestHandler:
 
         assert pull_request is not None
         assert pull_request.draft is False
+        assert published_bill is not None
         published_bill.refresh_from_db()
         assert published_bill.status == Bill.Status.OPEN
+        assert published_bill._submit_task is not None  # noqa: SLF001
         assert published_bill._submit_task.enabled is True  # noqa: SLF001
 
     def test_ready_for_review_no_pr(self, pr_handler: PullRequestHandler):

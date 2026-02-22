@@ -1,8 +1,6 @@
 from typing import Any
 
 import factory
-from django_celery_beat.models import IntervalSchedule
-from django_celery_beat.models import PeriodicTask
 
 from democrasite.users.tests.factories import UserFactory
 from democrasite.webiscite.models import Bill
@@ -25,18 +23,6 @@ class PullRequestFactory(factory.django.DjangoModelFactory[PullRequest]):
         model = PullRequest
 
 
-class TaskFactory(factory.django.DjangoModelFactory[PeriodicTask]):
-    interval = factory.LazyFunction(
-        lambda: IntervalSchedule.objects.get_or_create(
-            every=999, period=IntervalSchedule.DAYS
-        )[0]
-    )
-    name = factory.Faker("text", max_nb_chars=50)
-
-    class Meta:
-        model = PeriodicTask
-
-
 class BillFactory(factory.django.DjangoModelFactory[Bill]):
     name = factory.Faker("text", max_nb_chars=50)
     description = factory.Faker("paragraph")
@@ -45,9 +31,7 @@ class BillFactory(factory.django.DjangoModelFactory[Bill]):
     # Fields with defaults
     status = Bill.Status.OPEN
     constitutional = False
-    _submit_task = factory.SubFactory(TaskFactory)
-    # Currently yes_votes and no_votes are initialized as empty. If values are needed
-    # for them, a post-generation hook can be written to generate and insert the users
+    # _submit_task is created by Bill.save() for non-draft bills
 
     class Meta:
         model = Bill
