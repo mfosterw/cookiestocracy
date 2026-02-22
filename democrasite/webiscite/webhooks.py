@@ -4,7 +4,6 @@ Each service that sends webhooks should have its own function-based view."""
 
 import hmac
 import json
-from logging import WARNING
 from logging import getLogger
 from typing import TYPE_CHECKING
 from typing import Any
@@ -20,8 +19,6 @@ from django.http import request
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
-
-from democrasite.users.models import User
 
 from .models import Bill
 from .models import PullRequest
@@ -86,22 +83,10 @@ class PullRequestHandler:
         """
         pull_request: PullRequest = PullRequest.objects.create_from_github(pr)
 
-        try:
-            author = User.objects.filter(socialaccount__provider="github").get(
-                socialaccount__uid=pr["user"]["id"]
-            )
-        except User.DoesNotExist:
-            # If the creator of the pull request does not have a linked account,
-            # a Bill cannot be created and the pr is ignored.
-            pull_request.log("No bill created (user does not exist)", level=WARNING)
-            return pull_request, None
-
-        diff_text = requests.get(pr["diff_url"], timeout=10).text
-
         # pr["body"] is None if the body is empty
-        bill = Bill.objects.create_from_github(
-            pr["title"], pr["body"] or "", author, diff_text, pull_request
-        )
+        bill_desc = pr["body"] or ""
+        user_id = pr["user"]["id"]
+        bill = Bill.objects.create_from_github(pull_request, bill_desc, user_id)
 
         return pull_request, bill
 

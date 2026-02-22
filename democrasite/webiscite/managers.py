@@ -1,14 +1,13 @@
-from logging import getLogger
+from logging import WARNING
 from typing import TYPE_CHECKING
 from typing import Any
 
+import requests
 from django.db import models
 
 from democrasite.users.models import User
 
 from .constitution import is_constitutional
-
-logger = getLogger(__name__)
 
 if TYPE_CHECKING:
     from .models import Bill  # pragma: no cover
@@ -95,37 +94,45 @@ class BillManager[T](models.Manager):
 
     def create_from_github(
         self,
-        title: str,
-        body: str,
-        author: User,
-        diff_text: str,
         pull_request: "PullRequest",
-    ) -> T:
+        desc: str,
+        author_uid: str,
+    ) -> T | None:
         """Validate and create a :class:`~democrasite.webiscite.models.Bill` from a
         GitHub pull request
 
         Args:
-            title: The title of the pull request
-            body: The body of the pull request
-            author: The user who created the pull request
-            diff_text: The text of the diff of the pull request
             pull_request: The pull request instance to associate with the bill
+            desc: The description of the bill (pull request body)
+            author_uid: The GitHub UID of the pull request author
 
         Returns:
-            The new bill instance
+            The new bill instance, or None if the author has no linked account
         """
+        try:
+            author = User.objects.filter(socialaccount__provider="github").get(
+                socialaccount__uid=author_uid
+            )
+        except User.DoesNotExist:
+            # If the creator of the pull request does not have a linked account,
+            # a Bill cannot be created and the pr is ignored.
+            pull_request.log("No bill created (user does not exist)", level=WARNING)
+            return None
+
+        diff_text = requests.get(pull_request.diff_url, timeout=10).text
+        constitutional = bool(is_constitutional(diff_text))
 
         status = (
             self.model.Status.DRAFT if pull_request.draft else self.model.Status.OPEN
         )
 
         bill = self.model(
-            name=title,
-            description=body,
+            name=pull_request.title,
+            description=desc,
             author=author,
             pull_request=pull_request,
             status=status,
-            constitutional=bool(is_constitutional(diff_text)),
+            constitutional=constitutional,
         )
 
         bill.full_clean()
