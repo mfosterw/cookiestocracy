@@ -45,6 +45,7 @@ class PullRequestManager[T](models.Manager):
                 "author_name": pr["user"]["login"],
                 "status": pr["state"],
                 "sha": pr["head"]["sha"],
+                "draft": pr.get("draft", False),
             },
         )
 
@@ -111,21 +112,23 @@ class BillManager[T](models.Manager):
         GitHub pull request
 
         Args:
-            pr: The pull request data from the GitHub API
+            title: The title of the pull request
+            body: The body of the pull request
+            author: The user who created the pull request
             diff_text: The text of the diff of the pull request
             pull_request: The pull request instance to associate with the bill
 
         Returns:
-            A tuple containing the new or update pull request and new bill instance, if
-            applicable
+            The new bill instance
         """
-        with self._create_submit_task() as submit_task:
+        draft = pull_request.draft
+        with self._create_submit_task(enabled=not draft) as submit_task:
             self._bill: Bill = self.model(
                 name=title,
                 description=body,
                 author=author,
                 pull_request=pull_request,
-                status=self.model.Status.OPEN,
+                status=self.model.Status.DRAFT if draft else self.model.Status.OPEN,
                 constitutional=bool(is_constitutional(diff_text)),
                 _submit_task=submit_task,
             )
@@ -137,8 +140,12 @@ class BillManager[T](models.Manager):
         return bill
 
     @contextmanager
-    def _create_submit_task(self) -> Iterator[PeriodicTask]:
+    def _create_submit_task(self, *, enabled: bool = True) -> Iterator[PeriodicTask]:
         """Schedule a task to submit this bill for voting
+
+        Args:
+            enabled: Whether the task should be enabled immediately. Set to False
+                for draft bills whose voting period hasn't started yet.
 
         Returns:
             The task that was scheduled
@@ -153,6 +160,7 @@ class BillManager[T](models.Manager):
             name="bill_submit:temp",
             task="democrasite.webiscite.tasks.submit_bill",
             one_off=True,
+            enabled=enabled,
             # If last_run_at is not set, the task will run relative to when the
             # scheduler started, not when it was created
             last_run_at=timezone.now(),

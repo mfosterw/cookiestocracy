@@ -105,6 +105,34 @@ class PullRequestHandler:
 
         return pull_request, bill
 
+    def ready_for_review(
+        self, pr: dict[str, Any]
+    ) -> tuple[PullRequest | None, Bill | None]:
+        """Publish the draft bill associated with the pull request
+
+        Args:
+            pr: The parsed JSON object representing the pull request
+        """
+        try:
+            pull_request = PullRequest.objects.get(number=pr["number"])
+        except PullRequest.DoesNotExist:
+            logger.warning(
+                "PR #%s: Nothing changed (no pull request found)", pr["number"]
+            )
+            return (None, None)
+
+        pull_request.draft = False
+        pull_request.save()
+
+        try:
+            bill: Bill = pull_request.bill_set.get(status=Bill.Status.DRAFT)
+        except Bill.DoesNotExist:
+            pull_request.log("No draft bill found")
+            return (pull_request, None)
+
+        bill.publish()
+        return (pull_request, bill)
+
     def closed(self, pr: dict[str, Any]) -> tuple[PullRequest | None, Bill | None]:
         """Disables the open bill associated with the pull request
 

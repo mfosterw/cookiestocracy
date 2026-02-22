@@ -16,6 +16,7 @@ class PullRequestFactory(factory.django.DjangoModelFactory[PullRequest]):
     title = factory.Faker("text", max_nb_chars=50)
     author_name = factory.Faker("user_name")
     status = "open"
+    draft = False
     additions = factory.Faker("random_int")
     deletions = factory.Faker("random_int")
     sha = factory.Faker("pystr", min_chars=40, max_chars=40)
@@ -67,6 +68,7 @@ class GithubPullRequestFactory(factory.Factory[dict[str, Any]]):
     state = "open"
     additions = factory.SelfAttribute("bill.pull_request.additions")
     deletions = factory.SelfAttribute("bill.pull_request.deletions")
+    draft = False
     diff_url = ""  # Keep blank so request.get raises an error
 
     class Meta:
