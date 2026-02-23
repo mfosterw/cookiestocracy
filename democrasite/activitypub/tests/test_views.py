@@ -7,6 +7,7 @@ from django.contrib.auth.models import AnonymousUser
 from django.contrib.messages import get_messages
 from django.contrib.messages.middleware import MessageMiddleware
 from django.contrib.sessions.middleware import SessionMiddleware
+from django.http import HttpRequest
 from django.http import HttpResponseRedirect
 from django.test import Client
 from django.test import RequestFactory
@@ -36,11 +37,14 @@ class TestNoteListView:
 
 
 class TestUserProfileMixin:
+    def dummy_get_response(self, request: HttpRequest):
+        pass
+
     def test_no_auth(self, rf: RequestFactory):
         request = rf.get("/fake-url/")
 
-        SessionMiddleware(lambda r: None).process_request(request)
-        MessageMiddleware(lambda r: None).process_request(request)
+        SessionMiddleware(self.dummy_get_response).process_request(request)
+        MessageMiddleware(self.dummy_get_response).process_request(request)
         request.user = AnonymousUser()
 
         view = views.UserProfileMixin()
@@ -60,8 +64,8 @@ class TestUserProfileMixin:
     def test_no_person(self, rf: RequestFactory, user: User):
         request = rf.get("/fake-url/")
 
-        SessionMiddleware(lambda r: None).process_request(request)
-        MessageMiddleware(lambda r: None).process_request(request)
+        SessionMiddleware(self.dummy_get_response).process_request(request)
+        MessageMiddleware(self.dummy_get_response).process_request(request)
         request.user = user
 
         view = views.UserProfileMixin()
@@ -143,6 +147,7 @@ class TestNoteCreateView:
 
         new_note = Note.objects.get(content=content)
         assert new_note.author == person
+        assert isinstance(response, HttpResponseRedirect)
         assert response.status_code == HTTPStatus.FOUND
         assert response.url == new_note.get_absolute_url()
 
@@ -163,6 +168,7 @@ class TestNoteReplyView:
         reply_note = Note.objects.get(content=content)
         assert reply_note.author == person
         assert reply_note.in_reply_to == note
+        assert isinstance(response, HttpResponseRedirect)
         assert response.status_code == HTTPStatus.FOUND
         assert response.url == reply_note.get_absolute_url()
 
@@ -208,11 +214,14 @@ class TestPersonDetailView:
 
 
 class TestPersonCreateView:
+    def dummy_get_response(self, request: HttpRequest):
+        pass
+
     def test_unauthenticated(self, rf: RequestFactory):
         # Unauthenticated
         request = rf.post("/fake-url/")
-        SessionMiddleware(lambda r: None).process_request(request)
-        MessageMiddleware(lambda r: None).process_request(request)
+        SessionMiddleware(self.dummy_get_response).process_request(request)
+        MessageMiddleware(self.dummy_get_response).process_request(request)
         request.user = AnonymousUser()
 
         response = views.person_create_view(request)
@@ -229,8 +238,8 @@ class TestPersonCreateView:
 
     def test_person_exists(self, rf: RequestFactory, person: Person):
         request = rf.post("/fake-url/")
-        SessionMiddleware(lambda r: None).process_request(request)
-        MessageMiddleware(lambda r: None).process_request(request)
+        SessionMiddleware(self.dummy_get_response).process_request(request)
+        MessageMiddleware(self.dummy_get_response).process_request(request)
         request.user = person.user
 
         response = views.person_create_view(request)
@@ -283,13 +292,14 @@ class TestPersonUpdateView:
 
         person.refresh_from_db()
         assert person.bio == new_bio
+        assert isinstance(response, HttpResponseRedirect)
         assert response.status_code == HTTPStatus.FOUND
         assert response.url == person.get_absolute_url()
 
 
 class TestPersonFollowingNotesView:
     def test_get_queryset(self, person: Person, rf: RequestFactory):
-        person_followed = PersonFactory()
+        person_followed = PersonFactory.create()
         person.follow(person_followed)
 
         note_from_followed = NoteFactory(author=person_followed)

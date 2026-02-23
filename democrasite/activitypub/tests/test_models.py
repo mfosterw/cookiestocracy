@@ -12,6 +12,8 @@ class TestFollow:
         follower.follow(person)
 
         follow = follower.following_set.first()
+
+        assert follow is not None
         assert follow.following == person
         assert str(follow) == f"{follower} followed {person} on {follow.created}"
 

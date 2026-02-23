@@ -5,6 +5,8 @@ from django.contrib.auth.models import AnonymousUser
 from django.contrib.messages import get_messages
 from django.contrib.messages.middleware import MessageMiddleware
 from django.contrib.sessions.middleware import SessionMiddleware
+from django.http import HttpRequest
+from django.template.response import TemplateResponse
 from django.test import RequestFactory
 from factory.faker import faker
 
@@ -17,6 +19,9 @@ from democrasite.users.views import user_detail_view
 
 
 class TestUserUpdateView:
+    def dummy_get_response(self, request: HttpRequest):
+        pass
+
     def test_get_success_url(self, user: User, rf: RequestFactory):
         view = UserUpdateView()
         request = rf.get("/fake-url/")
@@ -40,8 +45,8 @@ class TestUserUpdateView:
         request = rf.get("/fake-url/")
 
         # Add the session/message middleware to the request
-        SessionMiddleware(lambda r: None).process_request(request)
-        MessageMiddleware(lambda r: None).process_request(request)
+        SessionMiddleware(self.dummy_get_response).process_request(request)
+        MessageMiddleware(self.dummy_get_response).process_request(request)
         request.user = user
 
         view.request = request
@@ -88,7 +93,7 @@ class TestUserDetailView:
     def test_github_authenticated(self, user: User, rf: RequestFactory):
         request = rf.get("/fake-url/")
         request.user = user
-        user.socialaccount_set.add(
+        user.socialaccount_set.add(  # type: ignore[attr-defined]
             SocialAccount.objects.create(
                 user=user,
                 provider="github",
@@ -98,7 +103,9 @@ class TestUserDetailView:
 
         response = user_detail_view(request, username=user.username)
 
+        assert isinstance(response, TemplateResponse)
         assert response.status_code == HTTPStatus.OK
+        assert response.context_data is not None
         assert (
             response.context_data["empty_message"]
             == "You haven't proposed any bills yet."

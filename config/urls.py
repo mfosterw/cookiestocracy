@@ -52,7 +52,7 @@ if settings.DEBUG:
     # Admin site is only enabled during development
     urlpatterns += [path(settings.ADMIN_URL, admin.site.urls)]
     # Overwrite view site link because it points to the production url instead of local
-    admin.AdminSite.site_url = reverse_lazy("webiscite:index")
+    admin.AdminSite.site_url = reverse_lazy("webiscite:index")  # type: ignore[assignment]
 
     # This allows the error pages to be debugged during development, just visit
     # these url in browser to see how these error pages look like.

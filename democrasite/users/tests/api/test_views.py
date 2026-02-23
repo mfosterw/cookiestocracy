@@ -26,7 +26,7 @@ class TestUserViewSet:
 
         view.request = request
 
-        response = view.me(request)  # type: ignore[call-arg,arg-type]
+        response = view.me(request)  # type: ignore[call-arg,arg-type,misc]
 
         assert response.data == {
             "username": user.username,

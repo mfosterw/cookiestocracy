@@ -9,6 +9,7 @@ django-celery-beat==2.8.1  # https://github.com/celery/django-celery-beat
 flower==2.0.1  # https://github.com/mher/flower
 PyGithub==2.8.1  # https://github.com/PyGithub/PyGithub
 unidiff==0.7.5  # https://github.com/matiasb/python-unidiff
+types-requests==2.32.4.20260107  # https://github.com/python/typeshed
 
 # Django
 # ------------------------------------------------------------------------------
