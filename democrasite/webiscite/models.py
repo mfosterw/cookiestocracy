@@ -1,5 +1,6 @@
 """Models for the webiscite app"""
 
+import json
 import logging
 
 from django.conf import settings
@@ -7,6 +8,7 @@ from django.db import models
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
+from django_celery_beat.models import IntervalSchedule
 from django_celery_beat.models import PeriodicTask
 from model_utils.models import TimeStampedModel
 from simple_history.models import HistoricalRecords
@@ -147,7 +149,9 @@ class Bill(TimeStampedModel):
 
     # Automatic fields
     votes = models.ManyToManyField(User, through=Vote, related_name="votes", blank=True)
-    _submit_task = models.OneToOneField(PeriodicTask, on_delete=models.PROTECT)
+    _submit_task = models.OneToOneField(
+        PeriodicTask, on_delete=models.PROTECT, null=True, blank=True
+    )
 
     history = HistoricalRecords()
 
@@ -244,15 +248,39 @@ class Bill(TimeStampedModel):
         else:
             return vote.support
 
+    def save(self, *args, **kwargs):
+        created = self._state.adding
+        super().save(*args, **kwargs)
+        if created and self.status != self.Status.DRAFT:
+            self._schedule_submit_task()
+
+    def _schedule_submit_task(self) -> None:
+        """Create a periodic task to submit this bill after the voting period."""
+
+        voting_ends, __ = IntervalSchedule.objects.get_or_create(
+            every=settings.WEBISCITE_VOTING_PERIOD, period=IntervalSchedule.DAYS
+        )
+        self._submit_task = PeriodicTask.objects.create(
+            interval=voting_ends,
+            name=f"bill_submit:{self.id}",
+            task="democrasite.webiscite.tasks.submit_bill",
+            args=json.dumps([self.id]),
+            one_off=True,
+            last_run_at=timezone.now(),
+        )
+        super().save()
+        self.log("Scheduled %s", self._submit_task.name)
+
     def close(self) -> None:
         """Close the bill and disable its submit task"""
         self.status = self.Status.CLOSED
         self.save()
         self.log("Closed")
 
-        self._submit_task.enabled = False
-        self._submit_task.save()
-        self.log("Submit task disabled")
+        if self._submit_task is not None:
+            self._submit_task.enabled = False
+            self._submit_task.save()
+            self.log("Submit task disabled")
 
     def publish(self) -> None:
         """Transition a draft bill to open, enabling voting and scheduling submission"""
@@ -261,10 +289,7 @@ class Bill(TimeStampedModel):
 
         self.status = self.Status.OPEN
         self.save()
-
-        self._submit_task.enabled = True
-        self._submit_task.last_run_at = timezone.now()
-        self._submit_task.save()
+        self._schedule_submit_task()
         self.log("Published")
 
     def submit(self) -> None:

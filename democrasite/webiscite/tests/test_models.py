@@ -1,4 +1,7 @@
+from unittest.mock import patch
+
 import pytest
+from allauth.socialaccount.models import SocialAccount
 from django.conf import settings
 from django.db import IntegrityError
 from factory.faker import faker
@@ -125,43 +128,43 @@ class TestBillManager:
         bill.vote(user, support=False)
         assert Bill.objects.annotate_user_vote(user).first().user_vote is None
 
-    def test_create_from_github(self, user: User):
+    @patch("requests.get")
+    def test_create_from_github(self, mock_get, user: User):
+        mock_get.return_value.text = ""
         pr = PullRequestFactory.create()
-        bill = Bill.objects.create_from_github(
-            pr.title,
-            FAKE.text(),
-            user,
-            FAKE.text(),
-            pr,
-        )
+        uid = SocialAccount.objects.create(
+            user=user, provider="github", uid=FAKE.random_int()
+        ).uid
 
+        bill = Bill.objects.create_from_github(pr, FAKE.text(), uid)
+
+        assert bill is not None
         assert bill.pk is not None
+        bill.refresh_from_db()
+        assert bill._submit_task is not None  # noqa: SLF001
         assert bill._submit_task.enabled is True  # noqa: SLF001
 
-    def test_create_from_github_draft(self, user: User):
+    @patch("requests.get")
+    def test_create_from_github_draft(self, mock_get, user: User):
+        mock_get.return_value.text = ""
         pr = PullRequestFactory.create(draft=True)
-        bill = Bill.objects.create_from_github(
-            pr.title,
-            FAKE.text(),
-            user,
-            FAKE.text(),
-            pr,
-        )
+        uid = SocialAccount.objects.create(
+            user=user, provider="github", uid=FAKE.random_int()
+        ).uid
 
+        bill = Bill.objects.create_from_github(pr, FAKE.text(), uid)
+
+        assert bill is not None
         assert bill.pk is not None
         assert bill.status == Bill.Status.DRAFT
-        assert bill._submit_task.enabled is False  # noqa: SLF001
+        assert bill._submit_task is None  # noqa: SLF001
 
-    def test__create_submit_task(self):
-        # just hit the error branch of finally clause
-        with (
-            pytest.raises(
-                AttributeError,
-                match=r"self._bill was not saved in the submit task context",
-            ),
-            Bill.objects._create_submit_task(),  # noqa: SLF001
-        ):
-            pass
+    def test_create_from_github_no_user(self):
+        pr = PullRequestFactory.create()
+
+        result = Bill.objects.create_from_github(pr, FAKE.text(), "nonexistent-uid")
+
+        assert result is None
 
 
 class TestBill:
@@ -194,25 +197,27 @@ class TestBill:
         assert bill.get_vote_url() == f"/bills/{bill.id}/vote/"
 
     def test_close(self, bill: Bill):
+        assert bill._submit_task is not None  # noqa: SLF001
         assert bill._submit_task.enabled is True  # noqa: SLF001
 
         bill.close()
 
         bill.refresh_from_db()
         assert bill.status == Bill.Status.CLOSED
+        assert bill._submit_task is not None  # noqa: SLF001
         assert bill._submit_task.enabled is False  # noqa: SLF001
 
 
 class TestBillPublish:
     def test_publish(self):
         bill = BillFactory.create(status=Bill.Status.DRAFT)
-        bill._submit_task.enabled = False  # noqa: SLF001
-        bill._submit_task.save()  # noqa: SLF001
+        assert bill._submit_task is None  # noqa: SLF001
 
         bill.publish()
 
         bill.refresh_from_db()
         assert bill.status == Bill.Status.OPEN
+        assert bill._submit_task is not None  # noqa: SLF001
         assert bill._submit_task.enabled is True  # noqa: SLF001
         assert bill._submit_task.last_run_at is not None  # noqa: SLF001
 

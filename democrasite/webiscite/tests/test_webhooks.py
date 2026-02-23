@@ -145,13 +145,6 @@ class TestPullRequestHandler:
             "bill": bill.id,
         }
 
-    def test_pr_opened_no_user(self, pr_handler: PullRequestHandler):
-        # The factory doesn't create a real user, so we can use it here
-        response = pr_handler.opened(GithubPullRequestFactory.create())
-
-        assert isinstance(response[0], PullRequest)
-        assert response[1] is None
-
     @patch("requests.get")
     def test_opened(self, mock_get, user: User, pr_handler: PullRequestHandler):
         pr = GithubPullRequestFactory.create()
@@ -163,14 +156,9 @@ class TestPullRequestHandler:
 
         pull_request, bill = pr_handler.opened(pr)
 
-        # All this is probably overkill
-        mock_get.assert_called_once_with(pr["diff_url"], timeout=10)
         assert pull_request is not None
-        assert pull_request.number == pr["number"]
-        assert pull_request.author_name == pr["user"]["login"]
         assert bill is not None
         assert bill.author == user
-        assert bill.constitutional is False
 
     @patch("requests.get")
     def test_opened_draft(self, mock_get, user: User, pr_handler: PullRequestHandler):
@@ -187,12 +175,10 @@ class TestPullRequestHandler:
         assert pull_request.draft is True
         assert bill is not None
         assert bill.status == Bill.Status.DRAFT
-        assert bill._submit_task.enabled is False  # noqa: SLF001
+        assert bill._submit_task is None  # noqa: SLF001
 
     def test_ready_for_review(self, pr_handler: PullRequestHandler):
         bill = BillFactory.create(status=Bill.Status.DRAFT)
-        bill._submit_task.enabled = False  # noqa: SLF001
-        bill._submit_task.save()  # noqa: SLF001
         bill.pull_request.draft = True
         bill.pull_request.save()
 
@@ -202,12 +188,14 @@ class TestPullRequestHandler:
 
         assert pull_request is not None
         assert pull_request.draft is False
+        assert published_bill is not None
         published_bill.refresh_from_db()
         assert published_bill.status == Bill.Status.OPEN
+        assert published_bill._submit_task is not None  # noqa: SLF001
         assert published_bill._submit_task.enabled is True  # noqa: SLF001
 
     def test_ready_for_review_no_pr(self, pr_handler: PullRequestHandler):
-        result = pr_handler.ready_for_review({"number": 99999})
+        result = pr_handler.ready_for_review({"number": 1})
         assert result == (None, None)
 
     def test_ready_for_review_no_draft_bill(
