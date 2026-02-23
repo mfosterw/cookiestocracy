@@ -1,3 +1,5 @@
+"""Managers for the webiscite app models."""
+
 from logging import WARNING
 from typing import TYPE_CHECKING
 from typing import Any
@@ -16,16 +18,14 @@ if TYPE_CHECKING:
 
 class PullRequestManager[T](models.Manager):
     def create_from_github(self, pr: dict[str, Any]) -> T:
-        """Create a :class:`~democrasite.webiscite.models.PullRequest` and optionally a
-        :class:`~democrasite.webiscite.models.Bill` instance from a GitHub pull request
+        """Create or update a :class:`~democrasite.webiscite.models.PullRequest` from
+        a GitHub pull request payload
 
         Args:
-            pr_args: The parameters for the ``PullRequest``
-            bill_args: The parameters for the ``Bill`` or None
+            pr: The pull request data from the GitHub API
 
         Returns:
-            A tuple containing the new or updated pull request and new bill instance, if
-            applicable
+            The new or updated pull request instance
         """
         pull_request, created = self.update_or_create(
             number=pr["number"],
@@ -47,6 +47,12 @@ class PullRequestManager[T](models.Manager):
 
 class BillManager[T](models.Manager):
     def get_queryset(self):
+        """Return a queryset with pull_request pre-fetched and vote percentages added.
+
+        All Bill querysets include ``total_votes``, ``yes_percent``, and
+        ``no_percent``
+        annotations, and are ordered by creation date.
+        """
         return (
             super()
             .get_queryset()
@@ -80,6 +86,16 @@ class BillManager[T](models.Manager):
     def annotate_user_vote(
         self, user: User, queryset: models.QuerySet["Bill"] | None = None
     ):
+        """Annotate a queryset with the given user's vote on each bill.
+
+        Args:
+            user: The user whose vote to annotate
+            queryset: The queryset to annotate; defaults to ``self.get_queryset()``
+
+        Returns:
+            The queryset annotated with a ``user_vote`` field
+            (``True``/``False``/``None``)
+        """
         if queryset is None:
             queryset = self.get_queryset()
 
