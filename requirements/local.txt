@@ -1,6 +1,6 @@
 -r production.txt
 
-Werkzeug[watchdog]==3.1.5 # https://github.com/pallets/werkzeug
+Werkzeug[watchdog]==3.1.6 # https://github.com/pallets/werkzeug
 ipdb==0.13.13  # https://github.com/gotcha/ipdb
 watchfiles==1.1.1  # https://github.com/samuelcolvin/watchfiles
 
@@ -19,7 +19,7 @@ sphinxcontrib-django==2.5  # https://github.com/sphinx-doc/sphinxcontrib-django
 
 # Code quality
 # ------------------------------------------------------------------------------
-ruff==0.15.1  # https://github.com/astral-sh/ruff
+ruff==0.15.2  # https://github.com/astral-sh/ruff
 pytest-cov==7.0.0  # https://github.com/pytest-dev/pytest-cov
 djlint==1.36.4  # https://github.com/Riverside-Healthcare/djLint
 pre-commit==4.5.1  # https://github.com/pre-commit/pre-commit
