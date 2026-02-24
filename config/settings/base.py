@@ -325,7 +325,7 @@ ACCOUNT_ALLOW_SOCIAL_REGISTRATION = env.bool(
 )
 # https://docs.allauth.org/en/latest/account/configuration.html
 ACCOUNT_LOGIN_METHODS = {"email"}
-ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_SIGNUP_FIELDS = ["email*", "password1*", "password2*"]
 # If email verification is used I would like to apply it to each linked account
 # individually so we don't have to rely on providers to do so
 ACCOUNT_EMAIL_VERIFICATION = "none"
@@ -336,7 +336,6 @@ ACCOUNT_FORMS = {
     "reset_password": "democrasite.users.forms.DisabledResetPasswordForm",
     "reset_password_from_key": "allauth.account.forms.DisabledResetPasswordKeyForm",
 }
-ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_ADAPTER = "democrasite.users.adapters.AccountAdapter"
 # https://docs.allauth.org/en/latest/socialaccount/configuration.html
 SOCIALACCOUNT_ADAPTER = "democrasite.users.adapters.SocialAccountAdapter"
