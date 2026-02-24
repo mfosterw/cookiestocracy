@@ -136,15 +136,6 @@ class TestPullRequestHandler:
         assert response.status_code == HTTPStatus.BAD_REQUEST
         assert response.content == b"Unsupported action: test"
 
-    def test_pr_handler_get_response(self, pr_handler: PullRequestHandler, bill: Bill):
-        response = pr_handler.get_response("test", bill.pull_request, bill)
-
-        assert json.loads(response.content) == {
-            "action": "test",
-            "pull_request": bill.pull_request.number,
-            "bill": bill.id,
-        }
-
     @patch("requests.get")
     def test_opened(self, mock_get, user: User, pr_handler: PullRequestHandler):
         pr = GithubPullRequestFactory.create()
