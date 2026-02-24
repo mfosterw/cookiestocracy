@@ -173,8 +173,14 @@ class Bill(TimeStampedModel):
     def __str__(self) -> str:
         return f"Bill {self.id}: {self.name} ({self.pull_request})"
 
-    def log(self, msg, *args):
-        logger.info(f"Bill %s (#%s): {msg}", self.id, self.pull_request.number, *args)  # noqa: G004
+    def log(self, msg, *args, level=logging.INFO):
+        logger.log(
+            level,
+            f"Bill %s (#%s): {msg}",  # noqa: G004
+            self.id,
+            self.pull_request.number,
+            *args,
+        )
         # f-string necessary to let string interpolation work in msg
 
     def get_absolute_url(self) -> str:
