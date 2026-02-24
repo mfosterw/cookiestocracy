@@ -115,6 +115,29 @@ class PullRequestHandler:
         bill.publish()
         return (pull_request, bill)
 
+    def synchronize(self, pr: dict[str, Any]) -> tuple[PullRequest, Bill | None]:
+        """Handle new commits pushed to an open pull request.
+
+        Updates the pull request with the new SHA and closes any active bill
+        as amended, since votes on the old version no longer apply.
+
+        Args:
+            pr: The parsed JSON object representing the pull request
+
+        Returns:
+            A tuple containing the updated pull request and the closed bill, if any
+        """
+        pull_request = PullRequest.objects.create_from_github(pr)
+
+        try:
+            bill: Bill = pull_request.bill_set.get(status=Bill.Status.OPEN)
+        except Bill.DoesNotExist:
+            pull_request.log("No open bill found")
+            return (pull_request, None)
+
+        bill.close(status=Bill.Status.AMENDED)
+        return (pull_request, bill)
+
     def closed(self, pr: dict[str, Any]) -> tuple[PullRequest | None, Bill | None]:
         """Disables the open bill associated with the pull request
 

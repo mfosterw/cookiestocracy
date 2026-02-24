@@ -48,7 +48,7 @@ The Bill system spans these files. Review each to determine if it needs changes:
 - `config/settings/base.py` — WEBISCITE_* settings (quorum, majority thresholds, voting period, GitHub token/repo)
 
 ## Key patterns to follow
-- Bill status choices: DRAFT, OPEN, APPROVED, REJECTED, FAILED, CLOSED
+- Bill status choices: DRAFT, OPEN, APPROVED, AMENDED, REJECTED, FAILED, CLOSED
 - Votes are M2M through Vote model with unique constraint on (bill, user)
 - Bill.vote() toggles existing votes; raises ClosedBillVoteError if bill not OPEN
 - Constitutional bills need WEBISCITE_SUPERMAJORITY (66.67%), normal need WEBISCITE_NORMAL_MAJORITY (50%)
@@ -62,6 +62,8 @@ The Bill system spans these files. Review each to determine if it needs changes:
 - PullRequest.close() closes both open and draft bills
 - The submit PeriodicTask is created disabled for draft bills; Bill.publish() enables it and resets last_run_at so the voting period starts from publication
 - GitHub's `ready_for_review` webhook action triggers PullRequestHandler.ready_for_review(), which updates the PR and publishes the draft bill
+- GitHub's `synchronize` webhook action (new commits pushed to PR) triggers PullRequestHandler.synchronize(), which updates the PR SHA and closes any open bill with AMENDED status; draft bills are not affected
+- Bill.close() accepts an optional `status` parameter (default Bill.Status.CLOSED) to set a different terminal status (e.g. AMENDED)
 
 ## Steps
 1. Read the relevant files from the checklist above

@@ -41,5 +41,12 @@ If the votes for the Bill pass the threshold, the pull request is merged into
 the master branch on Github and automatically deployed, officially making it
 part of Democrasite.
 
+If new commits are pushed to a pull request while a Bill is open for voting,
+GitHub sends a ``synchronize`` event.
+:meth:`~democrasite.webiscite.webhooks.PullRequestHandler.synchronize`
+updates the stored pull request with the new SHA and closes the open Bill
+with an ``AMENDED`` status, since the votes no longer reflect the current
+code. Draft bills are not affected by synchronize events.
+
 .. _GitHub: https://github.com/mfosterw/cookiestocracy
 .. _webhook: https://docs.github.com/en/developers/webhooks-and-events/webhooks/about-webhooks

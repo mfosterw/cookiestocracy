@@ -217,3 +217,25 @@ class TestPullRequestHandler:
 
         assert response == (bill.pull_request, mock_close.return_value)
         mock_close.assert_called_once()
+
+    def test_synchronize(self, pr_handler: PullRequestHandler):
+        bill = BillFactory.create(status=Bill.Status.OPEN)
+        pr = GithubPullRequestFactory.create(bill=bill)
+
+        pull_request, amended_bill = pr_handler.synchronize(pr)
+
+        assert pull_request is not None
+        assert amended_bill is not None
+        amended_bill.refresh_from_db()
+        assert amended_bill.status == Bill.Status.AMENDED
+        assert amended_bill._submit_task is not None  # noqa: SLF001
+        assert amended_bill._submit_task.enabled is False  # noqa: SLF001
+
+    def test_synchronize_no_open_bill(self, pr_handler: PullRequestHandler):
+        # Default GithubPullRequestFactory creates a closed bill (no active bill)
+        pr = GithubPullRequestFactory.create()
+
+        pull_request, bill = pr_handler.synchronize(pr)
+
+        assert pull_request is not None
+        assert bill is None
