@@ -42,10 +42,11 @@ class PullRequestHandler:
             An object containing the primary keys of the pull request and bill affected,
             if applicable
         """
+        action = payload["action"]
         handler: (
             Callable[[dict[str, Any]], tuple[PullRequest | None, Bill | None]] | None
         )
-        handler = getattr(self, payload["action"], None)
+        handler = getattr(self, action, None)
         if handler is None:
             logger.warning(
                 "GitHub pull request webhook failed with unsupported action: %s",
@@ -54,18 +55,14 @@ class PullRequestHandler:
             return HttpResponseBadRequest(f"Unsupported action: {payload['action']}")
 
         pull_request, bill = handler(payload["pull_request"])
-        return self.get_response(payload["action"], pull_request, bill)
 
-    def get_response(
-        self, action: str, pull_request: PullRequest | None, bill: Bill | None
-    ) -> JsonResponse:
-        body: dict[str, str | int] = {"action": action}
+        response = {"action": action}
         if pull_request is not None:
-            body["pull_request"] = pull_request.number
+            response["pull_request"] = pull_request.number
         if bill is not None:
-            body["bill"] = bill.id
+            response["bill"] = bill.id
 
-        return JsonResponse(body)
+        return JsonResponse(response)
 
     def reopened(self, pr: dict[str, Any]) -> tuple[PullRequest, Bill | None]:
         return self.opened(pr)
