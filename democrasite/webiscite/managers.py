@@ -137,7 +137,9 @@ class BillManager[T](models.Manager):
         diff_text = requests.get(pull_request.diff_url, timeout=10).text
         constitutional = bool(is_constitutional(diff_text))
 
-        status = Bill.Status.DRAFT if pull_request.draft else Bill.Status.OPEN
+        status = (
+            self.model.Status.DRAFT if pull_request.draft else self.model.Status.OPEN
+        )
 
         bill = self.model(
             name=pull_request.title,
