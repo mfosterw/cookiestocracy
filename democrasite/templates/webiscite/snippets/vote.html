@@ -20,7 +20,7 @@
        data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-trigger="click" title="{% trans 'Log in to vote' %}"
      {% endif %}
    {% endif %}>
-  ✓ {% trans 'Yes' %}: <span class="num-yes-votes" id="num-vote-yes-{{ bill.id }}">{{ bill.yes_votes.count }}</span>
+  ✓ {% trans 'Yes' %}: <span class="num-yes-votes" id="num-vote-yes-{{ bill.id }}">{{ bill.yes_count }}</span>
 </a>
 
 <a href="javascript:;"
@@ -33,5 +33,5 @@
        data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-trigger="click" title="{% trans 'Log in to vote' %}"
      {% endif %}
    {% endif %}>
-  X {% trans 'No' %}: <span class="num-no-votes" id="num-vote-no-{{ bill.id }}">{{ bill.no_votes.count }}</span>
+  X {% trans 'No' %}: <span class="num-no-votes" id="num-vote-no-{{ bill.id }}">{{ bill.no_count }}</span>
 </a>

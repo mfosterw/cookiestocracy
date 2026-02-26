@@ -115,7 +115,7 @@ class TestBillViewSet:
         assert response.status_code == HTTPStatus.OK
         assert response.data["yes_votes"] == 1
         assert response.data["no_votes"] == 0
-        assert bill.yes_votes.filter(pk=user.pk).exists()
+        assert bill.votes.filter(pk=user.pk).exists()
 
         response = api_client.post(url, {"support": False})
 

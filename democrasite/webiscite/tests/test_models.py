@@ -229,27 +229,27 @@ class TestBillPublish:
 class TestBillVote:
     def test_bill_vote_yes_toggle(self, bill: Bill, user: User):
         bill.vote(user, support=True)
-        assert bill.yes_votes.filter(pk=user.id).exists()
+        assert bill.votes.filter(pk=user.id, vote__support=True).exists()
         bill.vote(user, support=True)
-        assert not bill.yes_votes.filter(pk=user.id).exists()
+        assert not bill.votes.filter(pk=user.id, vote__support=True).exists()
 
     def test_bill_vote_no_toggle(self, bill: Bill, user: User):
         bill.vote(user, support=False)
-        assert bill.no_votes.filter(pk=user.id).exists()
+        assert bill.votes.filter(pk=user.id, vote__support=False).exists()
         bill.vote(user, support=False)
-        assert not bill.no_votes.filter(pk=user.id).exists()
+        assert not bill.votes.filter(pk=user.id, vote__support=False).exists()
 
     def test_bill_vote_yes_to_no_switch(self, bill: Bill, user: User):
         bill.vote(user, support=True)
         bill.vote(user, support=False)
-        assert not bill.yes_votes.filter(pk=user.id).exists()
-        assert bill.no_votes.filter(pk=user.id).exists()
+        assert not bill.votes.filter(pk=user.id, vote__support=True).exists()
+        assert bill.votes.filter(pk=user.id, vote__support=False).exists()
 
     def test_bill_vote_no_to_yes_switch(self, bill: Bill, user: User):
         bill.vote(user, support=False)
         bill.vote(user, support=True)
-        assert not bill.no_votes.filter(pk=user.id).exists()
-        assert bill.yes_votes.filter(pk=user.id).exists()
+        assert not bill.votes.filter(pk=user.id, vote__support=False).exists()
+        assert bill.votes.filter(pk=user.id, vote__support=True).exists()
 
     def test_bill_not_open(self, user: User):
         bill = BillFactory.create(status=Bill.Status.CLOSED)
@@ -289,6 +289,7 @@ class TestBillSubmit:
         Vote.objects.bulk_create(
             [Vote(bill=bill, user=voter, support=False) for voter in voters]
         )
+        bill = Bill.objects.get(id=bill.id)  # set annotations
 
         bill.submit()
 
@@ -300,6 +301,7 @@ class TestBillSubmit:
         Vote.objects.bulk_create(
             [Vote(bill=bill, user=voter, support=False) for voter in voters]
         )
+        bill = Bill.objects.get(id=bill.id)  # set annotations
 
         bill.submit()
 
@@ -310,6 +312,7 @@ class TestBillSubmit:
         Vote.objects.bulk_create(
             [Vote(bill=bill, user=voter, support=True) for voter in voters]
         )
+        bill = Bill.objects.get(id=bill.id)  # set annotations
 
         bill.submit()
 

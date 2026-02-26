@@ -47,18 +47,19 @@ class PullRequestManager[T](models.Manager):
 
 class BillManager[T](models.Manager):
     def get_queryset(self):
-        """Return a queryset with pull_request pre-fetched and vote percentages added.
+        """Return a queryset with related models pre-fetched and vote amounts added.
 
-        All Bill querysets include ``total_votes``, ``yes_percent``, and
-        ``no_percent``
-        annotations, and are ordered by creation date.
+        All Bill querysets include ``total_votes``, ``yes_count``, ``yes_percent``,
+        ``no_count`` and ``no_percent`` annotations, prefetch pull_request and author,
+        and are ordered by creation date.
         """
         return (
             super()
             .get_queryset()
-            .select_related("pull_request")
+            .select_related("pull_request", "author")
             .annotate(
                 total_votes=models.Count("vote"),
+                yes_count=models.Count("vote", filter=models.Q(vote__support=True)),
                 yes_percent=models.Case(
                     models.When(
                         models.Q(total_votes__gt=0),
@@ -69,6 +70,7 @@ class BillManager[T](models.Manager):
                     default=models.Value(0),
                     output_field=models.FloatField(),
                 ),
+                no_count=models.Count("vote", filter=models.Q(vote__support=False)),
                 no_percent=models.Case(
                     models.When(
                         models.Q(total_votes__gt=0),
@@ -109,11 +111,8 @@ class BillManager[T](models.Manager):
         )
 
     def create_from_github(
-        self,
-        pull_request: "PullRequest",
-        desc: str,
-        author_uid: str,
-    ) -> T | None:
+        self, pull_request: "PullRequest", desc: str, author_uid: str
+    ):
         """Validate and create a :class:`~democrasite.webiscite.models.Bill` from a
         GitHub pull request
 
@@ -138,9 +137,7 @@ class BillManager[T](models.Manager):
         diff_text = requests.get(pull_request.diff_url, timeout=10).text
         constitutional = bool(is_constitutional(diff_text))
 
-        status = (
-            self.model.Status.DRAFT if pull_request.draft else self.model.Status.OPEN
-        )
+        status = Bill.Status.DRAFT if pull_request.draft else Bill.Status.OPEN
 
         bill = self.model(
             name=pull_request.title,
