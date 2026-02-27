@@ -157,6 +157,13 @@ class Bill(TimeStampedModel):
 
     objects = BillManager()
 
+    # Annotations from default manager query
+    total_votes = 0
+    yes_count = 0
+    yes_percent = 0
+    no_count = 0
+    no_percent = 0
+
     class Meta:
         constraints = [
             models.UniqueConstraint(
@@ -177,6 +184,29 @@ class Bill(TimeStampedModel):
         logger.info(f"Bill %s (#%s): {msg}", self.id, self.pull_request.number, *args)  # noqa: G004
         # f-string necessary to let string interpolation work in msg
 
+    def save(self, *args, **kwargs):
+        created = self._state.adding
+        super().save(*args, **kwargs)
+        if created and self.status != self.Status.DRAFT:
+            self._schedule_submit_task()
+
+    def _schedule_submit_task(self) -> None:
+        """Create a periodic task to submit this bill after the voting period."""
+
+        voting_ends, __ = IntervalSchedule.objects.get_or_create(
+            every=settings.WEBISCITE_VOTING_PERIOD, period=IntervalSchedule.DAYS
+        )
+        self._submit_task = PeriodicTask.objects.create(
+            interval=voting_ends,
+            name=f"bill_submit:{self.id}",
+            task="democrasite.webiscite.tasks.submit_bill",
+            args=json.dumps([self.id]),
+            one_off=True,
+            last_run_at=timezone.now(),
+        )
+        super().save()
+        self.log("Scheduled %s", self._submit_task.name)  # type: ignore[union-attr]
+
     def get_absolute_url(self) -> str:
         """Returns URL to view this Bill instance"""
         return reverse("webiscite:bill-detail", kwargs={"pk": self.id})
@@ -189,20 +219,12 @@ class Bill(TimeStampedModel):
         """Returns URL for the current user to vote on this Bill instance"""
         return reverse("webiscite:bill-vote", kwargs={"pk": self.id})
 
-    @property
-    def yes_votes(self) -> models.QuerySet[User]:
-        return self.votes.filter(vote__support=True)
-
-    @property
-    def no_votes(self) -> models.QuerySet[User]:
-        return self.votes.filter(vote__support=False)
-
     def vote(self, user: User, *, support: bool) -> None:
         """Sets the given user's vote based on the support parameter
 
         If the user already voted the way the method would set, their vote is
-        removed from the bill (i.e. if ``user`` is in ``bill.yes_votes`` and support is
-        ``True``, ``user`` is removed from ``bill.yes_votes``)
+        removed from the bill (i.e. if the user previously voted yes and support is
+        ``True``, their vote is removed)
 
         Args:
             user (User): The user voting on the bill
@@ -248,29 +270,6 @@ class Bill(TimeStampedModel):
         else:
             return vote.support
 
-    def save(self, *args, **kwargs):
-        created = self._state.adding
-        super().save(*args, **kwargs)
-        if created and self.status != self.Status.DRAFT:
-            self._schedule_submit_task()
-
-    def _schedule_submit_task(self) -> None:
-        """Create a periodic task to submit this bill after the voting period."""
-
-        voting_ends, __ = IntervalSchedule.objects.get_or_create(
-            every=settings.WEBISCITE_VOTING_PERIOD, period=IntervalSchedule.DAYS
-        )
-        self._submit_task = PeriodicTask.objects.create(
-            interval=voting_ends,
-            name=f"bill_submit:{self.id}",
-            task="democrasite.webiscite.tasks.submit_bill",
-            args=json.dumps([self.id]),
-            one_off=True,
-            last_run_at=timezone.now(),
-        )
-        super().save()
-        self.log("Scheduled %s", self._submit_task.name)
-
     def close(self) -> None:
         """Close the bill and disable its submit task"""
         self.status = self.Status.CLOSED
@@ -303,20 +302,18 @@ class Bill(TimeStampedModel):
         self.save()
 
     def _check_approval(self) -> "Bill.Status":
-        total_votes = self.votes.count()
-        if total_votes < settings.WEBISCITE_MINIMUM_QUORUM:
+        if self.total_votes < settings.WEBISCITE_MINIMUM_QUORUM:
             self.log("Rejected due to insufficient votes")
             return self.Status.FAILED
 
-        approval = self.yes_votes.count() / total_votes
         if self.constitutional:
-            approved = approval > settings.WEBISCITE_SUPERMAJORITY
+            approved = self.yes_percent / 100 > settings.WEBISCITE_SUPERMAJORITY
         else:
-            approved = approval > settings.WEBISCITE_NORMAL_MAJORITY
+            approved = self.yes_percent / 100 > settings.WEBISCITE_NORMAL_MAJORITY
 
         if not approved:
-            self.log("Rejected with %s%% approval", approval * 100)
+            self.log("Rejected with %s%% approval", self.yes_percent)
             return self.Status.REJECTED
 
-        self.log("Approved with %s%% approval", approval * 100)
+        self.log("Approved with %s%% approval", self.yes_percent)
         return self.Status.APPROVED
