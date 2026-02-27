@@ -112,7 +112,7 @@ class BillManager[T](models.Manager):
 
     def create_from_github(
         self, pull_request: "PullRequest", desc: str, author_uid: str
-    ):
+    ) -> T | None:
         """Validate and create a :class:`~democrasite.webiscite.models.Bill` from a
         GitHub pull request
 
