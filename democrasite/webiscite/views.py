@@ -6,7 +6,7 @@ from django import http
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.mixins import UserPassesTestMixin
 from django.contrib.messages.views import SuccessMessageMixin
-from django.http import Http404
+from django.shortcuts import get_object_or_404
 from django.utils.translation import gettext_lazy as _
 from django.views.decorators.http import require_POST
 from django.views.generic import DetailView
@@ -96,13 +96,11 @@ class BillDetailView(DetailView):
     def get_object(self, queryset=None):
         pk = self.kwargs.get("pk")
 
-        try:
-            if self.request.user.is_authenticated:
-                return Bill.objects.annotate_user_vote(self.request.user).get(pk=pk)
-            return Bill.objects.get(pk=pk)
-
-        except Bill.DoesNotExist as err:
-            raise Http404(_("No Bills found matching query")) from err
+        if self.request.user.is_authenticated:
+            return get_object_or_404(
+                Bill.objects.annotate_user_vote(self.request.user), pk=pk
+            )
+        return get_object_or_404(Bill)
 
 
 bill_detail_view = BillDetailView.as_view()
