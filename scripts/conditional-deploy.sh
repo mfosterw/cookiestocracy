@@ -10,13 +10,13 @@ LOCAL=$(git rev-parse @)
 REMOTE=$(git rev-parse "$UPSTREAM")
 BASE=$(git merge-base @ "$UPSTREAM")
 
-if [ $LOCAL = $REMOTE ]; then
+if [ "$LOCAL" = "$REMOTE" ]; then
     true
     # echo "$(date --utc +%FT%TZ): No changes detected in git"
-elif [ $LOCAL = $BASE ]; then
+elif [ "$LOCAL" = "$BASE" ]; then
     git pull
     scripts/deploy.sh
-elif [ $REMOTE = $BASE ]; then
+elif [ "$REMOTE" = "$BASE" ]; then
      echo "$(date --utc +%FT%TZ): Local changes detected, you may need to stash"
 else
      echo "$(date --utc +%FT%TZ): Git is diverged, this is unexpected."
