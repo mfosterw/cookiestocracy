@@ -34,7 +34,7 @@ receivers:
         if: "attributes?.attrs?.tag != nil"
       - id: extract_service_from_docker_tag
         parse_from: attributes.name
-        regex: ^democrasite-(?<service>[^-]+)-(?<instance>\d+)$
+        regex: ^(democrasite|telemetry)-(?<service>[^-]+)-(?<instance>\d+)$
         type: regex_parser
         if: "attributes?.name != nil"
       - from: attributes.service
