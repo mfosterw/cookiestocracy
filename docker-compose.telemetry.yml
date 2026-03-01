@@ -1,3 +1,5 @@
+name: telemetry
+
 volumes:
   production_prometheus_data:
   production_loki_data:
