@@ -11,6 +11,7 @@ REMOTE=$(git rev-parse "$UPSTREAM")
 BASE=$(git merge-base @ "$UPSTREAM")
 
 if [ $LOCAL = $REMOTE ]; then
+    :
     # echo "$(date --utc +%FT%TZ): No changes detected in git"
 elif [ $LOCAL = $BASE ]; then
     git pull
