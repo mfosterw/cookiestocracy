@@ -4,7 +4,18 @@ receivers:
       grpc:
         endpoint: 0.0.0.0:4317
 
-  filelog:
+  filelog/host:
+    include: [/var/log/build.log]
+    poll_interval: 200ms
+    start_at: beginning
+    include_file_name: false
+    include_file_path: false
+    operators:
+      - type: add
+        field: resource["service.name"]
+        value: "host"
+
+  filelog/docker:
     include: [/var/lib/docker/containers/*/*-json.log]
     poll_interval: 200ms
     start_at: beginning
@@ -91,7 +102,7 @@ exporters:
 service:
   pipelines:
     logs:
-      receivers: [otlp, filelog]
+      receivers: [otlp, filelog/host, filelog/docker]
       processors: [batch]
       exporters: [otlp_http/loki]
 

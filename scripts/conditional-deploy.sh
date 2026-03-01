@@ -3,7 +3,6 @@
 # Scripts adapted from https://www.youtube.com/watch?v=jFrGhodqC08 by Tom Delande
 # Licensed under https://creativecommons.org/licenses/by/4.0/
 
-echo "$(date --utc +%FT%TZ): Fetching remote repository..."
 git fetch
 
 UPSTREAM=${1:-'@{u}'}
@@ -12,7 +11,7 @@ REMOTE=$(git rev-parse "$UPSTREAM")
 BASE=$(git merge-base @ "$UPSTREAM")
 
 if [ $LOCAL = $REMOTE ]; then
-    echo "$(date --utc +%FT%TZ): No changes detected in git"
+    # echo "$(date --utc +%FT%TZ): No changes detected in git"
 elif [ $LOCAL = $BASE ]; then
     git pull
     scripts/deploy.sh
