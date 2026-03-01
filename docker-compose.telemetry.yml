@@ -71,7 +71,7 @@ services:
   grafana:
     image: grafana/grafana:12.3.2
     volumes:
-      - ./compose/production/grafana/datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
+      - ./compose/production/telemetry/datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
       - production_grafana_data:/var/lib/grafana
     env_file:
       - ./.envs/.production/.grafana
