@@ -38,6 +38,7 @@ services:
       - production_loki_data:/loki
     networks:
       - democrasite_metrics
+    command: ["--log.level=warn", "--config.file=/etc/loki/loki.yaml"]
     logging: *logging
 
   tempo:
