@@ -5,6 +5,8 @@ Currently, the defined tasks are all related to processing pull requests
 from :func:`democrasite.webiscite.webhooks`.
 """
 
+from logging import WARNING
+
 import requests
 from celery import shared_task
 from celery.utils.log import get_task_logger
@@ -47,7 +49,7 @@ def submit_bill(bill_id: int) -> None:
     if merged:
         bill.log("Merged")
     else:
-        logger.warning("Bill %s failed to merge", bill.id)
+        bill.log("Failed to merge", level=WARNING)
         return
 
     # Automatically update constitution line numbers if necessary
