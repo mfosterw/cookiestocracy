@@ -74,8 +74,8 @@ pyshell: (manage "shell_plus")
 
 # Run tests.
 [group("testing")]
-test:
-    @docker compose run --rm django pytest
+test *args:
+    @docker compose run --rm django pytest {{ args }}
 
 # Run tests and open coverage report
 [group("testing")]
