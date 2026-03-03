@@ -130,6 +130,7 @@ class Bill(TimeStampedModel):
         DRAFT = "draft", _("Draft")
         OPEN = "open", _("Open")
         APPROVED = "approved", _("Approved")
+        AMENDED = "amended", _("PR Amended")  # PR updated with new commits
         REJECTED = "rejected", _("Rejected")
         FAILED = "failed", _("Not Enough Votes")  # Failed to reach quorum
         # Translators: PR is short for "pull request"
@@ -271,9 +272,9 @@ class Bill(TimeStampedModel):
         super().save()
         self.log("Scheduled %s", self._submit_task.name)
 
-    def close(self) -> None:
+    def close(self, status: "Bill.Status" = Status.CLOSED) -> None:
         """Close the bill and disable its submit task"""
-        self.status = self.Status.CLOSED
+        self.status = status
         self.save()
         self.log("Closed")
 
