@@ -163,9 +163,10 @@ def vote_view(request: http.HttpRequest, pk: int) -> http.HttpResponse:
     except ClosedBillVoteError as err:
         return http.HttpResponseForbidden(str(err))
 
+    bill = Bill.objects.get(pk=pk)  # refresh vote annotations
     return http.JsonResponse(
         {
-            "yes-votes": bill.yes_votes.count(),
-            "no-votes": bill.no_votes.count(),
+            "yes-votes": bill.yes_count,
+            "no-votes": bill.no_count,
         }
     )

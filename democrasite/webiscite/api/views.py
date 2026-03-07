@@ -53,7 +53,7 @@ class IsAuthorOrReadOnly(BasePermission):
 )
 class BillViewSet(RetrieveModelMixin, ListModelMixin, UpdateModelMixin, GenericViewSet):
     serializer_class = BillSerializer
-    queryset = Bill.objects.select_related("author", "pull_request")
+    queryset = Bill.objects.all()
     permission_classes = [IsAuthorOrReadOnly]
 
     def get_serializer_context(self):
@@ -84,8 +84,7 @@ class BillViewSet(RetrieveModelMixin, ListModelMixin, UpdateModelMixin, GenericV
         except ClosedBillVoteError as err:
             raise PermissionDenied(str(err)) from err
 
-        return Response(
-            {"yes_votes": bill.yes_votes.count(), "no_votes": bill.no_votes.count()}
-        )
+        bill = Bill.objects.get(pk=pk)
+        return Response({"yes_votes": bill.yes_count, "no_votes": bill.no_count})
 
     # TODO: Prefetch bill list votes
