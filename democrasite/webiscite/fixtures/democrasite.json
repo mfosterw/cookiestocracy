@@ -44,7 +44,6 @@
       "modified": "2024-02-25T17:26:54.012Z",
       "status": "open",
       "draft": false,
-
       "title": "The Initial Act",
       "additions": 0,
       "deletions": 0,
@@ -61,7 +60,6 @@
       "modified": "2024-02-25T17:26:54.012Z",
       "status": "open",
       "draft": false,
-
       "title": "The Test Act",
       "additions": 1000,
       "deletions": 1000,
@@ -78,13 +76,28 @@
       "modified": "2024-02-25T17:26:54.012Z",
       "status": "open",
       "draft": false,
-
       "title": "The Finished Act",
       "additions": 69,
       "deletions": 420,
       "diff_url": "https://github.com/mfosterw/cookiestocracy/pull/64.diff",
       "author_name": "dependabot",
       "sha": "12345"
+    }
+  },
+  {
+    "model": "webiscite.pullrequest",
+    "pk": -4,
+    "fields": {
+      "created": "2026-02-16T12:00:00.000Z",
+      "modified": "2026-02-16T12:00:00.000Z",
+      "status": "open",
+      "draft": true,
+      "title": "The Draft Act",
+      "additions": 42,
+      "deletions": 7,
+      "diff_url": "https://github.com/mfosterw/cookiestocracy/pull/64.diff",
+      "author_name": "matthew",
+      "sha": "abc123"
     }
   },
   {
@@ -151,6 +164,27 @@
     }
   },
   {
+    "model": "webiscite.historicalpullrequest",
+    "pk": 4,
+    "fields": {
+      "created": "2026-02-16T12:00:00.000Z",
+      "modified": "2026-02-16T12:00:00.000Z",
+      "number": -4,
+      "title": "The Draft Act",
+      "additions": 42,
+      "deletions": 7,
+      "diff_url": "https://github.com/mfosterw/cookiestocracy/pull/64.diff",
+      "author_name": "matthew",
+      "status": "open",
+      "draft": true,
+      "sha": "abc123",
+      "history_date": "2026-02-16T12:00:00.000Z",
+      "history_change_reason": "",
+      "history_type": "+",
+      "history_user": null
+    }
+  },
+  {
     "model": "webiscite.bill",
     "pk": 1,
     "fields": {
@@ -169,8 +203,8 @@
     "model": "webiscite.bill",
     "pk": 2,
     "fields": {
-      "created": "2024-02-25T17:26:53.913Z",
-      "modified": "2024-02-25T17:26:53.950Z",
+      "created": "2024-02-25T17:30:53.913Z",
+      "modified": "2024-02-25T17:30:53.950Z",
       "name": "The Failed Act",
       "description": "This bill failed because not enough people voted on it.",
       "author": 1,
@@ -184,8 +218,8 @@
     "model": "webiscite.bill",
     "pk": 3,
     "fields": {
-      "created": "2024-02-25T17:26:53.913Z",
-      "modified": "2024-02-25T17:26:53.950Z",
+      "created": "2024-02-25T17:40:53.913Z",
+      "modified": "2024-02-25T17:40:53.950Z",
       "name": "The Test Act",
       "description": "This is a test. It is the 3rd bill, but the first two are marked as not open, so this should be the oldest bill displayed on the front page.",
       "author": 1,
@@ -199,8 +233,8 @@
     "model": "webiscite.bill",
     "pk": 4,
     "fields": {
-      "created": "2024-02-25T17:26:53.913Z",
-      "modified": "2024-02-25T17:26:53.950Z",
+      "created": "2024-02-25T17:55:53.913Z",
+      "modified": "2024-02-25T17:55:53.950Z",
       "name": "The Rejected Act",
       "description": "This bill was rejected by the community. Since it was a constitutional amendment, it required a supermajority to pass.",
       "author": 1,
@@ -214,8 +248,8 @@
     "model": "webiscite.bill",
     "pk": 5,
     "fields": {
-      "created": "2024-02-25T17:26:53.913Z",
-      "modified": "2024-02-25T17:26:53.950Z",
+      "created": "2024-02-25T18:26:53.913Z",
+      "modified": "2024-02-25T18:26:53.950Z",
       "name": "The Constitutional Act",
       "description": "This is a constitutional amendment. That should be noted in a subheader beneath the title.",
       "author": 1,
@@ -229,8 +263,8 @@
     "model": "webiscite.bill",
     "pk": 6,
     "fields": {
-      "created": "2024-02-25T17:26:53.913Z",
-      "modified": "2024-02-25T17:26:53.950Z",
+      "created": "2024-02-25T18:36:53.913Z",
+      "modified": "2024-02-25T18:36:53.950Z",
       "name": "The Finished Act",
       "description": "This bill was approved and is now part of the live website.",
       "author": 1,
@@ -238,6 +272,21 @@
       "status": "approved",
       "constitutional": true,
       "_submit_task": 6
+    }
+  },
+  {
+    "model": "webiscite.bill",
+    "pk": 7,
+    "fields": {
+      "created": "2026-02-16T12:00:00.000Z",
+      "modified": "2026-02-16T12:00:00.000Z",
+      "name": "The Draft Act",
+      "description": "This bill is a draft. It was created from a draft pull request and cannot be voted on until the PR is marked ready for review.",
+      "author": 1,
+      "pull_request": -4,
+      "status": "draft",
+      "constitutional": false,
+      "_submit_task": 7
     }
   },
   {
@@ -361,6 +410,26 @@
     }
   },
   {
+    "model": "webiscite.historicalbill",
+    "pk": 7,
+    "fields": {
+      "id": 7,
+      "created": "2026-02-16T12:00:00.000Z",
+      "modified": "2026-02-16T12:00:00.000Z",
+      "name": "The Draft Act",
+      "description": "This bill is a draft. It was created from a draft pull request and cannot be voted on until the PR is marked ready for review.",
+      "status": "draft",
+      "constitutional": false,
+      "author": 1,
+      "pull_request": -4,
+      "_submit_task": 7,
+      "history_date": "2026-02-16T12:00:00.000Z",
+      "history_change_reason": "",
+      "history_type": "+",
+      "history_user": null
+    }
+  },
+  {
     "model": "django_celery_beat.intervalschedule",
     "pk": 1,
     "fields": { "every": 7, "period": "days" }
@@ -435,79 +504,6 @@
       "args": "[6]",
       "enabled": false,
       "date_changed": "2024-02-20T12:00:22.856Z"
-    }
-  },
-  {
-    "model": "webiscite.pullrequest",
-    "pk": -4,
-    "fields": {
-      "created": "2026-02-16T12:00:00.000Z",
-      "modified": "2026-02-16T12:00:00.000Z",
-      "status": "open",
-      "draft": true,
-
-      "title": "The Draft Act",
-      "additions": 42,
-      "deletions": 7,
-      "diff_url": "https://github.com/mfosterw/cookiestocracy/pull/64.diff",
-      "author_name": "matthew",
-      "sha": "abc123"
-    }
-  },
-  {
-    "model": "webiscite.historicalpullrequest",
-    "pk": 4,
-    "fields": {
-      "created": "2026-02-16T12:00:00.000Z",
-      "modified": "2026-02-16T12:00:00.000Z",
-      "number": -4,
-      "title": "The Draft Act",
-      "additions": 42,
-      "deletions": 7,
-      "diff_url": "https://github.com/mfosterw/cookiestocracy/pull/64.diff",
-      "author_name": "matthew",
-      "status": "open",
-      "draft": true,
-      "sha": "abc123",
-      "history_date": "2026-02-16T12:00:00.000Z",
-      "history_change_reason": "",
-      "history_type": "+",
-      "history_user": null
-    }
-  },
-  {
-    "model": "webiscite.bill",
-    "pk": 7,
-    "fields": {
-      "created": "2026-02-16T12:00:00.000Z",
-      "modified": "2026-02-16T12:00:00.000Z",
-      "name": "The Draft Act",
-      "description": "This bill is a draft. It was created from a draft pull request and cannot be voted on until the PR is marked ready for review.",
-      "author": 1,
-      "pull_request": -4,
-      "status": "draft",
-      "constitutional": false,
-      "_submit_task": 7
-    }
-  },
-  {
-    "model": "webiscite.historicalbill",
-    "pk": 7,
-    "fields": {
-      "id": 7,
-      "created": "2026-02-16T12:00:00.000Z",
-      "modified": "2026-02-16T12:00:00.000Z",
-      "name": "The Draft Act",
-      "description": "This bill is a draft. It was created from a draft pull request and cannot be voted on until the PR is marked ready for review.",
-      "status": "draft",
-      "constitutional": false,
-      "author": 1,
-      "pull_request": -4,
-      "_submit_task": 7,
-      "history_date": "2026-02-16T12:00:00.000Z",
-      "history_change_reason": "",
-      "history_type": "+",
-      "history_user": null
     }
   },
   {
