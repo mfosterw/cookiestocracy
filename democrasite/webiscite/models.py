@@ -212,7 +212,7 @@ class Bill(TimeStampedModel):
             last_run_at=timezone.now(),
         )
         super().save()
-        self.log("Scheduled %s", self._submit_task.name)  # type: ignore[union-attr]
+        self.log("Scheduled %s", self._submit_task.name)
 
     def get_absolute_url(self) -> str:
         """Returns URL to view this Bill instance"""
@@ -277,28 +277,11 @@ class Bill(TimeStampedModel):
         else:
             return vote.support
 
-    def _schedule_submit_task(self) -> None:
-        """Create a periodic task to submit this bill after the voting period."""
-
-        voting_ends, __ = IntervalSchedule.objects.get_or_create(
-            every=settings.WEBISCITE_VOTING_PERIOD, period=IntervalSchedule.DAYS
-        )
-        self._submit_task = PeriodicTask.objects.create(
-            interval=voting_ends,
-            name=f"bill_submit:{self.id}",
-            task="democrasite.webiscite.tasks.submit_bill",
-            args=json.dumps([self.id]),
-            one_off=True,
-            last_run_at=timezone.now(),
-        )
-        super().save()
-        self.log("Scheduled %s", self._submit_task.name)
-
     def close(self, status: "Bill.Status" = Status.CLOSED) -> None:
         """Close the bill and disable its submit task"""
         self.status = status
         self.save()
-        self.log("Closed")
+        self.log(status)
 
         if self._submit_task is not None:
             self._submit_task.enabled = False
