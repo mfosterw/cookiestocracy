@@ -86,7 +86,7 @@ services:
     logging: *logging
 
   redis:
-    image: docker.io/redis:6
+    image: docker.io/redis:7
     networks:
       - backend
     logging: *logging
