@@ -207,6 +207,17 @@ class TestBill:
         assert bill._submit_task is not None  # noqa: SLF001
         assert bill._submit_task.enabled is False  # noqa: SLF001
 
+    def test_close_amended(self, bill: Bill):
+        assert bill._submit_task is not None  # noqa: SLF001
+        assert bill._submit_task.enabled is True  # noqa: SLF001
+
+        bill.close(status=Bill.Status.AMENDED)
+
+        bill.refresh_from_db()
+        assert bill.status == Bill.Status.AMENDED
+        assert bill._submit_task is not None  # noqa: SLF001
+        assert bill._submit_task.enabled is False  # noqa: SLF001
+
 
 class TestBillPublish:
     def test_publish(self):

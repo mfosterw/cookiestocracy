@@ -67,6 +67,8 @@ http:
       service: telemetry
       tls:
         certResolver: letsencrypt
+      observability:
+        accessLogs: false
 
   middlewares:
     csrf:

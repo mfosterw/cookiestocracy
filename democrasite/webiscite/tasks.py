@@ -5,10 +5,13 @@ Currently, the defined tasks are all related to processing pull requests
 from :func:`democrasite.webiscite.webhooks`.
 """
 
+from logging import WARNING
+
 import requests
 from celery import shared_task
 from celery.utils.log import get_task_logger
 from django.conf import settings
+from django.db import transaction
 from github import Auth
 from github import Github
 from github.Repository import Repository
@@ -20,6 +23,7 @@ logger = get_task_logger(__name__)
 
 
 @shared_task
+@transaction.atomic
 def submit_bill(bill_id: int) -> None:
     """Handles the final processing and closing of a bill
 
@@ -47,7 +51,7 @@ def submit_bill(bill_id: int) -> None:
     if merged:
         bill.log("Merged")
     else:
-        logger.warning("Bill %s failed to merge", bill.id)
+        bill.log("Failed to merge", level=WARNING)
         return
 
     # Automatically update constitution line numbers if necessary

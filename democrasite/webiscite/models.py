@@ -130,6 +130,7 @@ class Bill(TimeStampedModel):
         DRAFT = "draft", _("Draft")
         OPEN = "open", _("Open")
         APPROVED = "approved", _("Approved")
+        AMENDED = "amended", _("PR Amended")  # PR updated with new commits
         REJECTED = "rejected", _("Rejected")
         FAILED = "failed", _("Not Enough Votes")  # Failed to reach quorum
         # Translators: PR is short for "pull request"
@@ -180,8 +181,14 @@ class Bill(TimeStampedModel):
     def __str__(self) -> str:
         return f"Bill {self.id}: {self.name} ({self.pull_request})"
 
-    def log(self, msg, *args):
-        logger.info(f"Bill %s (#%s): {msg}", self.id, self.pull_request.number, *args)  # noqa: G004
+    def log(self, msg, *args, level=logging.INFO):
+        logger.log(
+            level,
+            f"Bill %s (#%s): {msg}",  # noqa: G004
+            self.id,
+            self.pull_request.number,
+            *args,
+        )
         # f-string necessary to let string interpolation work in msg
 
     def save(self, *args, **kwargs):
@@ -270,9 +277,26 @@ class Bill(TimeStampedModel):
         else:
             return vote.support
 
-    def close(self) -> None:
+    def _schedule_submit_task(self) -> None:
+        """Create a periodic task to submit this bill after the voting period."""
+
+        voting_ends, __ = IntervalSchedule.objects.get_or_create(
+            every=settings.WEBISCITE_VOTING_PERIOD, period=IntervalSchedule.DAYS
+        )
+        self._submit_task = PeriodicTask.objects.create(
+            interval=voting_ends,
+            name=f"bill_submit:{self.id}",
+            task="democrasite.webiscite.tasks.submit_bill",
+            args=json.dumps([self.id]),
+            one_off=True,
+            last_run_at=timezone.now(),
+        )
+        super().save()
+        self.log("Scheduled %s", self._submit_task.name)
+
+    def close(self, status: "Bill.Status" = Status.CLOSED) -> None:
         """Close the bill and disable its submit task"""
-        self.status = self.Status.CLOSED
+        self.status = status
         self.save()
         self.log("Closed")
 
