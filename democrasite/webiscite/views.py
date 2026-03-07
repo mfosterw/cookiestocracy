@@ -100,7 +100,7 @@ class BillDetailView(DetailView):
             return get_object_or_404(
                 Bill.objects.annotate_user_vote(self.request.user), pk=pk
             )
-        return get_object_or_404(Bill)
+        return get_object_or_404(Bill, pk=pk)
 
 
 bill_detail_view = BillDetailView.as_view()

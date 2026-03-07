@@ -115,6 +115,13 @@ class TestBillDetailView:
         response = views.bill_detail_view(request, pk=bill.id)
         assert response.status_code == HTTPStatus.OK
 
+    def test_bill_retrieved(self, rf: RequestFactory):
+        bills = BillFactory.create_batch(5)
+        request = rf.get("/fake-url/")
+        request.user = AnonymousUser()
+        response = views.bill_detail_view(request, pk=bills[3].id)
+        assert response.status_code == HTTPStatus.OK
+
     def test_404(self, rf: RequestFactory):
         request = rf.get("/fake-url/")
         request.user = AnonymousUser()
