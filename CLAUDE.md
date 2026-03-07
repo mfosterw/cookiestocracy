@@ -8,7 +8,7 @@ Democrasite is a Django web application that implements democratic voting on Git
 
 ## Tech Stack
 
-- **Python 3.12 / Django 5.x** with PostgreSQL, Redis, Celery
+- **Python 3.13 / Django 5.x** with PostgreSQL, Redis, Celery
 - **Docker Compose** for local development (all commands run inside containers)
 - **Django REST Framework** with JWT auth and drf-spectacular for API docs
 - **django-allauth** for GitHub/Google OAuth
@@ -35,6 +35,7 @@ just loaddata                 # Load fixtures (democrasite + activitypub)
 ```
 
 To run a single test file or test:
+
 ```bash
 just run pytest democrasite/webiscite/tests/test_models.py
 just run pytest democrasite/webiscite/tests/test_models.py::TestBill::test_method_name -v
