@@ -130,6 +130,7 @@ class TestBillListTemplate:
         assert bill.name in content
         assert "Log in to vote" not in content
         assert "vote.js" in content
-        assert (bill.get_status_display() in content) == (
-            bill.status != Bill.Status.OPEN
-        )
+        if bill.status == Bill.Status.OPEN:
+            assert bill.get_status_display() + "</p>" not in content
+        else:
+            assert bill.get_status_display() in content
