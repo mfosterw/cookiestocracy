@@ -66,7 +66,7 @@ services:
     # logging: *loki-logging
 
   redis:
-    image: docker.io/redis:6
+    image: docker.io/redis:7
     container_name: democrasite-local-redis
     # logging: *loki-logging
 

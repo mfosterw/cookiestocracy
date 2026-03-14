@@ -20,7 +20,7 @@ updates:
     # Every Monday
     schedule:
       interval: "weekly"
-    # Ignore minor version updates (3.12 -> 3.13) but update patch versions
+    # Ignore minor version updates (3.13 -> 3.14) but update patch versions
     ignore:
       - dependency-name: "*"
         update-types:
