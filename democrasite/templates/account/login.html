@@ -12,7 +12,17 @@
   <p>{% blocktrans %}Please log in or sign up with a third party account.{% endblocktrans %}</p>
   <div class="socialaccount_ballot">
     <ul class="socialaccount_providers">
-      {% include "socialaccount/snippets/provider_list.html" with process="login" %}
+      {% for provider in socialaccount_providers %}
+        <li>
+          {# For security, we use POST to log the user in #}
+          <form action="{% provider_login_url provider.id next=request.path %}"
+                method="post">
+            {% csrf_token %}
+            <button type="submit"
+                    class="btn btn-link py-0 socialaccount_provider {{ provider.id }}">{{ provider.name }}</button>
+          </form>
+        {% endfor %}
+      </li>
     </ul>
   </div>
   {% providers_media_js %}
