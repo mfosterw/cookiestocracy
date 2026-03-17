@@ -30,7 +30,7 @@ def submit_bill(bill_id: int) -> None:
     When the voting period of a bill ends, this method is called with the id of that
     bill. It verifies that the bill is still active and counts the votes. If the bill
     has enough votes to pass (which varies depending on whether or not it's
-    constitutional), it is merged into the master branch of the repository.
+    constitutional), it is merged into the main branch of the repository.
     Finally, no regardless of the status of the bill, the pull request is closed.
 
     Args:

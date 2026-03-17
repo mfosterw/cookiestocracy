@@ -140,7 +140,7 @@ Automating Your Repository
 --------------------------
 
 When a :class:`~democrasite.webiscite.models.Bill` passes, the corresponding pull
-request is automatically merged into the master branch, and if code blocks from the
+request is automatically merged into the main branch, and if code blocks from the
 Constitution are moved, their locations are automatically updated in the remote
 ``constitution.json``. In order to test this functionality in your fork of the
 repository, you will need to `create a Github personal access token`_ and include it in

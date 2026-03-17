@@ -38,7 +38,7 @@ created (i.e. the pull request has not been edited), then counts the votes for
 and against that Bill.
 
 If the votes for the Bill pass the threshold, the pull request is merged into
-the master branch on Github and automatically deployed, officially making it
+the main branch on Github and automatically deployed, officially making it
 part of Democrasite.
 
 If new commits are pushed to a pull request while a Bill is open for voting,
