@@ -34,4 +34,4 @@ pytest-django==4.12.0  # https://github.com/pytest-dev/pytest-django
 
 # Containers
 # ------------------------------------------------------------------------------
-rust-just==1.46.0  # https://github.com/casey/just
+rust-just==1.47.0  # https://github.com/casey/just
