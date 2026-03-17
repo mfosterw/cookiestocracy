@@ -12,7 +12,7 @@ Democrasite
 .. |Continuous integration| image:: https://github.com/mfosterw/cookiestocracy/actions/workflows/ci.yml/badge.svg
      :target: https://github.com/mfosterw/cookiestocracy/actions/workflows/ci.yml
 
-.. |Coverage report| image:: https://codecov.io/gh/mfosterw/cookiestocracy/branch/master/graph/badge.svg?token=NPV1TLXZIW
+.. |Coverage report| image:: https://codecov.io/gh/mfosterw/cookiestocracy/graph/badge.svg?token=NPV1TLXZIW
      :target: https://codecov.io/gh/mfosterw/cookiestocracy
 
 .. |Documentation status| image:: https://readthedocs.org/projects/cookiestocracy/badge/?version=latest
