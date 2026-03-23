@@ -74,7 +74,7 @@ following the instructions in the guide.
 Understanding the repository
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Check out ``repo_map.txt`` in the root of the repository for a display of the
+Check out ``repository_map.txt`` in the root of the repository for a display of the
 repository layout and brief explanations for the purpose of each non-obvious file and
 directory.
 
@@ -114,8 +114,8 @@ Setting up your users
   how the site behaves for both kinds of users.
 
 .. _`django-allauth`: https://docs.allauth.org/en/latest/introduction/index.html
-.. _`GitHub`: https://django-allauth.readthedocs.io/en/latest/providers.html#github
-.. _`Google`: https://docs.allauth.org/en/latest/socialaccount/providers/github.html
+.. _`GitHub`: https://docs.allauth.org/en/latest/socialaccount/providers/github.html
+.. _`Google`: https://docs.allauth.org/en/latest/socialaccount/providers/google.html
 
 Linting
 ^^^^^^^

@@ -27,10 +27,14 @@ creates a :class:`~democrasite.webiscite.models.PullRequest` instance.
 
 If the user who created the pull request has a democrasite account, a new
 :class:`~democrasite.webiscite.models.Bill`
-is created with the information from the pull request and made visible on the
-homepage immediately. A :class:`~django_celery_beat.models.PeriodicTask` is
-also scheduled to execute :func:`~democrasite.webiscite.tasks.submit_bill`
-once the voting period ends.
+is created with the information from the pull request. If the pull request is
+still a GitHub draft, the bill stays in ``DRAFT`` status (no voting) until the
+PR is marked ready for review, which publishes it via
+:meth:`~democrasite.webiscite.webhooks.PullRequestHandler.ready_for_review`.
+Otherwise the bill is ``OPEN`` on the homepage. A
+:class:`~django_celery_beat.models.PeriodicTask` is scheduled to execute
+:func:`~democrasite.webiscite.tasks.submit_bill` once the voting period ends
+(enabled when the bill leaves ``DRAFT``).
 
 :func:`~democrasite.webiscite.tasks.submit_bill` verifies that the pull
 request is still open and that its SHA has not changed since the bill was
