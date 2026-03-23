@@ -73,9 +73,9 @@ word or are not familiar with a tool, google it!
 │   ├── urls.py  // base url definitions for all apps
 │   └── wsgi.py  // django app definition
 ├── democrasite  // main project directory. Apps live in here.
-│   ├── activitypub  // social/microblog app
+│   ├── social  // social/microblog app
 │   │   ├── fixtures  // sample data for use with the "loaddata" management command
-│   │   │   └── activitypub.json
+│   │   │   └── social.json
 │   │   ├── migrations  // database definitions and changes, created by django migration commands
 │   │   │   ├── __init__.py
 │   │   │   └── 0001_initial.py
@@ -115,7 +115,7 @@ word or are not familiar with a tool, google it!
 │   │   │   └── favicons  // site icon
 │   │   │       └── favicon.ico
 │   │   └── js  // scripts
-│   │       ├── note_interact.js  // activitypub
+│   │       ├── note_interact.js  // social
 │   │       ├── person_follow.js  //social
 │   │       ├── project.js  // all apps
 │   │       └── vote.js  // webiscite
@@ -138,7 +138,7 @@ word or are not familiar with a tool, google it!
 │   │   │   ├── signup.html
 │   │   │   ├── verification_sent.html
 │   │   │   └── verified_email_required.html
-│   │   ├── activitypub
+│   │   ├── social
 │   │   │   ├── snippets  // html snippets to include in other templates
 │   │   │   │   ├── note_list.html
 │   │   │   │   └── note.html
