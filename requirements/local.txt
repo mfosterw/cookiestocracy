@@ -6,7 +6,7 @@ watchfiles==1.1.1  # https://github.com/samuelcolvin/watchfiles
 
 # Testing
 # ------------------------------------------------------------------------------
-django-stubs[compatible-mypy]==5.2.9  # https://github.com/typeddjango/django-stubs
+django-stubs[compatible-mypy]==6.0.1  # https://github.com/typeddjango/django-stubs
 pytest==9.0.2  # https://github.com/pytest-dev/pytest
 pytest-sugar==1.1.1  # https://github.com/Frozenball/pytest-sugar
 djangorestframework-stubs[compatible-mypy]==3.16.8  # https://github.com/typeddjango/djangorestframework-stubs
@@ -19,8 +19,8 @@ sphinxcontrib-django==2.5  # https://github.com/sphinx-doc/sphinxcontrib-django
 
 # Code quality
 # ------------------------------------------------------------------------------
-ruff==0.15.6  # https://github.com/astral-sh/ruff
-pytest-cov==7.0.0  # https://github.com/pytest-dev/pytest-cov
+ruff==0.15.7  # https://github.com/astral-sh/ruff
+pytest-cov==7.1.0  # https://github.com/pytest-dev/pytest-cov
 djlint==1.36.4  # https://github.com/Riverside-Healthcare/djLint
 pre-commit==4.5.1  # https://github.com/pre-commit/pre-commit
 
@@ -34,4 +34,4 @@ pytest-django==4.12.0  # https://github.com/pytest-dev/pytest-django
 
 # Containers
 # ------------------------------------------------------------------------------
-rust-just==1.47.0  # https://github.com/casey/just
+rust-just==1.47.1  # https://github.com/casey/just
