@@ -22,7 +22,7 @@ All development uses Docker. The `justfile` sets `COMPOSE_FILE=docker-compose.lo
 just build                    # Build Docker images
 just up                       # Start all containers
 just down                     # Stop containers
-just test                     # Run pytest suite
+just test <args>              # Run pytest suite
 just lint                     # Run pre-commit hooks
 just typecheck                # Run mypy
 just manage <args>            # Run manage.py (e.g., just manage makemigrations)
@@ -34,12 +34,14 @@ just run <cmd>                # Execute arbitrary command in django container
 just loaddata                 # Load fixtures (democrasite + social)
 ```
 
-To run a single test file or test:
+To run a single test:
 
 ```bash
-just run pytest democrasite/webiscite/tests/test_models.py
-just run pytest democrasite/webiscite/tests/test_models.py::TestBill::test_method_name -v
+just test democrasite/webiscite/tests/test_models.py::TestBill::test_method_name -v
 ```
+
+For any `just` command, prefer running outside the sandbox to avoid `docker.sock`
+permission errors. If `just` is not found, run `conda env democrasite` first.
 
 Pytest is configured with `--ds=config.settings.test --reuse-db` in `pyproject.toml`.
 
