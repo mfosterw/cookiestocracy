@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block title %}
+  {% block sub_title %}
+  {% endblock sub_title %}
+  - ActivityPub on Democrasite
+{% endblock title %}
+
+{% block nav_user_pages %}
+  <li class="nav-item">
+    <a class="nav-link" href="{% url 'social:note-list' %}">Notes</a>
+  </li>
+  {% if user.person %}
+    <li class="nav-item">
+      <a class="nav-link" href="{% url 'social:following-notes' %}">Following</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link"
+         href="{% url 'social:person-detail' username=user.username %}">Profile</a>
+    </li>
+  {% else %}
+    <form class="form-inline"
+          action="{% url 'social:person-create' %}"
+          method="post">
+      {% csrf_token %}
+      <button class="btn btn-link nav-link" type="submit">Create Profile</button>
+    </form>
+  {% endif %}
+
+  {# Add profile links #}
+{% endblock nav_user_pages %}
+
+{% block content %}
+  {% block social_content %}
+  {% endblock social_content %}
+
+  {% if user.is_authenticated %}
+    <div class="note-create text-center mb-3">
+      {% if user.person %}
+        <a href="{% url 'social:note-create' %}"
+           class="btn btn-dark rounded-pill">Create Note</a>
+      {% else %}
+        <form action="{% url 'social:person-create' %}" method="post">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-dark rounded-pill">Create Profile</button>
+        </form>
+      {% endif %}
+    </div>
+  {% endif %}
+{% endblock content %}
+
+{% block extra_css %}
+  <link href="{% static 'css/social.css' %}" rel="stylesheet" />
+{% endblock extra_css %}
+
+{% if user.person %}
+  {% block inline_javascript %}
+    <script type="text/javascript" src="{% static 'js/note_interact.js' %}"></script>
+  {% endblock inline_javascript %}
+{% endif %}

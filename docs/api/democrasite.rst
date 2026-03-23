@@ -12,7 +12,7 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
-   democrasite.activitypub
+   democrasite.social
    democrasite.users
    democrasite.webiscite
 

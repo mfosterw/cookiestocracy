@@ -1,0 +1,22 @@
+{% extends "social/note_list.html" %}
+
+{% block sub_title %}
+  Note by {{ note.author }}
+{% endblock sub_title %}
+
+{% block social_content %}
+
+  <div class="row justify-content-center">
+    <div class="justify-content-center col-10 mb-3">
+      {% if note.get_ancestors %}
+        {% with note_list=note.get_ancestors empty_message="" %}{{ block.super }}{% endwith %}
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="row justify-content-center mb-3">
+    <div class="col-8">{% include "social/snippets/note.html" with detail=True %}</div>
+  </div>
+
+  {% with note_list=note.get_children empty_message="No replies yet." %}{{ block.super }}{% endwith %}
+{% endblock social_content %}

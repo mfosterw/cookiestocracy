@@ -2,7 +2,7 @@
 name: docs
 description: Update, review, or build the Sphinx documentation for Democrasite
 disable-model-invocation: true
-argument-hint: "[what to update or check, e.g. 'review for accuracy' or 'add activitypub section']"
+argument-hint: "[what to update or check, e.g. 'review for accuracy' or 'add social section']"
 ---
 
 ## Task
@@ -30,7 +30,7 @@ docs/
     ├── democrasite.webiscite.views.rst
     ├── democrasite.webiscite.api.rst
     ├── democrasite.users.rst
-    ├── democrasite.activitypub.rst
+    ├── democrasite.social.rst
     └── … (one file per module)
 ```
 

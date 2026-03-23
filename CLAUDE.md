@@ -31,7 +31,7 @@ just coverage                 # Run tests with coverage + open HTML report
 just shell                    # Bash shell in django container
 just pyshell                  # Django shell_plus (IPython)
 just run <cmd>                # Execute arbitrary command in django container
-just loaddata                 # Load fixtures (democrasite + activitypub)
+just loaddata                 # Load fixtures (democrasite + social)
 ```
 
 To run a single test file or test:
@@ -49,7 +49,7 @@ Pytest is configured with `--ds=config.settings.test --reuse-db` in `pyproject.t
 
 - **`democrasite/webiscite/`** — Core app. Models: `PullRequest`, `Bill`, `Vote`. Handles GitHub webhooks, voting logic, constitution enforcement, and Celery tasks for auto-merging.
 - **`democrasite/users/`** — Custom `User` model (extends `AbstractUser` with single `name` field instead of first/last). OAuth integration.
-- **`democrasite/activitypub/`** — ActivityPub federation. Models: `Person` (linked to User with keypair), `Follow`.
+- **`democrasite/social/`** — Social network for short notes. Models: `Person` (linked to User with keypair), `Follow`.
 
 ### Configuration
 
