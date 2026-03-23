@@ -73,7 +73,7 @@ word or are not familiar with a tool, google it!
 │   ├── urls.py  // base url definitions for all apps
 │   └── wsgi.py  // django app definition
 ├── democrasite  // main project directory. Apps live in here.
-│   ├── activitypub  // activitypub/microblog app
+│   ├── activitypub  // social/microblog app
 │   │   ├── fixtures  // sample data for use with the "loaddata" management command
 │   │   │   └── activitypub.json
 │   │   ├── migrations  // database definitions and changes, created by django migration commands
@@ -108,7 +108,7 @@ word or are not familiar with a tool, google it!
 │   │   ├── css  // styling. Files named after template folders are imported in that
 │   │   │   │    // folder's respective "base.html".
 │   │   │   ├── about.css
-│   │   │   ├── activitypub.css
+│   │   │   ├── social.css
 │   │   │   ├── project.css
 │   │   │   └── webiscite.css
 │   │   ├── images
@@ -116,7 +116,7 @@ word or are not familiar with a tool, google it!
 │   │   │       └── favicon.ico
 │   │   └── js  // scripts
 │   │       ├── note_interact.js  // activitypub
-│   │       ├── person_follow.js  //activitypub
+│   │       ├── person_follow.js  //social
 │   │       ├── project.js  // all apps
 │   │       └── vote.js  // webiscite
 │   ├── templates  // html templates to render and display. Files with the ".html"

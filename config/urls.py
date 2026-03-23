@@ -23,10 +23,8 @@ urlpatterns = [
     # User management
     path("users/", include("democrasite.users.urls", namespace="users")),
     path("accounts/", include("allauth.urls")),
-    # ActivityPub
-    path(
-        "activitypub/", include("democrasite.activitypub.urls", namespace="activitypub")
-    ),
+    # Social
+    path("social/", include("democrasite.social.urls", namespace="social")),
     # webiscite
     path("", include("democrasite.webiscite.urls", namespace="webiscite")),
     # Media files

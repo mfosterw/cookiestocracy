@@ -1,0 +1,52 @@
+<div class="note">
+  <p class="mb-1">{{ note.content }}</p>
+  <small>Posted by: <a href="{% url 'social:person-detail' username=note.author.display_name %}">{{ note.author }}</a> on {{ note.created|date:"Y-m-d H:i" }}</small>
+  {% if note.repost_person %}
+    <br />
+    <small class="pt-0 ms-3">Reposted by: <a href="{% url 'social:person-detail' username=note.repost_person %}">{{ note.repost_person }}</a> on {{ note.repost_time|date:"Y-m-d H:i" }}</small>
+  {% endif %}
+  {% if note.in_reply_to %}
+    <br />
+    <small>In reply to: <a href="{% url 'social:note-detail' note.in_reply_to.id %}">{{ note.in_reply_to.content|truncatewords:10 }}</a></small>
+  {% endif %}
+  {% if user.person %}
+    <br />
+    <div class="d-inline-flex note-interaction-wrapper">
+      <a href="javascript:;"
+         class="me-1 link-underline link-underline-opacity-0 note-interaction"
+         title="Like this note">
+        <i class="bi
+                  {% if user.person in note.likes.all %}
+                    bi-heart-fill
+                  {% else %}
+                    bi-heart
+                  {% endif %}
+                  text-danger note-like"
+           action="{{ note.get_like_url }}"></i>
+      </a>
+      <small class="text-secondary note-like-count">{{ note.likes.count }}</small>
+    </div>
+    <div class="d-inline-flex note-interaction-wrapper">
+      <a href="javascript:;"
+         class="me-1 link-underline link-underline-opacity-0 note-interaction"
+         title="Repost this note">
+        <i class="bi bi-repeat
+                  {% if user.person in note.reposts.all %}
+                    text-success
+                  {% else %}
+                    text-secondary
+                  {% endif %}
+                  note-repost"
+           action="{{ note.get_repost_url }}"></i>
+      </a>
+      <small class="text-secondary note-repost-count">{{ note.reposts.count }}</small>
+    </div>
+    <a class="float-end text-secondary"
+       href="{% url 'social:note-reply' note.id %}">
+      <small>Reply</small>
+    </a>
+  {% endif %}
+  {% if not detail %}
+    <a href="{% url 'social:note-detail' note.id %}" class="stretched-link"></a>
+  {% endif %}
+</div>

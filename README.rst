@@ -94,7 +94,7 @@ Loading initial data
 
 To load some initial sample data into the database, run::
 
-    $ python manage.py loaddata democrasite activitypub
+    $ python manage.py loaddata democrasite social
 
 Setting up your users
 ^^^^^^^^^^^^^^^^^^^^^
