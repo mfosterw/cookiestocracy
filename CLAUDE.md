@@ -60,9 +60,9 @@ Pytest is configured with `--ds=config.settings.test --reuse-db` in `pyproject.t
 
 ### Key Patterns
 
-- **Constitution system** (`webiscite/constitution.py`, `constitution.json`): Maps files to protected line ranges. PRs touching protected code become "constitutional" bills requiring supermajority. Line numbers auto-update after merges.
-- **Bill lifecycle**: OPEN → APPROVED/REJECTED/FAILED/CLOSED. Each Bill has a OneToOne to a Celery `PeriodicTask` that runs `submit_bill()` at voting period end.
-- **Webhook flow** (`webiscite/webhooks.py`): GitHub push events → HMAC validation → create/update `PullRequest` → create `Bill`.
+- **Constitution system** (`democrasite/webiscite/constitution.py`, repo-root `constitution.json`): Maps files to protected line ranges. PRs touching protected code become "constitutional" bills requiring supermajority. Line numbers auto-update after merges.
+- **Bill lifecycle**: Draft PRs yield `DRAFT` bills until `ready_for_review`; then `OPEN` → APPROVED/REJECTED/FAILED/CLOSED (or `AMENDED` if the PR branch changes during voting). Each Bill has a OneToOne to a Celery Beat `PeriodicTask` that runs `submit_bill()` at voting period end.
+- **Webhook flow** (`democrasite/webiscite/webhooks.py`): GitHub `pull_request` webhooks (open, reopen, close, synchronize, ready_for_review, etc.) → HMAC validation → create/update `PullRequest` and `Bill` as appropriate. `push` and `ping` are accepted with minimal handling.
 - **Vote constraints**: One vote per user per bill (DB unique constraint). Votes can be changed.
 - **Audit trail**: `django-simple-history` tracks changes on key models.
 
