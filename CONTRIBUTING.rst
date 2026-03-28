@@ -120,8 +120,8 @@ Creating a Webhook
 
 :obj:`democrasite.webiscite` needs `webhooks`_ to find out about events on
 Github. `Create a webhook`_ in your fork of the repository, then generate a
-secret key for your hook and store it in your environment (either through your
-terminal or ``.env`` file) as ``GITHUB_SECRET_KEY``.
+secret key for your hook and store it in ``.envs/.local/.django`` (or your shell) as
+``GITHUB_WEBHOOK_SECRET`` so it matches the secret configured on GitHub.
 
 To test your webhook, follow these `instructions`_. (If you have a preferred
 tool for exposing your local server, feel free to replace smee with it.) If you

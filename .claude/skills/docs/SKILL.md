@@ -41,14 +41,15 @@ All run from the `docs/` directory (or with `make -C docs <target>`):
 | Command | What it does |
 |---|---|
 | `make apidocs` | Regenerate all `docs/api/*.rst` from source using sphinx-apidoc. Run this whenever Python modules are added or removed. |
-| `make livehtml` | Build docs and serve with live reload at http://localhost:9000. Requires the docs Docker container (`docker compose -f docker-compose.docs.yml up`). |
+| `make livehtml` | Build docs and serve with live reload at http://localhost:9000. Run inside the `docs` service (started with `just up`; see `docker-compose.local.yml`). |
 | `make clean` | Remove `_build/` and `api/` directories for a fresh build. |
 | `make html` | One-off HTML build into `_build/html/`. |
 
-To serve with live reload locally (in Docker):
+To serve with live reload locally (in Docker), start the stack so the `docs` service runs (from repo root):
 ```
-docker compose -f docker-compose.docs.yml up
+just up
 ```
+The `docs` container runs `make livehtml` via `compose/local/django/start-docs`.
 
 To regenerate API docs locally (sphinx-apidoc must be installed):
 ```
@@ -98,7 +99,7 @@ Line length: 88 characters (enforced by ruff). Wrap long docstring lines to stay
    - `:class:\`~democrasite.webiscite.models.Bill\`` — class link
    - `:func:\`~democrasite.webiscite.tasks.submit_bill\`` — function link
    - `:meth:\`~democrasite.webiscite.webhooks.PullRequestHandler.opened\`` — method link
-3. Verify the build: `docker compose -f docker-compose.docs.yml up`
+3. Verify the build: `just up` and open http://localhost:9000/
 
 ### Adding a new Python module
 1. Write a module-level docstring at the top of the file
