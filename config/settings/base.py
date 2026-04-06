@@ -102,7 +102,7 @@ LOCAL_APPS = [
     # Custom apps
     "democrasite.users",
     "democrasite.webiscite",
-    "democrasite.activitypub",
+    "democrasite.social",
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS

@@ -22,7 +22,7 @@
 
         {% if user.person %}
           <a class="btn btn-success"
-             href="{% url 'activitypub:person-detail' user.username %}">{% trans "ActivityPub" %}</a>
+             href="{% url 'social:person-detail' user.username %}">{% trans "ActivityPub" %}</a>
         {% endif %}
       </div>
     </div>

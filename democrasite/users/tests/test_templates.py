@@ -17,7 +17,7 @@ from django.views.defaults import page_not_found
 from django.views.defaults import permission_denied
 from django.views.defaults import server_error
 
-from democrasite.activitypub.tests.factories import PersonFactory
+from democrasite.social.tests.factories import PersonFactory
 from democrasite.users.models import User
 from democrasite.users.tests.factories import UserFactory
 

@@ -2,6 +2,14 @@ The documentation in this file is meant to be very brief. If you don't understan
 word or are not familiar with a tool, google it!
 
 .
+├── .claude  // Claude Code agent skills (optional local tooling)
+│   └── skills
+│       ├── docs
+│       │   └── SKILL.md
+│       ├── new-bill-feature
+│       │   └── SKILL.md
+│       └── test-webhook
+│           └── SKILL.md
 ├── .devcontainer  // devcontainer files
 │   ├── bashrc.override.sh  // bash initialization
 │   └── devcontainer.json  // devcontainer config
@@ -60,7 +68,7 @@ word or are not familiar with a tool, google it!
 │       └── traefik  // reverse proxy and load balancer
 │           ├── Dockerfile
 │           └── traefik.yml
-├── config  // django configuration and app defintion
+├── config  // django configuration and app definition
 │   ├── settings  // django settings files. See https://docs.djangoproject.com/en/dev/ref/settings/
 │   │   ├── __init__.py
 │   │   ├── base.py  // common settings shared between environments
@@ -73,12 +81,14 @@ word or are not familiar with a tool, google it!
 │   ├── urls.py  // base url definitions for all apps
 │   └── wsgi.py  // django app definition
 ├── democrasite  // main project directory. Apps live in here.
-│   ├── activitypub  // activitypub/microblog app
+│   ├── social  // social/microblog app
 │   │   ├── fixtures  // sample data for use with the "loaddata" management command
-│   │   │   └── activitypub.json
+│   │   │   └── social.json
 │   │   ├── migrations  // database definitions and changes, created by django migration commands
 │   │   │   ├── __init__.py
-│   │   │   └── 0001_initial.py
+│   │   │   ├── 0001_initial.py
+│   │   │   ├── 0002_historicalnote_historicallike_historicalperson_and_more.py
+│   │   │   └── 0003_alter_person_following.py
 │   │   ├── tests
 │   │   │   ├── __init__.py
 │   │   │   ├── conftest.py  // test configuration and fixtures definitions
@@ -108,15 +118,15 @@ word or are not familiar with a tool, google it!
 │   │   ├── css  // styling. Files named after template folders are imported in that
 │   │   │   │    // folder's respective "base.html".
 │   │   │   ├── about.css
-│   │   │   ├── activitypub.css
+│   │   │   ├── social.css
 │   │   │   ├── project.css
 │   │   │   └── webiscite.css
 │   │   ├── images
 │   │   │   └── favicons  // site icon
 │   │   │       └── favicon.ico
 │   │   └── js  // scripts
-│   │       ├── note_interact.js  // activitypub
-│   │       ├── person_follow.js  //activitypub
+│   │       ├── note_interact.js  // social
+│   │       ├── person_follow.js  //social
 │   │       ├── project.js  // all apps
 │   │       └── vote.js  // webiscite
 │   ├── templates  // html templates to render and display. Files with the ".html"
@@ -138,7 +148,7 @@ word or are not familiar with a tool, google it!
 │   │   │   ├── signup.html
 │   │   │   ├── verification_sent.html
 │   │   │   └── verified_email_required.html
-│   │   ├── activitypub
+│   │   ├── social
 │   │   │   ├── snippets  // html snippets to include in other templates
 │   │   │   │   ├── note_list.html
 │   │   │   │   └── note.html
@@ -211,7 +221,12 @@ word or are not familiar with a tool, google it!
 │   │   │   ├── __init__.py
 │   │   │   ├── 0001_initial.py
 │   │   │   ├── 0002_remove_bill_submit_task_bill__submit_task.py
-│   │   │   └── 0003_vote_unique_user_bill_vote.py
+│   │   │   ├── 0003_vote_unique_user_bill_vote.py
+│   │   │   ├── 0004_remove_bill_status_changed_and_more.py
+│   │   │   ├── 0005_alter_bill_name_alter_historicalbill_name_and_more.py
+│   │   │   ├── 0006_remove_bill_unique_open_pull_request_and_more.py
+│   │   │   ├── 0007_alter_bill__submit_task.py
+│   │   │   └── 0008_alter_bill_status_alter_historicalbill_status.py
 │   │   ├── tests
 │   │   │   ├── api
 │   │   │   │   ├── __init__.py
@@ -232,11 +247,12 @@ word or are not familiar with a tool, google it!
 │   │   ├── apps.py  // app definition
 │   │   ├── constitution.py  // constitution parsing and processing
 │   │   ├── context_processors.py  // template context processors
+│   │   ├── managers.py  // custom managers/querysets (e.g. bill annotations)
 │   │   ├── models.py  // database and ORM object definitions
 │   │   ├── tasks.py  // asynchronous tasks to run with celery
 │   │   ├── urls.py  // app url route definitions
-│   │   └── views.py  // route behavior definitions
-│   │   └── webhooks.py  // webhook route behavior, e.g. github pr opened
+│   │   ├── views.py  // route behavior definitions
+│   │   └── webhooks.py  // GitHub webhook handling (pull_request, push, ping)
 │   ├── __init__.py
 │   └── conftest.py  // global test configuration and fixture definitions
 ├── docs  // documentation setup and files
@@ -244,17 +260,18 @@ word or are not familiar with a tool, google it!
 │   │   ├── *
 │   ├── __init__.py
 │   ├── conf.py  // sphinx configuration file
+│   ├── CONTRIBUTING.rst  // contributing guide (included in Sphinx toctree)
 │   ├── howto.rst  // instructions for creating docs
 │   ├── index.rst
 │   ├── make.bat  // build commands for sphinx using windows
 │   ├── Makefile  // build commands for sphinx
-│   ├── readthedocs.db  // dummy database for local development
+│   ├── README.rst  // project overview (mirrors root README for RTD)
 │   ├── users.rst
 │   └── webiscite.rst
 ├── locale  // translations
 │   └── README.rst
 ├── requirements  // python dependencies
-│   ├── base.txt  // base dependencies shared across enviornments
+│   ├── base.txt  // base dependencies shared across environments
 │   ├── local.txt  // local development
 │   └── production.txt  // production deployment
 ├── .dockerignore  // files not to copy into docker containers
@@ -263,12 +280,14 @@ word or are not familiar with a tool, google it!
 ├── .gitignore  // files which should not be tracked by git
 ├── .pre-commit-config.yaml  // configuration for linting and checks to run before each commit
 ├── .readthedocs.yml  // configuration for documentation website
+├── CLAUDE.md  // guidance for Claude Code / AI assistants working in this repo
 ├── constitution.json  // constitution definition, see about page
 ├── CONTRIBUTING.rst  // contributing guide
 ├── CONTRIBUTORS.txt  // list of project contributors. Be sure to add yourself!
 │   // dockerfiles for docker compose live in "compose/"
 ├── docker-compose.local.yml  // docker compose configuration for local development
 ├── docker-compose.production.yml  // docker compose configuration for production deployment
+├── docker-compose.telemetry.yml  // Prometheus, Loki, Tempo, Grafana (expects external compose networks)
 ├── justfile  // command shortcuts for local development NOT using devcontainer
 ├── LICENSE  // Legal permissible uses of the software. MIT license is very liberal
 ├── manage.py  // file for running django management commands
@@ -276,8 +295,8 @@ word or are not familiar with a tool, google it!
 ├── README.rst  // general info and introduction to project
 └── repository_map.txt  // documentation about the layout and purpose of the repository (this file!)
 
-63 directories, 228 files  // that's kinda a lot ngl
+71 directories, 260 files
 
 This file was generated using:
-rg --files --hidden --ignore --glob '!.git/' "$@" | tree --fromfile --dirsfirst -a
+git ls-files | tree --fromfile --dirsfirst -a
 and annotated by hand. Other methods generally ignore too few or too many files.

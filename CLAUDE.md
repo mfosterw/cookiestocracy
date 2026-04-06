@@ -22,7 +22,7 @@ All development uses Docker. The `justfile` sets `COMPOSE_FILE=docker-compose.lo
 just build                    # Build Docker images
 just up                       # Start all containers
 just down                     # Stop containers
-just test                     # Run pytest suite
+just test <args>              # Run pytest suite
 just lint                     # Run pre-commit hooks
 just typecheck                # Run mypy
 just manage <args>            # Run manage.py (e.g., just manage makemigrations)
@@ -31,15 +31,17 @@ just coverage                 # Run tests with coverage + open HTML report
 just shell                    # Bash shell in django container
 just pyshell                  # Django shell_plus (IPython)
 just run <cmd>                # Execute arbitrary command in django container
-just loaddata                 # Load fixtures (democrasite + activitypub)
+just loaddata                 # Load fixtures (democrasite + social)
 ```
 
-To run a single test file or test:
+To run a single test:
 
 ```bash
-just run pytest democrasite/webiscite/tests/test_models.py
-just run pytest democrasite/webiscite/tests/test_models.py::TestBill::test_method_name -v
+just test democrasite/webiscite/tests/test_models.py::TestBill::test_method_name -v
 ```
+
+For any `just` command, prefer running outside the sandbox to avoid `docker.sock`
+permission errors. If `just` is not found, run `conda env democrasite` first.
 
 Pytest is configured with `--ds=config.settings.test --reuse-db` in `pyproject.toml`.
 
@@ -49,7 +51,7 @@ Pytest is configured with `--ds=config.settings.test --reuse-db` in `pyproject.t
 
 - **`democrasite/webiscite/`** — Core app. Models: `PullRequest`, `Bill`, `Vote`. Handles GitHub webhooks, voting logic, constitution enforcement, and Celery tasks for auto-merging.
 - **`democrasite/users/`** — Custom `User` model (extends `AbstractUser` with single `name` field instead of first/last). OAuth integration.
-- **`democrasite/activitypub/`** — ActivityPub federation. Models: `Person` (linked to User with keypair), `Follow`.
+- **`democrasite/social/`** — Social network for short notes. Models: `Person` (linked to User with keypair), `Follow`.
 
 ### Configuration
 
@@ -60,9 +62,9 @@ Pytest is configured with `--ds=config.settings.test --reuse-db` in `pyproject.t
 
 ### Key Patterns
 
-- **Constitution system** (`webiscite/constitution.py`, `constitution.json`): Maps files to protected line ranges. PRs touching protected code become "constitutional" bills requiring supermajority. Line numbers auto-update after merges.
-- **Bill lifecycle**: OPEN → APPROVED/REJECTED/FAILED/CLOSED. Each Bill has a OneToOne to a Celery `PeriodicTask` that runs `submit_bill()` at voting period end.
-- **Webhook flow** (`webiscite/webhooks.py`): GitHub push events → HMAC validation → create/update `PullRequest` → create `Bill`.
+- **Constitution system** (`democrasite/webiscite/constitution.py`, repo-root `constitution.json`): Maps files to protected line ranges. PRs touching protected code become "constitutional" bills requiring supermajority. Line numbers auto-update after merges.
+- **Bill lifecycle**: Draft PRs yield `DRAFT` bills until `ready_for_review`; then `OPEN` → APPROVED/REJECTED/FAILED/CLOSED (or `AMENDED` if the PR branch changes during voting). Each Bill has a OneToOne to a Celery Beat `PeriodicTask` that runs `submit_bill()` at voting period end.
+- **Webhook flow** (`democrasite/webiscite/webhooks.py`): GitHub `pull_request` webhooks (open, reopen, close, synchronize, ready_for_review, etc.) → HMAC validation → create/update `PullRequest` and `Bill` as appropriate. `push` and `ping` are accepted with minimal handling.
 - **Vote constraints**: One vote per user per bill (DB unique constraint). Votes can be changed.
 - **Audit trail**: `django-simple-history` tracks changes on key models.
 

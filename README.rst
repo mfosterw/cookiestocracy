@@ -12,7 +12,7 @@ Democrasite
 .. |Continuous integration| image:: https://github.com/mfosterw/cookiestocracy/actions/workflows/ci.yml/badge.svg
      :target: https://github.com/mfosterw/cookiestocracy/actions/workflows/ci.yml
 
-.. |Coverage report| image:: https://codecov.io/gh/mfosterw/cookiestocracy/branch/master/graph/badge.svg?token=NPV1TLXZIW
+.. |Coverage report| image:: https://codecov.io/gh/mfosterw/cookiestocracy/graph/badge.svg?token=NPV1TLXZIW
      :target: https://codecov.io/gh/mfosterw/cookiestocracy
 
 .. |Documentation status| image:: https://readthedocs.org/projects/cookiestocracy/badge/?version=latest
@@ -74,7 +74,7 @@ following the instructions in the guide.
 Understanding the repository
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Check out ``repo_map.txt`` in the root of the repository for a display of the
+Check out ``repository_map.txt`` in the root of the repository for a display of the
 repository layout and brief explanations for the purpose of each non-obvious file and
 directory.
 
@@ -94,7 +94,7 @@ Loading initial data
 
 To load some initial sample data into the database, run::
 
-    $ python manage.py loaddata democrasite activitypub
+    $ python manage.py loaddata democrasite social
 
 Setting up your users
 ^^^^^^^^^^^^^^^^^^^^^
@@ -114,8 +114,8 @@ Setting up your users
   how the site behaves for both kinds of users.
 
 .. _`django-allauth`: https://docs.allauth.org/en/latest/introduction/index.html
-.. _`GitHub`: https://django-allauth.readthedocs.io/en/latest/providers.html#github
-.. _`Google`: https://docs.allauth.org/en/latest/socialaccount/providers/github.html
+.. _`GitHub`: https://docs.allauth.org/en/latest/socialaccount/providers/github.html
+.. _`Google`: https://docs.allauth.org/en/latest/socialaccount/providers/google.html
 
 Linting
 ^^^^^^^

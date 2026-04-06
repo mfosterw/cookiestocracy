@@ -1,4 +1,5 @@
 import pytest
+from django.contrib.auth.models import AnonymousUser
 from rest_framework.test import APIRequestFactory
 
 from democrasite.users.api.views import UserViewSet
@@ -19,6 +20,14 @@ class TestUserViewSet:
         view.request = request
 
         assert user in view.get_queryset()
+
+    def test_logged_out(self, api_rf: APIRequestFactory, view: UserViewSet):
+        request = api_rf.get("/fake-url/")
+        request.user = AnonymousUser()
+
+        view.request = request
+
+        assert not view.get_queryset()
 
     def test_me(self, api_rf: APIRequestFactory, user: User, view: UserViewSet):
         request = api_rf.get("/fake-url/")

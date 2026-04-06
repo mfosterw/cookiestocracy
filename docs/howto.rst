@@ -4,15 +4,18 @@ How To - Project Documentation
 Get Started
 ----------------------------------------------------------------------
 
-Documentation can be written as rst files in `democrasite/docs`.
+Documentation source files live in the ``docs/`` directory at the repository root.
 
 
-To build and serve docs, use the commands::
+To build and serve docs with live reload, start the local stack (including the ``docs``
+service) from the project root::
 
-    docker compose -f docker-compose.docs.yml up
+    just up
 
+The docs container serves Sphinx at http://localhost:9000/ (see ``docker-compose.local.yml``).
 
-Changes to files in `docs` will be picked up and reloaded automatically.
+Changes to files under ``docs/`` and under ``democrasite/`` (watched by sphinx-autobuild)
+will be picked up and reloaded automatically.
 
 `Sphinx <https://www.sphinx-doc.org/>`_ is the tool used to build documentation.
 
