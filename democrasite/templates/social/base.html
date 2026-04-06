@@ -10,15 +10,23 @@
 
 {% block nav_user_pages %}
   <li class="nav-item">
-    <a class="nav-link" href="{% url 'social:note-list' %}">Notes</a>
+    {% url 'social:note-list' as url_notes %}
+    <a href="{{ url_notes }}"
+       class="nav-link
+              {% if request.path == url_notes %}active{% endif %}">Notes</a>
   </li>
   {% if user.person %}
     <li class="nav-item">
-      <a class="nav-link" href="{% url 'social:following-notes' %}">Following</a>
+      {% url 'social:following-notes' as url_following %}
+      <a href="{{ url_following }}"
+         class="nav-link
+                {% if request.path == url_following %}active{% endif %}">Following</a>
     </li>
     <li class="nav-item">
-      <a class="nav-link"
-         href="{% url 'social:person-detail' username=user.username %}">Profile</a>
+      {% url 'social:person-detail' username=user.username as url_profile %}
+      <a href="{{ url_profile }}"
+         class="nav-link
+                {% if request.path == url_profile %}active{% endif %}">Profile</a>
     </li>
   {% else %}
     <form class="form-inline"
